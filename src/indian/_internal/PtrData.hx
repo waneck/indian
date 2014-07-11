@@ -1,6 +1,6 @@
 package indian.buf;
 
-typedef PtrData<T> =
+typedef PtrData =
 #if INDIAN_EMULATE_BUFFER
 	haxe.io.BytesData;
 #elseif cpp

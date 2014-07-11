@@ -1,9 +1,10 @@
-package indian.buf;
+package indian;
+import indian._internal.PtrData;
 
 /**
 	A Ptr represents a pointer to a natively-allocated memory chunk.
 **/
-abstract Ptr<T>(PtrData<T>)
+abstract Ptr(PtrData)
 {
 	inline public function new(pointer)
 	{

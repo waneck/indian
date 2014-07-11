@@ -1,4 +1,5 @@
-package indian.buf;
+package indian;
+import indian.buf.*;
 
 class MemChunk
 {
@@ -15,7 +16,7 @@ class MemChunk
 	/**
 		Gets the containing memory chunk if available.
 	**/
-	public var parent(get,never):Null<Ptr<Dynamic>>;
+	public var parent(get,never):Null<Ptr>;
 
 	/**
 		Sets the buffer length if it wasn't set yet.
@@ -26,11 +27,11 @@ class MemChunk
 
 	public function setLength64(len:Int64):Void;
 
-	public function getPointer():Ptr<T>;
+	public function getPointer():Ptr;
 
 	/**
 		Gets a buffer from the pointer.
-		The returned buffer can only be stored in the stack.
+		The returned buffer can only be stored in the stack - it cannot be stored in fields nor captured by functions
 	**/
 	inline public function buffer():Buffer
 	{
