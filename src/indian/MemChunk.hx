@@ -29,6 +29,14 @@ class MemChunk
 
 	public function getPointer():Ptr;
 
+	public function advanceBytes(nbytes:Int):MemChunk
+	{
+	}
+
+	public function advanceBytes64(nbytes:Int64):MemChunk
+	{
+	}
+
 	/**
 		Gets a buffer from the pointer.
 		The returned buffer can only be stored in the stack - it cannot be stored in fields nor captured by functions
