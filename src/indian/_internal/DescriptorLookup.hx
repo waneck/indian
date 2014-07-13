@@ -25,4 +25,12 @@ class DescriptorLookup
 	public static function getLength(addr:IntPtr):Int
 	{
 	}
+
+	/**
+		Frees the length of the address
+		@throws InvalidArgument if the length isn't set
+	**/
+	public static function freeLength(addr:IntPtr)
+	{
+	}
 }
