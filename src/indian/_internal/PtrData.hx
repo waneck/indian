@@ -1,4 +1,4 @@
-package indian.buf;
+package indian._internal;
 
 typedef PtrData =
 #if INDIAN_EMULATE_BUFFER

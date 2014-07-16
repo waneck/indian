@@ -18,15 +18,6 @@ class MemChunk
 	**/
 	public var parent(get,never):Null<Ptr>;
 
-	/**
-		Sets the buffer length if it wasn't set yet.
-
-		@throws `UnsafeOperation` if the buffer length was already set and has a different value than `len`
-	**/
-	public function setLength(len:Int):Void;
-
-	public function setLength64(len:Int64):Void;
-
 	public function getPointer():Ptr;
 
 	public function advanceBytes(nbytes:Int):MemChunk

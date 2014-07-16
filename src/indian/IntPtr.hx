@@ -1,6 +1,11 @@
 package indian;
 import haxe.Int64;
 import indian._internal.PtrData;
+#if macro
+import haxe.macro.Context;
+import haxe.macro.Expr;
+using haxe.macro.ExprTools;
+#end
 
 /**
 	A Ptr represents a pointer to a natively-allocated memory chunk.
@@ -8,14 +13,26 @@ import indian._internal.PtrData;
 	However, acquiring a buffer instance from an IntPtr requires a descriptor lookup,
 	so in cases where the pointer may be stored for an extended period of time, it is advisable to store a MemChunk instance instead
 **/
-abstract IntPtr(PtrData)
+abstract IntPtr<T>(PtrData)
 {
+	macro public function pcast(ethis:haxe.macro.Expr, to:haxe.macro.Expr):haxe.macro.Expr
+	{
+		var type = switch (Context.parse('(_ : ${to.toString()})', to.pos)) {
+			case macro (_ : $t):
+				t;
+			case _:
+				throw "assert";
+		};
+		return macro (cast $ethis : indian.IntPtr<$type>);
+	}
+#if !macro
 	inline public function new(pointer)
 	{
 		this = pointer;
 	}
 
 	public static var pointerSize(get,never):Int;
+
 
 	inline public function descriptor():MemChunk
 	{
@@ -45,15 +62,16 @@ abstract IntPtr(PtrData)
 	{
 	}
 
-	@:deprecated("Do not use the equality operator with pointers as it's not reliable. Use `eq' instead")
+	@:deprecated("Do not use the equality operator with pointers as it's not reliable. Use `eq` instead")
 	@:op(A == B) inline public function equals(to:IntPtr<T>):Bool
 	{
 		return eq(to);
 	}
 
-	@:deprecated("Do not use the equality operator with pointers as it's not reliable. Use `eq' instead")
+	@:deprecated("Do not use the equality operator with pointers as it's not reliable. Use `eq` instead")
 	@:op(A != B) inline public function notEquals(to:IntPtr<T>):Bool
 	{
 		return !eq(to);
 	}
+#end
 }
