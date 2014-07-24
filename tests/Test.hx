@@ -3,10 +3,9 @@ class Test
 {
 	static function main()
 	{
-		trace("hello world");
-		var data:IntPtr<Int> = null;
-		var d2 = data.pcast(String);
-		$type(d2);
+		var x:Ptr<Int> = 10;
+		trace(x);
+		$type(x);
 	}
 
 }
