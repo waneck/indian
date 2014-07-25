@@ -12,6 +12,7 @@ class PtrBuild
 	{
 		return switch getLocalType() {
 			case TInst(_, [t]):
+				trace(getLocalType().toString());
 				createType(t, currentPos());
 			case _:
 				throw "assert";
@@ -40,6 +41,8 @@ class PtrBuild
 					}
 				case TDynamic(_):
 					return getOrBuild(['indian','_internal'],'Void',0,null);
+				case TInst(_.get() => { kind : KTypeParameter(_) }, _):
+					return getType('Dynamic');
 				case _:
 			}
 			return t;
