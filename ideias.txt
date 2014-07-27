@@ -1,5 +1,3 @@
-* @:generic ainda não suporta múltiplos builds quando usado com o @:genericBuild (infelizmente)
-* Ptr deve ser já a versão EphPtr, e algo como HeapPointer é a versão que pode ser passada livremente - isso faz com que naturalmente a maioria dos ponteiros seja tipada como Ptr<>, a não ser que necessário
 * um pointer é sempre um buffer no seu underlying type - um buffer pode ter o underlying type de um real C#/C++ Pointer
 * GCBuffer - Ptr<Dynamic> que pode ser Garbage Collected. Não disponível em TODAS as plataformas (e.g. flash lel)
 * Para Java, não usar JNA e fazer próprios bindings: possibilidade de utilizar o modo 'direct' usando memory map anonymous

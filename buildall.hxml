@@ -1,0 +1,20 @@
+-cp src
+-cp tests
+-main Test
+-lib taurine-core
+-lib utest
+-debug
+--each
+--next
+-cs bin/cs
+-D unsafe
+-cmd mono bin/cs/bin/Test-Debug.exe
+--next
+-cpp bin/cpp
+-cmd ./bin/cpp/Test-debug
+--next
+-neko bin/neko.n
+-cmd neko bin/neko.n
+--next
+-java bin/java
+-cmd java -jar bin/java/Test-Debug.jar
