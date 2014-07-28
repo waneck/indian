@@ -153,6 +153,10 @@ import indian._internal.*;
 #end
 	}
 
+	@:extern public static function memcpy(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
+	{
+	}
+
 	@:op(A+B) @:extern inline public function add(byteOffset:Int):Buffer
 	{
 #if (cs || cpp || java)
