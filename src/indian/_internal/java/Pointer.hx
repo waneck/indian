@@ -16,9 +16,14 @@ import java.sun.misc.Unsafe;
 		}
 		catch(e:Dynamic)
 		{
-			trace('Unsafe unsupported. Error:',e);
+			trace('Unsafe is not supported on this platform. Error:',e);
 			null;
 		}
+	}
+
+	@:extern inline public static function nil():Pointer
+	{
+		return null;
 	}
 
 	@:extern inline public function new(ptr:Int64)
