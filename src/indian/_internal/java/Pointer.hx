@@ -76,6 +76,16 @@ import java.sun.misc.Unsafe;
 		unsafe.putInt(this.add(cast offset), val);
 	}
 
+	@:extern inline public function getInt64(offset:Int):taurine.Int64
+	{
+		return unsafe.getLong(this.add(cast offset));
+	}
+
+	@:extern inline public function setInt64(offset:Int, val:Int64):Void
+	{
+		unsafe.putLong(this.add(cast offset), val);
+	}
+
 	@:extern inline public function getFloat32(offset:Int):Single
 	{
 		return cast unsafe.getFloat(this.add(cast offset));

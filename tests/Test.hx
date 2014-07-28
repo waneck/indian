@@ -14,7 +14,9 @@ class Test
 	{
 		// var buffer:Buffer = null;
 // #if java
-		var buffer = indian._internal.java.Pointer.alloc(1024);
+		// var buffer = indian._internal.java.Pointer.alloc(1024);
+		var buffer:Buffer = cast null;
+		buffer = test(buffer);
 // #end
 		if (buffer != null)
 		{
@@ -41,6 +43,11 @@ class Test
 #if sys
 		// Sys.exit(report.allOk() ? 0 : 1);
 #end
+	}
+
+	@:unsafe static function test(a:Buffer)
+	{
+		return a;
 	}
 
 }

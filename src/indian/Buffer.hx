@@ -1,5 +1,6 @@
 package indian;
 import taurine.*;
+import taurine.Int64;
 import indian._internal.*;
 
 /**
@@ -73,6 +74,30 @@ import indian._internal.*;
 		( cast this.add(offset) : PointerType<Int> )[0] = val;
 #elseif cpp
 		var p:PointerType<Int> = this.add(offset).reinterpret();
+		p[0] = val;
+#else
+		this.setInt32(offset,val);
+#end
+	}
+
+	@:extern inline public function getInt64(offset:Int):Int64
+	{
+#if cs
+		return ( cast this.add(offset) : PointerType<Int64> )[0];
+#elseif cpp
+		var p:PointerType<Int64> = this.add(offset).reinterpret();
+		return p[0];
+#else
+		//TODO
+#end
+	}
+
+	@:extern inline public function setInt64(offset:Int, val:Int64):Void
+	{
+#if cs
+		( cast this.add(offset) : PointerType<Int64> )[0] = val;
+#elseif cpp
+		var p:PointerType<Int64> = this.add(offset).reinterpret();
 		p[0] = val;
 #else
 		this.setInt32(offset,val);
@@ -153,8 +178,18 @@ import indian._internal.*;
 #end
 	}
 
-	@:extern public static function memcpy(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
+	@:extern inline public function getCString() {
+
+	}
+
+	public static function memcpy(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
 	{
+		//TODO
+	}
+
+	public static function memmove(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
+	{
+		//TODO
 	}
 
 	@:op(A+B) @:extern inline public function add(byteOffset:Int):Buffer
@@ -162,6 +197,18 @@ import indian._internal.*;
 #if (cs || cpp || java)
 		return new Buffer(this.add(byteOffset));
 #else
+		//TODO
+		throw "not available";
+#end
+	}
+
+	@:op(A-B) @:extern inline public function sub(byteOffset:Int):Buffer
+	{
+#if (cs || cpp || java)
+		return new Buffer(this.add(-byteOffset));
+#else
+		//TODO
+		throw "not available";
 #end
 	}
 }
