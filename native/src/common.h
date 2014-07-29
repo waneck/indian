@@ -1,6 +1,14 @@
 #ifndef TAU_COMMON_H
 #define TAU_COMMON_H 1
+
+#ifdef HXCPP_COMPATIBLE
 #include <hx/CFFI.h>
+#else
+extern "C" {
+#include <neko.h>
+}
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,8 +34,6 @@
 
 
 typedef unsigned long long hx_uint64;
-typedef unsigned short hx_ui16;
-typedef unsigned char hx_ui8;
 
 hx_uint64 val_uint64(value v);
 value alloc_uint64(hx_uint64 v);

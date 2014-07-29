@@ -24,9 +24,9 @@ DEFINE_PRIM(tau_memcpy,5);
 
 value tau_ptr_of_buffer( value buf )
 {
-	val_check(buf, buffer);
-	buffer b = val_to_buffer(buf);
-	return alloc_ptr( buffer_data(b) );
+	// val_check(buf, buffer);
+	val_check(buf,string);
+	return alloc_ptr( val_string(buf) );
 }
 DEFINE_PRIM(tau_ptr_of_buffer,1);
 

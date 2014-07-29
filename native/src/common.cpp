@@ -7,8 +7,11 @@
 #endif
 #include "common.h"
 
+extern "C" {
 DEFINE_KIND(k_ui64);
 DEFINE_KIND(k_raw_ui64);
+DEFINE_KIND(k_ptr);
+}
 
 typedef struct {
 	hx_uint64 value;
@@ -38,7 +41,7 @@ hx_uint64 val_uint64(value v)
 	}
 }
 
-void i64_container_finalize( value v ) 
+static void i64_container_finalize( value v ) 
 {
 	free( val_data(v) );
 	// val_kind(v) = NULL;
@@ -60,8 +63,6 @@ value alloc_uint64(hx_uint64 v)
 	}
 }
 
-DEFINE_KIND(k_ptr);
-
 void *val_ptr(value ptr)
 {
 	if (val_is_abstract(ptr))
@@ -75,7 +76,7 @@ void *val_ptr(value ptr)
 
 	buffer buf = alloc_buffer("Invalid pointer: ");
 	val_buffer(buf,ptr);
-	val_throw( buffer_val(buf) );
+	val_throw( buffer_to_string(buf) );
 	return NULL;
 }
 
