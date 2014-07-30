@@ -178,8 +178,8 @@ import indian._internal.*;
 #end
 	}
 
-	@:extern inline public function getCString() {
-
+	@:extern inline public function getCString()
+	{
 	}
 
 	public static function memcpy(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
