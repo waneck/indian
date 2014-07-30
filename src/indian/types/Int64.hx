@@ -171,8 +171,7 @@ import neko.Lib;
 	@:extern @:op(A*B) public inline function mul(i:Int):Int64
 	{
 #if cpp
-		var ret = Int64Helper.mul(this,i);
-		return ret;
+		return Int64Helper.mul(this,i);
 #elseif neko
 		var ret = __mul(this,i);
 		return ret;
@@ -186,8 +185,7 @@ import neko.Lib;
 	@:extern @:op(A*B) public inline function mul_int64(i:Int64):Int64
 	{
 #if cpp
-		var ret = Int64Helper.mul_i64(this,i.t());
-		return ret;
+		return Int64Helper.mul_i64(this,i.t());
 #elseif neko
 		var ret = __mul(this,i);
 		return ret;
@@ -524,6 +522,7 @@ import neko.Lib;
 	}
 
 	// DEFS
+#if neko
 	private static var __toHex:Dynamic = neko.Lib.load("indian","tau_i64_to_hex",1);
 	private static var __toStr:Dynamic = neko.Lib.load("indian","tau_i64_to_str",1);
 	private static var __toInt:Dynamic = neko.Lib.load("indian","tau_i64_to_int",1);
@@ -540,6 +539,7 @@ import neko.Lib;
 	private static var __sub:Dynamic->Dynamic->Int64 = neko.Lib.load("indian","tau_i64_sub",2);
 	private static var __add:Dynamic->Dynamic->Int64 = neko.Lib.load("indian","tau_i64_add",2);
 	private static var __make:Dynamic->Dynamic->Int64 = neko.Lib.load("indian","tau_i64_make",2);
+#end
 
 }
 
@@ -662,7 +662,7 @@ typedef Int64_t = #if cpp cpp.Int64 #else haxe.Int64 #end
 ')
 @:keep class Int64Helper
 {
-	@:extern public static function ixor(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function ixor(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
@@ -672,87 +672,87 @@ typedef Int64_t = #if cpp cpp.Int64 #else haxe.Int64 #end
 		return 1;
 	}
 
-	@:extern public static function xor_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function xor_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function ior(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function ior(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function or_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function or_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function iand(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function iand(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function and_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function and_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function shr(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function shr(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function ushr(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function ushr(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function shl(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function shl(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function mul(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function mul(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function mul_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function mul_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function div(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function div(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function div_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function div_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function mod(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function mod(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function mod_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function mod_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function add(i:Int64_t, i2:Int):Int64_t
+	@:extern public static function add(i:Int64_t, i2:Int):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function add_i64(i:Int64_t, i2:Int64_t):Int64_t
+	@:extern public static function add_i64(i:Int64_t, i2:Int64_t):Int64
 	{
 		return 1;
 	}
 
-	@:extern public static function make(i1:Int, i2:Int):Int64_t
+	@:extern public static function make(i1:Int, i2:Int):Int64
 	{
 		return 1;
 	}

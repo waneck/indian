@@ -32,19 +32,19 @@ DEFINE_PRIM(tau_i64_sub, 2);
 
 static value tau_i64_shr ( value this1, value i)
 {
-	return alloc_uint64( ( (long long int) val_uint64(this1) ) >> val_int(i) );
+	return alloc_uint64( ( (long long int) val_uint64(this1) ) >> val_any_int(i) );
 }
 DEFINE_PRIM(tau_i64_shr , 2);
 
 static value tau_i64_ushr( value this1, value i)
 {
-	return alloc_uint64( val_uint64(this1) >> val_int(i) );
+	return alloc_uint64( val_uint64(this1) >> val_any_int(i) );
 }
 DEFINE_PRIM(tau_i64_ushr, 2);
 
 static value tau_i64_shl( value this1, value i)
 {
-	return alloc_uint64( val_uint64(this1) << val_int(i) );
+	return alloc_uint64( val_uint64(this1) << val_any_int(i) );
 }
 DEFINE_PRIM(tau_i64_shl, 2);
 
@@ -75,7 +75,11 @@ DEFINE_PRIM(tau_i64_compare, 2);
 
 static value tau_i64_make( value high, value low )
 {
-	return alloc_uint64( (( (hx_uint64) val_int(high) ) << 32) | ( val_int(low) & 0xFFFFFFFF) );
+	hx_uint64 ilow = (hx_uint64) ((unsigned int) val_any_int(low) );
+	hx_uint64 ihigh = (hx_uint64) ((unsigned int) val_any_int(high) );
+	hx_uint64 ret = (ihigh << 32) | ilow;
+	// printf("%lld (%lld), %lld  - %llx == %llx\n\n",ihigh, ihigh << 32,ilow,ilow,ret);
+	return alloc_uint64(ret);
 }
 DEFINE_PRIM(tau_i64_make, 2);
 

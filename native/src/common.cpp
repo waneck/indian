@@ -21,7 +21,7 @@ hx_uint64 val_uint64(value v)
 {
 	if (val_is_any_int(v))
 	{
-		return (hx_uint64) val_any_int(v);
+		return (hx_uint64) (unsigned int) val_any_int(v);
 	} else if (val_is_abstract(v)) {
 		if (val_is_kind(v,k_ui64))
 			return ((i64_container *) val_data(v))->value;

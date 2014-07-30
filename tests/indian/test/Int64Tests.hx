@@ -20,7 +20,6 @@ class Int64Tests
 		Assert.equals( (v + ""), "1048576" );
 
 		var p40 = v.shl(20);
-		trace(p40.toString(),v.toString());
 		Assert.equals( p40.toString(), "1099511627776" );
 
 		Assert.equals( ofInt(1).shl(0).toString(), "1" );
@@ -34,7 +33,6 @@ class Int64Tests
 		var c = a * b;
 
 		Assert.equals( c.toString(), "572248275467371265" );
-		trace((c + "") + " should be 572248275467371265"); // but gives 7572248271172403969 in javascript
 
 		var a = Int64.make(0, 0xD3F9C9F4);
 		var b = Int64.make(0, 0xC865C765);
@@ -43,6 +41,8 @@ class Int64Tests
 
 		var a = Int64.make(0, 0x9E370301);
 		var b = Int64.make(0, 0xB0590000);
+		// 0x00000000012b48f0,0x00000000012b48e8
+
 		var c = a + b;
 		Assert.equals( c.toString(), "5613028097" );
 
@@ -92,7 +92,6 @@ class Int64Tests
 		var a = ofInt(3),
 				b = ofInt(2),
 				c = make(0xffffffff,0xfffffffe);
-		trace(a+b);
 		Assert.isTrue( (a + b) == ofInt(5) );
 		Assert.isTrue( (a + 4) == ofInt(7) );
 		Assert.isTrue( (c + 3) == ofInt(1) );
