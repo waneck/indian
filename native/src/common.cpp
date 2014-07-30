@@ -19,9 +19,9 @@ typedef struct {
 
 hx_uint64 val_uint64(value v)
 {
-	if (val_is_int(v))
+	if (val_is_any_int(v))
 	{
-		return (hx_uint64) val_int(v);
+		return (hx_uint64) val_any_int(v);
 	} else if (val_is_abstract(v)) {
 		if (val_is_kind(v,k_ui64))
 			return ((i64_container *) val_data(v))->value;
@@ -32,11 +32,23 @@ hx_uint64 val_uint64(value v)
 		static field id_low = val_id("low");
 		value vhigh = val_field(v,id_high);
 		value vlow = val_field(v,id_low);
-		if (!val_is_int(vhigh) || !val_is_int(vlow))
-			val_throw( alloc_string( "(val_uint64) Invalid Int64 parameter" ));
-		return ( ((hx_uint64) val_int(vhigh)) << 32 ) | ( (hx_uint64) val_int(vlow) );
+		if (!val_is_any_int(vhigh) || !val_is_any_int(vlow))
+		{
+			buffer buf = alloc_buffer( "(val_uint64) Invalid haxe.Int64 parameter: " );
+			val_buffer(buf,v);
+			val_throw( buffer_to_string(buf) );
+		}
+		return ( ((hx_uint64) val_any_int(vhigh)) << 32 ) | ( (hx_uint64) val_any_int(vlow) );
+	} else if (val_is_float(v)) {
+		return (hx_uint64) val_float(v);
 	} else {
-		val_throw( alloc_string( "(val_uint64) Invalid Int64 parameter" ));
+		{
+			buffer buf = alloc_buffer( "(val_uint64) Invalid Int64 parameter: " );
+			val_buffer(buf,alloc_int(val_type(v)));
+			val_buffer(buf,alloc_string(", "));
+			val_buffer(buf,v);
+			val_throw( buffer_to_string(buf) );
+		}
 		return 0ULL;
 	}
 }
@@ -44,13 +56,15 @@ hx_uint64 val_uint64(value v)
 static void i64_container_finalize( value v ) 
 {
 	free( val_data(v) );
-	// val_kind(v) = NULL;
+#ifndef HXCPP_COMPATIBLE
+	val_kind(v) = NULL;
+#endif
 }
 
 value alloc_uint64(hx_uint64 v)
 {
-	if (v < 0xFFFFFFFFULL) {
-		return alloc_int( (int) v );
+	if (v <= 0xFFFFFFFFULL) {
+		return alloc_best_int( (int) v );
 	} else if (sizeof(hx_uint64) <= sizeof(void *)) {
 		return alloc_abstract(k_raw_ui64, (void *) v);
 	} else {

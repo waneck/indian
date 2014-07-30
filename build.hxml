@@ -1,12 +1,15 @@
 -cp src
 -cp tests
 #--interp
--cpp bin/cpp
+#-cpp bin/cpp
+-neko bin/neko.n
 #-cs bin/cs
 -debug
 #-java bin/java
 -D unsafe
+#-D dump
 -main Test
 -lib taurine-core
 -lib utest
+-lib indian
 #-cmd java -jar bin/java/Test-Debug.jar

@@ -1,6 +1,6 @@
 package indian.test;
 
-class PointerTest
+class PointerTests
 {
 
 	public function new()
