@@ -30,6 +30,25 @@ value tau_ptr_of_buffer( value buf )
 }
 DEFINE_PRIM(tau_ptr_of_buffer,1);
 
+value tau_alloc( value len )
+{
+	return alloc_ptr(malloc( (size_t) val_uint64(len) ));
+}
+DEFINE_PRIM(tau_alloc,1);
+
+value tau_free( value ptr )
+{
+	free(val_ptr(ptr));
+	return val_null;
+}
+DEFINE_PRIM(tau_free,1);
+
+value tau_ptr_add( value ptr, value offset )
+{
+	return alloc_ptr( (void *) (( (char *) val_ptr(ptr) ) + ( (size_t) val_uint64(offset) )) );
+}
+DEFINE_PRIM(tau_ptr_add,2);
+
 value tau_get_ui8(value ptr, value base_addr, value offset)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
@@ -218,7 +237,7 @@ value tau_set_f32(value ptr, value base_addr, value offset, value val)
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
-	( (float *) src )[0] = val_float(val);
+	( (float *) src )[0] = val_number(val);
 	return val;
 }
 DEFINE_PRIM(tau_set_f32,4);
@@ -236,7 +255,7 @@ value tau_set_f64(value ptr, value base_addr, value offset, value val)
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
-	( (double *) src )[0] = val_float(val);
+	( (double *) src )[0] = val_number(val);
 	return val;
 }
 DEFINE_PRIM(tau_set_f64,4);
@@ -325,3 +344,38 @@ value tau_write_string(value ptr, value base_addr, value offset, value string)
 	return alloc_int(len);
 }
 DEFINE_PRIM(tau_write_string,4);
+
+value tau_set_ptr(value ptr, value base_addr, value offset, value val)
+{
+	unsigned char *src = (unsigned char *) val_ptr(ptr);
+	if (!val_is_null(base_addr))
+	{
+		src += (size_t) val_uint64(base_addr);
+	}
+	if (val_is_any_int(offset))
+	{
+		src += (size_t) val_any_int(offset);
+	} else if (!val_is_null(offset)) {
+		src += (size_t) val_uint64(offset);
+	}
+	( (void **) src )[0] = val_ptr(val);
+	return val;
+}
+DEFINE_PRIM(tau_set_ptr,4);
+
+value tau_get_ptr(value ptr, value base_addr, value offset)
+{
+	unsigned char *src = (unsigned char *) val_ptr(ptr);
+	if (!val_is_null(base_addr))
+	{
+		src += (size_t) val_uint64(base_addr);
+	}
+	if (val_is_any_int(offset))
+	{
+		src += (size_t) val_any_int(offset);
+	} else if (!val_is_null(offset)) {
+		src += (size_t) val_uint64(offset);
+	}
+	return alloc_ptr(*( (void **) src ) );
+}
+DEFINE_PRIM(tau_get_ptr,3);

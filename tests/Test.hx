@@ -16,6 +16,7 @@ class Test
 
 		runner.addCase(new indian.test.PointerTests());
 		runner.addCase(new indian.test.Int64Tests());
+		runner.addCase(new indian.test.BufferTests());
 
 		var report = new utest.ui.text.PrintReport(runner);
 		runner.run();

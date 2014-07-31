@@ -1,8 +1,8 @@
 -cp src
 -cp tests
 #--interp
-#-cpp bin/cpp
--neko bin/neko.n
+-cpp bin/cpp
+#-neko bin/neko.n
 #-cs bin/cs
 -debug
 #-java bin/java

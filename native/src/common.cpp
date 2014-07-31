@@ -81,6 +81,8 @@ void *val_ptr(value ptr)
 {
 	if (val_is_abstract(ptr))
 	{
+		if (val_is_kind(ptr,k_ui64))
+			return &(((i64_container *) val_data(ptr))->value);
 		// We won't check if it's of kind k_ptr, because other libs may want to
 		// use it, and this is an unsafe library after all
 		return val_data(ptr);
