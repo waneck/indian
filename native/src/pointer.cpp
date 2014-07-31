@@ -37,9 +37,9 @@ value tau_get_ui8(value ptr, value base_addr, value offset)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		return alloc_int(*(src + val_int(offset)));
+		return alloc_int(*(src + val_any_int(offset)));
 	} else if (!val_is_null(offset)) {
 		return alloc_int(*(src + val_uint64(offset)));
 	}
@@ -54,9 +54,9 @@ value tau_get_ui16(value ptr, value base_addr, value offset)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -71,13 +71,13 @@ value tau_get_i32(value ptr, value base_addr, value offset)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
-	return alloc_int(*( (int *) src ) );
+	return alloc_best_int(*( (int *) src ) );
 }
 DEFINE_PRIM(tau_get_i32,3);
 
@@ -88,9 +88,9 @@ value tau_get_i64(value ptr, value base_addr, value offset)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -105,9 +105,9 @@ value tau_get_f32(value ptr, value base_addr, value offset)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -122,9 +122,9 @@ value tau_get_f64(value ptr, value base_addr, value offset)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -140,13 +140,13 @@ value tau_set_ui8(value ptr, value base_addr, value offset, value val)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
-	src[0] = val_int(val);
+	src[0] = val_any_int(val);
 	return val;
 }
 DEFINE_PRIM(tau_set_ui8,4);
@@ -158,13 +158,13 @@ value tau_set_ui16(value ptr, value base_addr, value offset, value val)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
-	( (unsigned short *) src )[0] = val_int(val);
+	( (unsigned short *) src )[0] = val_any_int(val);
 	return val;
 }
 DEFINE_PRIM(tau_set_ui16,4);
@@ -176,13 +176,13 @@ value tau_set_i32(value ptr, value base_addr, value offset, value val)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
-	( (int *) src )[0] = val_int(val);
+	( (int *) src )[0] = val_any_int(val);
 	return val;
 }
 DEFINE_PRIM(tau_set_i32,4);
@@ -194,9 +194,9 @@ value tau_set_i64(value ptr, value base_addr, value offset, value val)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -212,9 +212,9 @@ value tau_set_f32(value ptr, value base_addr, value offset, value val)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -230,9 +230,9 @@ value tau_set_f64(value ptr, value base_addr, value offset, value val)
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_int(offset))
+	if (val_is_any_int(offset))
 	{
-		src += (size_t) val_int(offset);
+		src += (size_t) val_any_int(offset);
 	} else if (!val_is_null(offset)) {
 		src += (size_t) val_uint64(offset);
 	}
@@ -240,3 +240,88 @@ value tau_set_f64(value ptr, value base_addr, value offset, value val)
 	return val;
 }
 DEFINE_PRIM(tau_set_f64,4);
+
+value tau_read_string_len(value ptr, value base_addr, value offset, value size)
+{
+	unsigned char *src = (unsigned char *) val_ptr(ptr);
+	if (!val_is_null(base_addr))
+	{
+		src += (size_t) val_uint64(base_addr);
+	}
+	if (val_is_any_int(offset))
+	{
+		src += (size_t) val_any_int(offset);
+	} else if (!val_is_null(offset)) {
+		src += (size_t) val_uint64(offset);
+	}
+	val_check(size,int);
+	int ssize = val_any_int(size);
+	return copy_string( (const char *) src, ssize );
+}
+DEFINE_PRIM(tau_read_string_len,4);
+
+value tau_read_string(value ptr, value base_addr, value offset)
+{
+	unsigned char *src = (unsigned char *) val_ptr(ptr);
+	if (!val_is_null(base_addr))
+	{
+		src += (size_t) val_uint64(base_addr);
+	}
+	if (val_is_any_int(offset))
+	{
+		src += (size_t) val_any_int(offset);
+	} else if (!val_is_null(offset)) {
+		src += (size_t) val_uint64(offset);
+	}
+	return alloc_string( ( const char * ) src );
+}
+DEFINE_PRIM(tau_read_string,3);
+
+value tau_write_string_len(value ptr, value base_addr, value offset, value size, value string)
+{
+	unsigned char *addr = (unsigned char *) val_ptr(ptr);
+	if (!val_is_null(base_addr))
+	{
+		addr += (size_t) val_uint64(base_addr);
+	}
+	if (val_is_any_int(offset))
+	{
+		addr += (size_t) val_any_int(offset);
+	} else if (!val_is_null(offset)) {
+		addr += (size_t) val_uint64(offset);
+	}
+	val_check(size,int);
+	val_check(string,string);
+	int len = val_strlen(string);
+	int isize = val_any_int(size);
+	if (isize < len)
+	{
+		len = isize;
+	}
+	memcpy( addr, val_string(string), len );
+	if (len < isize)
+		addr[len] = '\0'; //for compat
+	return alloc_int(len);
+}
+DEFINE_PRIM(tau_write_string_len,5);
+
+value tau_write_string(value ptr, value base_addr, value offset, value string)
+{
+	unsigned char *addr = (unsigned char *) val_ptr(ptr);
+	if (!val_is_null(base_addr))
+	{
+		addr += (size_t) val_uint64(base_addr);
+	}
+	if (val_is_any_int(offset))
+	{
+		addr += (size_t) val_any_int(offset);
+	} else if (!val_is_null(offset)) {
+		addr += (size_t) val_uint64(offset);
+	}
+	val_check(string,string);
+	int len = val_strlen(string);
+	memcpy( addr, val_string(string), len );
+	addr[len] = '\0';
+	return alloc_int(len);
+}
+DEFINE_PRIM(tau_write_string,4);
