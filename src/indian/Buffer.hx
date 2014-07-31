@@ -40,7 +40,7 @@ import indian._internal.*;
 #if (cpp || cs)
 		this[offset] = val;
 #elseif neko
-		indian._internal.neko.PointerHelper.setUInt8(this, offset, null, val);
+		indian._internal.neko.PointerHelper.setUInt8(this, offset, val);
 #else
 		this.setUInt8(offset,val);
 #end
@@ -65,7 +65,7 @@ import indian._internal.*;
 #if cs
 		( cast this.add(offset) : PointerType<UInt16> )[0] = cast val;
 #elseif neko
-		indian._internal.neko.PointerHelper.setUInt16(this, offset, null, val);
+		indian._internal.neko.PointerHelper.setUInt16(this, offset, val);
 #elseif cpp
 		var p16:PointerType<UInt16> = this.add(offset).reinterpret();
 		p16[0] = cast val;
@@ -93,7 +93,7 @@ import indian._internal.*;
 #if cs
 		( cast this.add(offset) : PointerType<Int> )[0] = val;
 #elseif neko
-		indian._internal.neko.PointerHelper.setInt32(this, offset, null, val);
+		indian._internal.neko.PointerHelper.setInt32(this, offset, val);
 #elseif cpp
 		var p:PointerType<Int> = this.add(offset).reinterpret();
 		p[0] = val;
@@ -121,7 +121,7 @@ import indian._internal.*;
 #if cs
 		( cast this.add(offset) : PointerType<Int64> )[0] = val;
 #elseif neko
-		indian._internal.neko.PointerHelper.setInt64(this, offset, null, val);
+		indian._internal.neko.PointerHelper.setInt64(this, offset, val);
 #elseif cpp
 		var p:PointerType<Int64> = this.add(offset).reinterpret();
 		p[0] = val;
@@ -149,7 +149,7 @@ import indian._internal.*;
 #if cs
 		( cast this.add(offset) : PointerType<Single> )[0] = val;
 #elseif neko
-		indian._internal.neko.PointerHelper.setFloat32(this, offset, null, val);
+		indian._internal.neko.PointerHelper.setFloat32(this, offset, val);
 #elseif cpp
 		var p:PointerType<Single> = this.add(offset).reinterpret();
 		p[0] = val;
@@ -177,7 +177,7 @@ import indian._internal.*;
 #if cs
 		( cast this.add(offset) : PointerType<Float> )[0] = val;
 #elseif neko
-		indian._internal.neko.PointerHelper.setFloat64(this, offset, null, val);
+		indian._internal.neko.PointerHelper.setFloat64(this, offset, val);
 #elseif cpp
 		var p:PointerType<Float> = this.add(offset).reinterpret();
 		p[0] = val;
@@ -206,7 +206,7 @@ import indian._internal.*;
 #if cs
 		( cast this.add(offset) : PointerType<PointerType<T>> )[0] = pointer;
 #elseif neko
-		indian._internal.neko.PointerHelper.setPointer(this, offset, null, pointer);
+		indian._internal.neko.PointerHelper.setPointer(this, offset, pointer);
 #elseif cpp
 		var p:PointerType<PointerType<T>> = this.add(offset).reinterpret();
 		p[0] = pointer;

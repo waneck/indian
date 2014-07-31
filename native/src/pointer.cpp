@@ -32,7 +32,7 @@ DEFINE_PRIM(tau_ptr_of_buffer,1);
 
 value tau_alloc( value len )
 {
-	return alloc_ptr(malloc( (size_t) val_uint64(len) ));
+	return alloc_ptr(calloc(1, (size_t) val_uint64(len) ));
 }
 DEFINE_PRIM(tau_alloc,1);
 
@@ -49,265 +49,174 @@ value tau_ptr_add( value ptr, value offset )
 }
 DEFINE_PRIM(tau_ptr_add,2);
 
-value tau_get_ui8(value ptr, value base_addr, value offset)
+value tau_get_ui8(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		return alloc_int(*(src + val_any_int(offset)));
-	} else if (!val_is_null(offset)) {
-		return alloc_int(*(src + val_uint64(offset)));
 	}
 	return alloc_int(*src);
 }
-DEFINE_PRIM(tau_get_ui8,3);
+DEFINE_PRIM(tau_get_ui8,2);
 
-value tau_get_ui16(value ptr, value base_addr, value offset)
+value tau_get_ui16(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	return alloc_int(*( (unsigned short *) src ) );
 }
-DEFINE_PRIM(tau_get_ui16,3);
+DEFINE_PRIM(tau_get_ui16,2);
 
-value tau_get_i32(value ptr, value base_addr, value offset)
+value tau_get_i32(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	return alloc_best_int(*( (int *) src ) );
 }
-DEFINE_PRIM(tau_get_i32,3);
+DEFINE_PRIM(tau_get_i32,2);
 
-value tau_get_i64(value ptr, value base_addr, value offset)
+value tau_get_i64(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	return alloc_uint64(*( (hx_uint64 *) src ) );
 }
-DEFINE_PRIM(tau_get_i64,3);
+DEFINE_PRIM(tau_get_i64,2);
 
-value tau_get_f32(value ptr, value base_addr, value offset)
+value tau_get_f32(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	return alloc_float((double) *( (float *) src ) );
 }
-DEFINE_PRIM(tau_get_f32,3);
+DEFINE_PRIM(tau_get_f32,2);
 
-value tau_get_f64(value ptr, value base_addr, value offset)
+value tau_get_f64(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	return alloc_float(*( (double *) src ) );
 }
-DEFINE_PRIM(tau_get_f64,3);
+DEFINE_PRIM(tau_get_f64,2);
 
-
-value tau_set_ui8(value ptr, value base_addr, value offset, value val)
+value tau_set_ui8(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	src[0] = val_any_int(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_ui8,4);
+DEFINE_PRIM(tau_set_ui8,3);
 
-value tau_set_ui16(value ptr, value base_addr, value offset, value val)
+value tau_set_ui16(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	( (unsigned short *) src )[0] = val_any_int(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_ui16,4);
+DEFINE_PRIM(tau_set_ui16,3);
 
-value tau_set_i32(value ptr, value base_addr, value offset, value val)
+value tau_set_i32(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	( (int *) src )[0] = val_any_int(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_i32,4);
+DEFINE_PRIM(tau_set_i32,3);
 
-value tau_set_i64(value ptr, value base_addr, value offset, value val)
+value tau_set_i64(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	( (int *) src )[0] = val_uint64(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_i64,4);
+DEFINE_PRIM(tau_set_i64,3);
 
-value tau_set_f32(value ptr, value base_addr, value offset, value val)
+value tau_set_f32(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	( (float *) src )[0] = val_number(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_f32,4);
+DEFINE_PRIM(tau_set_f32,3);
 
-value tau_set_f64(value ptr, value base_addr, value offset, value val)
+value tau_set_f64(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	( (double *) src )[0] = val_number(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_f64,4);
+DEFINE_PRIM(tau_set_f64,3);
 
-value tau_read_string_len(value ptr, value base_addr, value offset, value size)
+value tau_read_string_len(value ptr, value base_addr, value size)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	val_check(size,int);
 	int ssize = val_any_int(size);
 	return copy_string( (const char *) src, ssize );
 }
-DEFINE_PRIM(tau_read_string_len,4);
+DEFINE_PRIM(tau_read_string_len,3);
 
-value tau_read_string(value ptr, value base_addr, value offset)
+value tau_read_string(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
-	}
 	return alloc_string( ( const char * ) src );
 }
-DEFINE_PRIM(tau_read_string,3);
+DEFINE_PRIM(tau_read_string,2);
 
-value tau_write_string_len(value ptr, value base_addr, value offset, value size, value string)
+value tau_write_string_len(value ptr, value base_addr, value size, value string)
 {
 	unsigned char *addr = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		addr += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		addr += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		addr += (size_t) val_uint64(offset);
 	}
 	val_check(size,int);
 	val_check(string,string);
@@ -324,18 +233,12 @@ value tau_write_string_len(value ptr, value base_addr, value offset, value size,
 }
 DEFINE_PRIM(tau_write_string_len,5);
 
-value tau_write_string(value ptr, value base_addr, value offset, value string)
+value tau_write_string(value ptr, value base_addr, value string)
 {
 	unsigned char *addr = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		addr += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		addr += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		addr += (size_t) val_uint64(offset);
 	}
 	val_check(string,string);
 	int len = val_strlen(string);
@@ -343,39 +246,27 @@ value tau_write_string(value ptr, value base_addr, value offset, value string)
 	addr[len] = '\0';
 	return alloc_int(len);
 }
-DEFINE_PRIM(tau_write_string,4);
+DEFINE_PRIM(tau_write_string,3);
 
-value tau_set_ptr(value ptr, value base_addr, value offset, value val)
+value tau_set_ptr(value ptr, value base_addr, value val)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
-	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
 	}
 	( (void **) src )[0] = val_ptr(val);
 	return val;
 }
-DEFINE_PRIM(tau_set_ptr,4);
+DEFINE_PRIM(tau_set_ptr,3);
 
-value tau_get_ptr(value ptr, value base_addr, value offset)
+value tau_get_ptr(value ptr, value base_addr)
 {
 	unsigned char *src = (unsigned char *) val_ptr(ptr);
 	if (!val_is_null(base_addr))
 	{
 		src += (size_t) val_uint64(base_addr);
 	}
-	if (val_is_any_int(offset))
-	{
-		src += (size_t) val_any_int(offset);
-	} else if (!val_is_null(offset)) {
-		src += (size_t) val_uint64(offset);
-	}
 	return alloc_ptr(*( (void **) src ) );
 }
-DEFINE_PRIM(tau_get_ptr,3);
+DEFINE_PRIM(tau_get_ptr,2);
