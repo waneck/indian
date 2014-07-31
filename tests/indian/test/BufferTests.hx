@@ -2,7 +2,7 @@ package indian.test;
 import indian.Buffer in RawMem;
 import utest.Assert;
 
-class BufferTests
+@:unsafe class BufferTests
 {
 	public function new()
 	{

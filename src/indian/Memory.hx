@@ -2,7 +2,7 @@ package indian;
 
 import indian.Buffer in HeapPtr;
 
-class Memory
+@:unsafe class Memory
 {
 	/**
 		Allocates non-gc heap bytes, and returns a pointer to it.
