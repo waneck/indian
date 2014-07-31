@@ -233,7 +233,7 @@ import indian._internal.*;
 	@:op(A+B) @:extern inline public function add(byteOffset:Int):Buffer
 	{
 #if (cs || cpp || java)
-		return new Buffer(this.add(byteOffset));
+		return cast this.add(byteOffset);
 #elseif neko
 		return new Buffer(indian._internal.neko.PointerHelper.add(byteOffset));
 #else
