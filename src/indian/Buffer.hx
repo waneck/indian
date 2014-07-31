@@ -18,7 +18,8 @@ import indian._internal.*;
 	{
 #if cpp
 		indian._internal.cpp.Memory.m_memmove(cast (dest + destPos), cast (src + srcPos), len);
-#elseif (java || cs)
+#elseif java
+		indian._internal.java.Pointer.copy( src.add(srcPos).t(), dest.add(destPos).t(), cast len );
 #elseif neko
 		indian._internal.neko.PointerHelper.memmove(src,srcPos,dest,destPos,len);
 #end
@@ -254,5 +255,10 @@ import indian._internal.*;
 		//TODO
 		throw "not available";
 #end
+	}
+
+	@:extern inline private function t()
+	{
+		return this;
 	}
 }

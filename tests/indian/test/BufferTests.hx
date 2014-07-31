@@ -280,6 +280,8 @@ class BufferTests
 	public function test_blit()
 	{
 		var vec3 = alloc(7), vec4 = alloc(5);
+		for (i in 0...5)
+			vec4.setUInt8(i,0);
 		for (i in 0...7)
 			vec3.setUInt8(i,i);
 

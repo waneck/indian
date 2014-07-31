@@ -21,6 +21,11 @@ import java.sun.misc.Unsafe;
 		}
 	}
 
+	@:extern inline public static function copy(src:Pointer, dest:Pointer, bytes:Int64)
+	{
+		unsafe.copyMemory(cast src,cast dest,cast bytes);
+	}
+
 	@:extern inline public static function nil():Pointer
 	{
 		return null;
