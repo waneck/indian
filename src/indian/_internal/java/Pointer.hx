@@ -10,7 +10,6 @@ import java.sun.misc.Unsafe;
 		try
 		{
 			var ctor = java.Lib.toNativeType(Unsafe).getDeclaredConstructor(new java.NativeArray(0));
-			trace(ctor);
 			ctor.setAccessible(true);
 			cast ctor.newInstance(new java.NativeArray(0));
 		}
