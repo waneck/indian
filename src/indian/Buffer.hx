@@ -31,7 +31,7 @@ import indian._internal.*;
 #elseif neko
 		return indian._internal.neko.PointerHelper.getUInt8(this,offset);
 #else
-		return this.getUInt8(offset);
+		return this.getUInt8(offset) & 0xFF;
 #end
 	}
 
@@ -56,7 +56,7 @@ import indian._internal.*;
 		var p16:PointerType<UInt16> = this.add(offset).reinterpret();
 		return p16[0];
 #else
-		return this.getUInt16(offset);
+		return this.getUInt16(offset) & 0xFFFF;
 #end
 	}
 
@@ -111,6 +111,8 @@ import indian._internal.*;
 #elseif cpp
 		var p:PointerType<Int64> = this.add(offset).reinterpret();
 		return p[0];
+#elseif java
+		return this.getInt32(offset);
 #else
 		//TODO
 #end
@@ -126,7 +128,7 @@ import indian._internal.*;
 		var p:PointerType<Int64> = this.add(offset).reinterpret();
 		p[0] = val;
 #else
-		this.setInt32(offset,val);
+		this.setInt64(offset,val);
 #end
 	}
 

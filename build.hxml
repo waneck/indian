@@ -2,10 +2,10 @@
 -cp tests
 #--interp
 #-cpp bin/cpp
--neko bin/neko.n
+#-neko bin/neko.n
 #-cs bin/cs
 -debug
-#-java bin/java
+-java bin/java
 -D unsafe
 #-D dump
 -main Test
