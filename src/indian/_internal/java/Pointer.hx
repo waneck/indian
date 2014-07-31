@@ -80,7 +80,7 @@ import java.sun.misc.Unsafe;
 		unsafe.putInt(this.add(cast offset), val);
 	}
 
-	@:extern inline public function getInt64(offset:Int):taurine.Int64
+	@:extern inline public function getInt64(offset:Int):indian.types.Int64
 	{
 		return unsafe.getLong(this.add(cast offset));
 	}
