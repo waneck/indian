@@ -22,6 +22,7 @@ import indian._internal.*;
 		indian._internal.java.Pointer.copy( src.add(srcPos).t(), dest.add(destPos).t(), cast len );
 #elseif neko
 		indian._internal.neko.PointerHelper.memmove(src,srcPos,dest,destPos,len);
+#elseif cs
 #end
 	}
 
