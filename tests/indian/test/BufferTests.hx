@@ -490,6 +490,8 @@ import utest.Assert;
 	public function test_accessors()
 	{
 		var mem = alloc(8);
+		for (i in 0...8)
+			mem.setUInt8(i,0);
 		var littleEndian = true;
 		if (littleEndian)
 		{

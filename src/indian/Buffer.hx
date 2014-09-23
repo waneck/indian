@@ -14,7 +14,12 @@ import indian._internal.*;
 		this = cast pointer;
 	}
 
-	@:extern inline public static function blit(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
+#if cs
+	@:unsafe
+#else
+	@:extern inline
+#end
+	public static function blit(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
 	{
 #if cpp
 		indian._internal.cpp.Memory.m_memmove(cast (dest + destPos), cast (src + srcPos), len);
@@ -23,6 +28,46 @@ import indian._internal.*;
 #elseif neko
 		indian._internal.neko.PointerHelper.memmove(src,srcPos,dest,destPos,len);
 #elseif cs
+		trace(len);
+		var src = src.t() + srcPos,
+				dest = dest.t() + destPos;
+		var src64:Int64 = cast src,
+				dest64:Int64 = cast dest;
+		var src64:Int = cast (src64 & 7);
+		var dest64:Int = cast (dest64 & 7);
+		var llen = 8 - src64;
+		if (src64 == dest64 && len > llen)
+		{
+			trace('here');
+			for (i in 0...llen)
+			{
+				src[i] = dest[i];
+			}
+			len -= llen;
+
+			var lsrc:cs.Pointer<Int64> = cast (src + llen);
+			var ldest:cs.Pointer<Int64> = cast (dest + llen);
+			var llen = Std.int(len/8);
+			for (i in 0...llen)
+			{
+				ldest[i] = lsrc[i];
+			}
+			len -= llen;
+			if (len > 0)
+			{
+				src = cast lsrc;
+				dest = cast ldest;
+				for (i in 0...len)
+				{
+					dest[i] = src[i];
+				}
+			}
+		} else {
+			for (i in 0...len)
+			{
+				dest[i] = src[i];
+			}
+		}
 #end
 	}
 
