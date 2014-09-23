@@ -12,6 +12,8 @@ class Test
 
 	static function main()
 	{
+		var map = new Map();
+		map[10] = 10;
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.PointerTests());
