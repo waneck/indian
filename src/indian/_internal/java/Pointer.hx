@@ -1,6 +1,5 @@
 package indian._internal.java;
-import haxe.Int64;
-using haxe.Int64;
+import indian.types.*;
 import java.sun.misc.Unsafe;
 
 @:suppressWarnings("deprecation")

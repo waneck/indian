@@ -22,6 +22,15 @@ value tau_memcpy(value src_ptr, value src_pos, value dest_ptr, value dest_pos, v
 }
 DEFINE_PRIM(tau_memcpy,5);
 
+value tau_memcmp(value ptr1_ptr, value ptr1_pos, value ptr2_ptr, value ptr2_pos, value len)
+{
+	char *ptr1 = (char *) val_ptr(ptr1_ptr);
+	char *ptr2 = (char *) val_ptr(ptr2_ptr);
+
+	return alloc_int(memcmp( ptr1 + ( (size_t) val_uint64(ptr1_pos) ), ptr2 + ( (size_t) val_uint64(ptr2_pos) ), (size_t) val_uint64(len) ));
+}
+DEFINE_PRIM(tau_memcmp,5);
+
 value tau_ptr_of_buffer( value buf )
 {
 	// val_check(buf, buffer);

@@ -2,6 +2,9 @@ package indian;
 import taurine.*;
 import indian.types.Int64;
 import indian._internal.*;
+#if java
+import indian._internal.java.Pointer;
+#end
 
 /**
 	Any pointer can be accessed as a Buffer type.
@@ -37,12 +40,13 @@ import indian._internal.*;
 		var llen = 8 - src64_7;
 		if (src64 < dest64 && (src64+len) > dest64)
 		{
-			//copy from the back
+			//copy from the back - slow
 			while (len --> 0)
 			{
 				dest[len] = src[len];
 			}
 		} else if (src64_7 == dest64_7 && len > llen) {
+			// optimized case when both are aligned the same way
 			for (i in 0...llen)
 			{
 				src[i] = dest[i];
@@ -51,16 +55,16 @@ import indian._internal.*;
 
 			var lsrc:cs.Pointer<Int64> = cast (src + llen);
 			var ldest:cs.Pointer<Int64> = cast (dest + llen);
-			var llen = Std.int(len/8);
-			for (i in 0...llen)
+			var ilen = len >>> 3;
+			for (i in 0...ilen)
 			{
 				ldest[i] = lsrc[i];
 			}
-			len -= llen;
+			len -= ilen << 3;
 			if (len > 0)
 			{
-				src = cast lsrc;
-				dest = cast ldest;
+				src += llen + (ilen << 3);
+				dest += llen + (ilen << 3);
 				for (i in 0...len)
 				{
 					dest[i] = src[i];
@@ -71,6 +75,125 @@ import indian._internal.*;
 			{
 				dest[i] = src[i];
 			}
+		}
+#end
+	}
+
+#if (cs || java)
+	@:unsafe
+#else
+	@:extern inline
+#end
+	public static function compare(ptr1:Buffer, ptr1pos:Int, ptr2:Buffer, ptr2pos:Int, len:Int):Int
+	{
+#if cpp
+		return indian._internal.cpp.Memory.m_memcmp(cast (ptr1 + ptr1pos), cast (ptr2 + ptr2pos), len);
+#elseif neko
+		return indian._internal.neko.PointerHelper.memcmp(ptr1,ptr1pos,ptr2,ptr2pos,len);
+#elseif java
+		var ptr1 = ptr1.t().addr() + ptr1pos,
+				ptr2 = ptr2.t().addr() + ptr2pos;
+		var ptr1_7:Int = cast (ptr1 & 7);
+		var ptr2_7:Int = cast (ptr2 & 7);
+		var llen = 8 - ptr1_7;
+		if (ptr1_7 == ptr2_7 && len > llen)
+		{
+			for (i in 0...llen)
+			{
+				var v = Pointer.getUInt8(ptr1, i) - Pointer.getUInt8(ptr2, i);
+				if (v != 0)
+					return v;
+			}
+			len -= llen;
+
+			ptr1 = ptr1 + llen;
+			ptr2 = ptr2 + llen;
+			llen = Std.int(len/8);
+			for (i in 0...llen)
+			{
+				var v = Pointer.getInt64(ptr1, i) - Pointer.getInt64(ptr2, i);
+				if (v != 0)
+				{
+					return (v < 0 ? -1 : 1);
+				}
+			}
+			len -= llen;
+			if (len > 0)
+			{
+				ptr1 += llen * 8;
+				ptr2 += llen * 8;
+				for (i in 0...len)
+				{
+					var v = Pointer.getUInt8(ptr1, i) - Pointer.getUInt8(ptr2, i);
+					if (v != 0)
+						return v;
+				}
+			}
+
+			return 0;
+		} else {
+			for (i in 0...len)
+			{
+				var v = Pointer.getUInt8(ptr1, i) - Pointer.getUInt8(ptr2, i);
+				if (v != 0)
+					return v;
+			}
+
+			return 0;
+		}
+
+#elseif cs
+		var ptr1 = ptr1.t() + ptr1pos,
+				ptr2 = ptr2.t() + ptr2pos;
+		var ptr164:Int64 = cast ptr1,
+				ptr264:Int64 = cast ptr2;
+		var ptr164_7:Int = cast (ptr164 & 7);
+		var ptr264_7:Int = cast (ptr264 & 7);
+		var llen = 8 - ptr164_7;
+		if (ptr164_7 == ptr264_7 && len > llen)
+		{
+			for (i in 0...llen)
+			{
+				var v = ptr1[i] - ptr2[i];
+				if (v != 0)
+					return v;
+			}
+			len -= llen;
+
+			var lptr1:cs.Pointer<Int64> = cast (ptr1 + llen);
+			var lptr2:cs.Pointer<Int64> = cast (ptr2 + llen);
+			var llen = Std.int(len/8);
+			for (i in 0...llen)
+			{
+				var v = lptr1[i] - lptr2[i];
+				if (v != 0)
+				{
+					return (v < 0 ? -1 : 1);
+				}
+			}
+			len -= llen;
+			if (len > 0)
+			{
+				ptr1 = cast (lptr1 + llen);
+				ptr2 = cast (lptr2 + llen);
+				for (i in 0...len)
+				{
+					var v = ptr1[i] - ptr2[i];
+					if (v != 0)
+						return v;
+				}
+			}
+
+			return 0;
+		} else {
+			for (i in 0...len)
+			{
+				var v = ptr1[i] - ptr2[i];
+				if (v != 0)
+					return v;
+			}
+
+			return 0;
 		}
 #end
 	}

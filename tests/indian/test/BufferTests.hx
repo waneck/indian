@@ -325,6 +325,7 @@ import utest.Assert;
 		vec5.setUInt8(4,3);
 		vec5.setUInt8(5,3);
 
+		// test overlapping
 		RawMem.blit(vec5,0, vec5,2, 4);
 		Assert.equals(vec5.getUInt8(0), 1);
 		Assert.equals(vec5.getUInt8(1), 1);
@@ -332,6 +333,35 @@ import utest.Assert;
 		Assert.equals(vec5.getUInt8(3), 1);
 		Assert.equals(vec5.getUInt8(4), 2);
 		Assert.equals(vec5.getUInt8(5), 2);
+
+		//test large portions of memory
+		function getMem()
+		{
+			var mem = alloc(255);
+			for (i in 0...255)
+				mem.setUInt8(i,i);
+			return mem;
+		}
+
+		var src = getMem();
+
+		// test different src/dest alignments
+		for (i in 0...16)
+			for (j in 0...16)
+			{
+				var dest = getMem();
+				RawMem.blit(src,100 + i, dest, 50 + j, 100);
+				for (k in 0...255)
+				{
+					if (k >= (50 + j) && k < (150 + j))
+					{
+						Assert.equals(src.getUInt8(100+i+ (k - (50 + j))), dest.getUInt8(k), 'For index $k, of i $i and j $j, expected ${100+i+ (k - (50 + j))}; got ${dest.getUInt8(k)}');
+					} else {
+						Assert.equals(dest.getUInt8(k),k);
+					}
+				}
+			}
+
 	}
 
 	public function test_int32_roundtrips()

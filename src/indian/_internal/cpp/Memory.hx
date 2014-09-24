@@ -21,4 +21,9 @@ package indian._internal.cpp;
 	{
 		untyped __cpp__('memcpy({0},{1},{2})',dest,src,len);
 	}
+
+	@:extern inline public static function m_memcmp(ptr1:indian.Buffer, ptr2:indian.Buffer, len:Int):Int
+	{
+		return untyped __cpp__('memcmp({0},{1},{2})',ptr1,ptr2,len);
+	}
 }
