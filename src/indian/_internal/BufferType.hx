@@ -10,6 +10,8 @@ typedef BufferType =
 	cs.Pointer<cs.StdTypes.UInt8>
 #elseif java
 	indian._internal.java.Pointer
+#elseif neko
+	Dynamic
 #else
 	taurine.mem.RawMem
 #end;

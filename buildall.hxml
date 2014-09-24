@@ -3,8 +3,12 @@
 -main Test
 -lib taurine-core
 -lib utest
+-lib indian
 -debug
 --each
+--next
+-neko bin/neko.n
+-cmd neko bin/neko.n
 --next
 -cs bin/cs
 -D unsafe

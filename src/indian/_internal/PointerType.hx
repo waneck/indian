@@ -10,6 +10,8 @@ typedef PointerType<T> =
 	cs.Pointer<T>
 #elseif java
 	indian._internal.java.Pointer
+#elseif neko
+	Dynamic
 #else
 	taurine.mem.RawMem
 #end;
