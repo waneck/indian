@@ -13,9 +13,5 @@
 -cpp bin/cpp
 -cmd ./bin/cpp/Test-debug
 --next
--lib indian
--neko bin/neko.n
--cmd neko bin/neko.n
---next
 -java bin/java
 -cmd java -jar bin/java/Test-Debug.jar

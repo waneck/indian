@@ -28,17 +28,21 @@ import indian._internal.*;
 #elseif neko
 		indian._internal.neko.PointerHelper.memmove(src,srcPos,dest,destPos,len);
 #elseif cs
-		trace(len);
 		var src = src.t() + srcPos,
 				dest = dest.t() + destPos;
 		var src64:Int64 = cast src,
 				dest64:Int64 = cast dest;
-		var src64:Int = cast (src64 & 7);
-		var dest64:Int = cast (dest64 & 7);
-		var llen = 8 - src64;
-		if (src64 == dest64 && len > llen)
+		var src64_7:Int = cast (src64 & 7);
+		var dest64_7:Int = cast (dest64 & 7);
+		var llen = 8 - src64_7;
+		if (src64 < dest64 && (src64+len) > dest64)
 		{
-			trace('here');
+			//copy from the back
+			while (len --> 0)
+			{
+				dest[len] = src[len];
+			}
+		} else if (src64_7 == dest64_7 && len > llen) {
 			for (i in 0...llen)
 			{
 				src[i] = dest[i];

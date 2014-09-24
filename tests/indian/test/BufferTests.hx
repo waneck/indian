@@ -316,6 +316,22 @@ import utest.Assert;
 		Assert.equals(vec3.getUInt8(4), 4);
 		Assert.equals(vec3.getUInt8(5), 5);
 		Assert.equals(vec3.getUInt8(6), 6);
+
+		var vec5 = alloc(6);
+		vec5.setUInt8(0,1);
+		vec5.setUInt8(1,1);
+		vec5.setUInt8(2,2);
+		vec5.setUInt8(3,2);
+		vec5.setUInt8(4,3);
+		vec5.setUInt8(5,3);
+
+		RawMem.blit(vec5,0, vec5,2, 4);
+		Assert.equals(vec5.getUInt8(0), 1);
+		Assert.equals(vec5.getUInt8(1), 1);
+		Assert.equals(vec5.getUInt8(2), 1);
+		Assert.equals(vec5.getUInt8(3), 1);
+		Assert.equals(vec5.getUInt8(4), 2);
+		Assert.equals(vec5.getUInt8(5), 2);
 	}
 
 	public function test_int32_roundtrips()
