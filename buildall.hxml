@@ -8,14 +8,18 @@
 --each
 --next
 -neko bin/neko.n
+-cmd echo "=======neko========"
 -cmd neko bin/neko.n
 --next
 -cs bin/cs
 -D unsafe
+-cmd echo "=======cs========"
 -cmd mono bin/cs/bin/Test-Debug.exe
 --next
 -cpp bin/cpp
+-cmd echo "=======cpp========"
 -cmd ./bin/cpp/Test-debug
 --next
 -java bin/java
+-cmd echo "=======java========"
 -cmd java -jar bin/java/Test-Debug.jar

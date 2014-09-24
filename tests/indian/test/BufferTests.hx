@@ -355,13 +355,68 @@ import utest.Assert;
 				{
 					if (k >= (50 + j) && k < (150 + j))
 					{
-						Assert.equals(src.getUInt8(100+i+ (k - (50 + j))), dest.getUInt8(k), 'For index $k, of i $i and j $j, expected ${100+i+ (k - (50 + j))}; got ${dest.getUInt8(k)}');
+						if (src.getUInt8(100+i+ (k - (50 + j))) != dest.getUInt8(k))
+							Assert.fail('For index $k, of i $i and j $j, expected ${100+i+ (k - (50 + j))}; got ${dest.getUInt8(k)}');
 					} else {
-						Assert.equals(dest.getUInt8(k),k);
+						if (dest.getUInt8(k) != k)
+							Assert.equals(dest.getUInt8(k),k);
 					}
 				}
 			}
+	}
 
+	public function test_compare()
+	{
+		function getMem()
+		{
+			var mem = alloc(16);
+			for (i in 0...16)
+				mem.setUInt8(i,i+100);
+			return mem;
+		}
+
+		var src = getMem();
+		for (result in [-3,-2,-1,0,1,2,3])
+		{
+			for (i in 0...16)
+			{
+				var dest = getMem();
+				dest.setUInt8(i, dest.getUInt8(i) + result);
+				if (result < 0)
+				{
+					Assert.isTrue(RawMem.compare(src,0,dest,0,16) > 0);
+					Assert.isTrue(RawMem.compare(dest,0,src,0,16) < 0);
+					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) > 0);
+					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) < 0);
+				} else if (result == 0) {
+					Assert.equals(RawMem.compare(src,0,dest,0,16), 0);
+					Assert.equals(RawMem.compare(dest,0,src,0,16), 0);
+				} else {
+					Assert.isTrue(RawMem.compare(src,0,dest,0,16) < 0);
+					Assert.isTrue(RawMem.compare(dest,0,src,0,16) > 0);
+					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) < 0);
+					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) > 0);
+				}
+			}
+		}
+
+		function getMem()
+		{
+			var mem = alloc(150);
+			for (i in 0...150)
+				mem.setUInt8(i,i+100);
+			return mem;
+		}
+
+		for (result in [-3,-2,-1,0,1,2,3])
+		{
+			for (i in 0...16)
+			{
+				for (j in 0...16)
+				{
+				}
+			}
+		}
 	}
 
 	public function test_int32_roundtrips()

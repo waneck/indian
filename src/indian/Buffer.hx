@@ -105,19 +105,24 @@ import indian._internal.java.Pointer;
 					return v;
 			}
 			len -= llen;
-
 			ptr1 = ptr1 + llen;
 			ptr2 = ptr2 + llen;
-			llen = Std.int(len/8);
+
+			llen = len >>> 3;
 			for (i in 0...llen)
 			{
-				var v = Pointer.getInt64(ptr1, i) - Pointer.getInt64(ptr2, i);
-				if (v != 0)
+				var v1 = Pointer.getInt64(ptr1, i<<3),
+						v2 = Pointer.getInt64(ptr2, i<<3);
+				if (v1 != v2)
 				{
-					return (v < 0 ? -1 : 1);
+					for (j in 0...8)
+					{
+						var v = Pointer.getUInt8(ptr1, (i<<3) + j) - Pointer.getUInt8(ptr2, (i<<3) + j);
+						if (v != 0) return v;
+					}
 				}
 			}
-			len -= llen;
+			len -= llen << 3;
 			if (len > 0)
 			{
 				ptr1 += llen * 8;
@@ -152,33 +157,38 @@ import indian._internal.java.Pointer;
 		var llen = 8 - ptr164_7;
 		if (ptr164_7 == ptr264_7 && len > llen)
 		{
+			// optimized case when both are aligned the same way
 			for (i in 0...llen)
 			{
-				var v = ptr1[i] - ptr2[i];
+				var v = cast(ptr1[i], Int) - cast(ptr2[i],Int);
 				if (v != 0)
 					return v;
 			}
 			len -= llen;
 
-			var lptr1:cs.Pointer<Int64> = cast (ptr1 + llen);
-			var lptr2:cs.Pointer<Int64> = cast (ptr2 + llen);
-			var llen = Std.int(len/8);
-			for (i in 0...llen)
+			var lptr1:cs.Pointer<cs.StdTypes.UInt64> = cast (ptr1 + llen);
+			var lptr2:cs.Pointer<cs.StdTypes.UInt64> = cast (ptr2 + llen);
+			var ilen = len >>> 3;
+			for (i in 0...ilen)
 			{
-				var v = lptr1[i] - lptr2[i];
-				if (v != 0)
+				var v1 = lptr1[i],
+						v2 = lptr2[i];
+				if (v1 != v2)
 				{
-					return (v < 0 ? -1 : 1);
+					if (v1 < v2)
+						return -1;
+					else
+						return 1;
 				}
 			}
-			len -= llen;
+			len -= ilen << 3;
 			if (len > 0)
 			{
-				ptr1 = cast (lptr1 + llen);
-				ptr2 = cast (lptr2 + llen);
+				ptr1 += llen + (ilen << 3);
+				ptr2 += llen + (ilen << 3);
 				for (i in 0...len)
 				{
-					var v = ptr1[i] - ptr2[i];
+					var v = cast(ptr1[i],Int) - cast(ptr2[i],Int);
 					if (v != 0)
 						return v;
 				}
@@ -188,11 +198,10 @@ import indian._internal.java.Pointer;
 		} else {
 			for (i in 0...len)
 			{
-				var v = ptr1[i] - ptr2[i];
+				var v = cast(ptr1[i],Int) - cast(ptr2[i],Int);
 				if (v != 0)
 					return v;
 			}
-
 			return 0;
 		}
 #end
