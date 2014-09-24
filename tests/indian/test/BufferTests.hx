@@ -386,34 +386,20 @@ import utest.Assert;
 				{
 					Assert.isTrue(RawMem.compare(src,0,dest,0,16) > 0);
 					Assert.isTrue(RawMem.compare(dest,0,src,0,16) < 0);
-					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) > 0);
 					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) < 0);
+					if (i > 0)
+						dest.setUInt8(i-1, dest.getUInt8(i) - result);
+					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) > 0);
 				} else if (result == 0) {
 					Assert.equals(RawMem.compare(src,0,dest,0,16), 0);
 					Assert.equals(RawMem.compare(dest,0,src,0,16), 0);
 				} else {
 					Assert.isTrue(RawMem.compare(src,0,dest,0,16) < 0);
 					Assert.isTrue(RawMem.compare(dest,0,src,0,16) > 0);
-					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) < 0);
 					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) > 0);
-				}
-			}
-		}
-
-		function getMem()
-		{
-			var mem = alloc(150);
-			for (i in 0...150)
-				mem.setUInt8(i,i+100);
-			return mem;
-		}
-
-		for (result in [-3,-2,-1,0,1,2,3])
-		{
-			for (i in 0...16)
-			{
-				for (j in 0...16)
-				{
+					if (i > 0)
+						dest.setUInt8(i-1, dest.getUInt8(i) - result);
+					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) < 0);
 				}
 			}
 		}
