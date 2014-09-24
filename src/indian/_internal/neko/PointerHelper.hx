@@ -24,4 +24,5 @@ class PointerHelper
 
 	public static var memmove:Dynamic = Lib.load('indian','tau_memmove',5);
 	public static var memcmp:Dynamic = Lib.load('indian','tau_memcmp',5);
+	public static var strlen:Dynamic = Lib.load('indian','tau_strlen',2);
 }

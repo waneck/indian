@@ -277,6 +277,19 @@ import utest.Assert;
 		ui8equal(toBytes(Math.POSITIVE_INFINITY), [0x7f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], '+Infinity');
 	}
 
+	public function test_strlen()
+	{
+		var vec = alloc(21);
+		for ( i in 0...20 )
+			vec.setUInt8(i,'0'.code);
+		for (i in 0...20)
+		{
+			vec.setUInt8(20-i, 0);
+			Assert.equals(RawMem.strlen(vec,0), 20-i);
+			Assert.equals(RawMem.strlen(vec,19-i), 1);
+		}
+	}
+
 	public function test_blit()
 	{
 		var vec3 = alloc(7), vec4 = alloc(5);

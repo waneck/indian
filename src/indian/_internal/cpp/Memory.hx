@@ -26,4 +26,9 @@ package indian._internal.cpp;
 	{
 		return untyped __cpp__('memcmp({0},{1},{2})',ptr1,ptr2,len);
 	}
+
+	@:extern inline public static function m_strlen(ptr:indian.Buffer):Int
+	{
+		return untyped __cpp__('strlen((const char *) (void *) {0})',ptr);
+	}
 }

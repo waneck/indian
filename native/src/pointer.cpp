@@ -31,6 +31,12 @@ value tau_memcmp(value ptr1_ptr, value ptr1_pos, value ptr2_ptr, value ptr2_pos,
 }
 DEFINE_PRIM(tau_memcmp,5);
 
+value tau_strlen(value ptr, value offset)
+{
+	return alloc_int( strlen((const char *) (val_ptr(ptr) + ( (size_t) val_uint64(offset) ))) );
+}
+DEFINE_PRIM(tau_strlen,2);
+
 value tau_ptr_of_buffer( value buf )
 {
 	// val_check(buf, buffer);

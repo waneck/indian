@@ -207,6 +207,31 @@ import indian._internal.java.Pointer;
 #end
 	}
 
+#if !(neko || cpp)
+	@:unsafe
+#else
+	@:extern inline
+#end
+	public static function strlen(src:Buffer, offset:Int):Int
+	{
+#if cpp
+		return indian._internal.cpp.Memory.m_strlen(src + offset);
+#elseif neko
+		return indian._internal.neko.PointerHelper.strlen(src, offset);
+#else
+		var len = offset;
+		while (true)
+		{
+			var v = src.getUInt8(++len);
+			if (v == 0)
+				return (len - offset);
+		}
+		return -1;
+#end
+	}
+
+
+
 	@:extern inline public function getUInt8(offset:Int):Int
 	{
 #if (cpp || cs)
