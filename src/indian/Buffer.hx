@@ -1,9 +1,11 @@
 package indian;
-import taurine.*;
 import indian.types.Int64;
 import indian._internal.*;
+import taurine.*;
 #if java
 import indian._internal.java.Pointer;
+#elseif cpp
+import indian._internal.cpp.*;
 #end
 
 /**
