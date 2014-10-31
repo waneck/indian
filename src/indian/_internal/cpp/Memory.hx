@@ -1,5 +1,6 @@
 package indian._internal.cpp;
 
+//FIXME: use `m_` idiom for everything; expose malloc as well
 @:keep @:unreflective class Memory
 {
 	public static function alloc<T>(nbytes:Int):indian.Buffer
@@ -7,12 +8,12 @@ package indian._internal.cpp;
 		return untyped __cpp__('(unsigned char *) calloc(1,{0})',nbytes);
 	}
 
-	@:extern inline public static function m_free(ptr:indian._internal.PointerType<Dynamic>)
+	@:extern inline public static function free(ptr:indian._internal.PointerType<Dynamic>)
 	{
-		m2_free(ptr.reinterpret());
+		m_free(ptr.reinterpret());
 	}
 
-	public static function m2_free(ptr:indian._internal.PointerType<cpp.UInt8>)
+	static function m_free(ptr:indian._internal.PointerType<cpp.UInt8>)
 	{
 		untyped __cpp__('free((void *) {0})',ptr);
 	}

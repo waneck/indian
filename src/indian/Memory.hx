@@ -1,6 +1,10 @@
 package indian;
 import indian.Buffer in HeapPtr;
 
+/**
+	This class provides allocation / deallocation and address-related operations that are made available in
+	a more safe manner through the `indian.Indian` interface
+**/
 @:unsafe class Memory
 {
 	/**
@@ -25,7 +29,7 @@ import indian.Buffer in HeapPtr;
 	inline public static function free(ptr:HeapPtr):Void
 	{
 #if cpp
-		indian._internal.cpp.Memory.m_free(cast ptr);
+		indian._internal.cpp.Memory.free(cast ptr);
 #elseif neko
 		indian._internal.neko.PointerHelper.free(ptr);
 #elseif java

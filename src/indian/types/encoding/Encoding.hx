@@ -6,7 +6,7 @@ package indian.types.encoding;
 	public static var Utf32(default,null) = new Utf32();
 
 	/**
-		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
+		Converts `source` (byte array in UTF8 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
 		The conversion will not exceed the length defined by `maxByteLength`.
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
@@ -18,13 +18,18 @@ package indian.types.encoding;
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertFromUtf32(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
+	public function convertFromUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
 	{
 		return throw "Not Implemented";
 	}
 
+	@:extern inline public static function utf8iter(source:indian.Buffer, byteLength:Int, iter:Int->Void):Void
+	{
+
+	}
+
 	/**
-		Converts `source` encoded with current encoding to the byte array specified in `out` - encoded in UTF32.
+		Converts `source` encoded with current encoding to the byte array specified in `out` - encoded in UTF8.
 		The conversion will not exceed the length defined by `maxByteLength`.
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
@@ -36,7 +41,7 @@ package indian.types.encoding;
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertToUtf32(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
+	public function convertToUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -61,16 +66,15 @@ package indian.types.encoding;
 			if (source != out)
 				Buffer.blit(source, 0, out, 0, byteLength);
 			return byteLength;
-		} else if (this.isUtf32()) {
-			return sourceEncoding.convertToUtf32(source,byteLength, out,maxByteLength);
-		} else if (sourceEncoding.isUtf32()) {
-			return this.convertFromUtf32(source,byteLength, out,maxByteLength);
+		} else if (this.isUtf8()) {
+			return sourceEncoding.convertToUtf8(source,byteLength, out,maxByteLength);
+		} else if (sourceEncoding.isUtf8()) {
+			return this.convertFromUtf8(source,byteLength, out,maxByteLength);
 		} else {
-			// check if we need an extra buffer
 		}
 	}
 
-	private function isUtf32():Bool
+	private function isUtf8():Bool
 	{
 		return false;
 	}

@@ -6,6 +6,8 @@ import haxe.macro.Expr;
 import haxe.macro.Context;
 #end
 
+/**
+**/
 @:unsafe class Indian
 {
 #if !macro
@@ -32,7 +34,7 @@ import haxe.macro.Context;
 	}
 
 	/**
-		Gets a pointer to a directly-accessed
+		Gets a pointer to the directly-accessed string bytes. Returns null if this operation is not available on this platform.
 	**/
 	public static function stringPtr(string:String):Null<Buffer>
 	{
@@ -42,6 +44,9 @@ import haxe.macro.Context;
 	{
 	}
 
+	public static function addrOf<T>(val:T):Ptr<T>
+	{
+	}
 #end
 	/**
 		Tries to allocate a memory of size `bytesLength` in the stack.
