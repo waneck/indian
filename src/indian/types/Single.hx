@@ -1,4 +1,4 @@
-package taurine;
+package indian.types;
 
 #if (cs || java)
 typedef Single = StdTypes.Single;

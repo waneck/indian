@@ -1,4 +1,4 @@
-package indian._internal;
+package indian._impl;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.Context;
@@ -40,7 +40,7 @@ class PtrBuild
 						case _:
 					}
 				case TDynamic(_):
-					return getOrBuild(['indian','_internal'],'Void',0,null);
+					return getOrBuild(['indian','_impl'],'Void',0,null);
 				case TInst(_.get() => { kind : KTypeParameter(_) }, _):
 					return getType('Dynamic');
 				case _:

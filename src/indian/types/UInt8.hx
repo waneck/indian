@@ -1,4 +1,4 @@
-package taurine;
+package indian.types;
 
 /**
 	Cross-platform implementation of an unsigned byte (8 bits).

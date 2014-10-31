@@ -1,4 +1,4 @@
-package indian._internal.neko;
+package indian._impl.neko;
 import neko.Lib;
 
 class PointerHelper

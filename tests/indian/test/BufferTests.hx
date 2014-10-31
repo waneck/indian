@@ -509,7 +509,8 @@ import utest.Assert;
 		free(mem);
 	}
 
-	static inline var LN2 = taurine.math.MacroMath.reduce(Math.log(2));
+	// static inline var LN2 = taurine.math.MacroMath.reduce(Math.log(2));
+	static var LN2 = Math.log(2);
 
 	public function test_float32_roundtrips()
 	{

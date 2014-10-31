@@ -1,4 +1,4 @@
-package taurine;
+package indian.types;
 
 /**
 	Cross-platform implementation of an unsigned short (16 bits).

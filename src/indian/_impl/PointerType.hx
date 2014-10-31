@@ -1,4 +1,4 @@
-package indian._internal;
+package indian._impl;
 
 typedef PointerType<T> =
 #if cpp
@@ -9,7 +9,7 @@ typedef PointerType<T> =
 #end
 	cs.Pointer<T>
 #elseif java
-	indian._internal.java.Pointer
+	indian._impl.java.Pointer
 #elseif neko
 	Dynamic
 #else

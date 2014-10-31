@@ -1,4 +1,4 @@
-package indian._internal.java;
+package indian._impl.java;
 import indian.types.*;
 import java.sun.misc.Unsafe;
 

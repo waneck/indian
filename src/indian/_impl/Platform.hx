@@ -1,4 +1,4 @@
-package indian._internal;
+package indian._impl;
 #if macro
 import haxe.macro.Context.*;
 #end

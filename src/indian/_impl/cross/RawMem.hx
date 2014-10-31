@@ -1,4 +1,4 @@
-package taurine.mem;
+package indian._impl.cross;
 
 typedef RawMemData =
 
@@ -9,7 +9,7 @@ typedef RawMemData =
 #elseif java
 	java.nio.ByteBuffer
 #elseif cs
-	taurine.mem._internal.cs.RawMemData
+	indian._impl.cross._internal.cs.RawMemData
 #elseif flash9
 	flash.util.ByteArray
 #elseif php
