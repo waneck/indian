@@ -12,6 +12,11 @@ import utest.Assert;
 	{
 		return indian.Memory.alloc(len);
 	}
+
+	private function free(r:RawMem,?pos:haxe.PosInfos):Void
+	{
+		return indian.Memory.free(r);
+	}
 	//tests from https://github.com/inexorabletash/polyfill/blob/master/tests/typedarray_tests.js
 	//Copyright (C) 2010 Linden Research, Inc. Originally published at: https://bitbucket.org/lindenlab/llsd/
 	private function stricterEqual(actual:Float, expected:Float, message:String, ?pos:haxe.PosInfos)
@@ -54,6 +59,7 @@ import utest.Assert;
 		Assert.equals(arr.getUInt16(0), 0x1111);
 		Assert.equals(arr.getUInt16(2), 0x1111);
 		ui8equal(arr, [0x11,0x11,0x11,0x11]);
+		free(arr);
 	}
 
 	public function test_signed_unsigned()
@@ -76,6 +82,7 @@ import utest.Assert;
 		Assert.equals(49152, mem.getUInt16(0));
 		mem.setUInt16(0,-1);
 		Assert.equals(0xFFFF, mem.getUInt16(0));
+		free(mem);
 	}
 
 	public function test_float32_unpack()
@@ -91,7 +98,9 @@ import utest.Assert;
 			else
 				for (i in 0...arr.length)
 					ret.setUInt8(i,arr[3-i]);
-			return ret.getFloat32(0);
+			var r = ret.getFloat32(0);
+			free(ret);
+			return r;
 		}
 		stricterEqual(fromBytes([0xff, 0xff, 0xff, 0xff]), Math.NaN, 'Q-NaN');
 		stricterEqual(fromBytes([0xff, 0xc0, 0x00, 0x01]), Math.NaN, 'Q-NaN');
@@ -199,7 +208,9 @@ import utest.Assert;
 			else
 				for (i in 0...arr.length)
 					ret.setUInt8(i,arr[7-i]);
-			return ret.getFloat64(0);
+			var r = ret.getFloat64(0);
+			free(ret);
+			return r;
 		}
 
 		stricterEqual(fromBytes([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]), Math.NaN, 'Q-NaN');
@@ -288,6 +299,7 @@ import utest.Assert;
 			Assert.equals(RawMem.strlen(vec,0), 20-i);
 			Assert.equals(RawMem.strlen(vec,19-i), 1);
 		}
+		free(vec);
 	}
 
 	public function test_blit()
@@ -376,6 +388,8 @@ import utest.Assert;
 					}
 				}
 			}
+
+		free(vec3); free(vec4); free(vec5);
 	}
 
 	public function test_compare()
@@ -414,6 +428,7 @@ import utest.Assert;
 						dest.setUInt8(i-1, dest.getUInt8(i) - result);
 					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) < 0);
 				}
+				free(dest);
 			}
 		}
 	}
@@ -438,6 +453,7 @@ import utest.Assert;
 			mem.setInt32(0,d);
 			Assert.equals(mem.getInt32(0), d);
 		}
+		free(mem);
 	}
 
 	public function test_int16_roundtrips()
@@ -463,6 +479,8 @@ import utest.Assert;
 			else
 				Assert.equals(mem.getUInt16(0), d);
 		}
+
+		free(mem);
 	}
 
 	public function test_int8_roundtrips()
@@ -488,6 +506,7 @@ import utest.Assert;
 			else
 				Assert.equals(mem.getUInt8(0), d);
 		}
+		free(mem);
 	}
 
 	static inline var LN2 = taurine.math.MacroMath.reduce(Math.log(2));
@@ -544,6 +563,7 @@ import utest.Assert;
 			mem.setFloat32(0,d);
 			stricterEqual(single(mem.getFloat32(0)), single(d), d +"");
 		}
+		free(mem);
 	}
 
 	public function test_float64_roundtrips()
@@ -585,6 +605,7 @@ import utest.Assert;
 			mem.setFloat64(0,d);
 			stricterEqual(d, mem.getFloat64(0), d + "");
 		}
+		free(mem);
 	}
 
 	public function test_accessors()
@@ -672,6 +693,99 @@ import utest.Assert;
 			// stricterEqual(mem.getFloat32(2), -1.932478247535851e-37, "");
 			stricterEqual(mem.getFloat64(0), -3.116851295377095e-306, "");
 		}
+
+		free(mem);
+	}
+
+	public function test_physcmp()
+	{
+		var buf = alloc(128);
+		var buf2 = buf + 2;
+		Assert.isTrue(buf2 > buf);
+		Assert.isTrue(buf2 >= buf);
+		Assert.isFalse(buf == buf2);
+		Assert.isFalse(buf2 <= buf);
+		Assert.isFalse(buf2 < buf);
+		Assert.equals(-1, buf.physCompare(buf2));
+		buf2--;
+		Assert.isTrue(buf2 > buf);
+		Assert.isTrue(buf2 >= buf);
+		Assert.isFalse(buf == buf2);
+		Assert.isFalse(buf2 <= buf);
+		Assert.isFalse(buf2 < buf);
+		Assert.equals(-1, buf.physCompare(buf2));
+		buf2--;
+		Assert.isFalse(buf2 > buf);
+		Assert.isTrue(buf2 >= buf);
+		Assert.isTrue(buf == buf2);
+		Assert.isTrue(buf2 <= buf);
+		Assert.isFalse(buf2 < buf);
+		Assert.equals(0, buf.physCompare(buf2));
+		buf2--;
+		Assert.isFalse(buf2 > buf);
+		Assert.isFalse(buf2 >= buf);
+		Assert.isFalse(buf == buf2);
+		Assert.isTrue(buf2 <= buf);
+		Assert.isTrue(buf2 < buf);
+		Assert.equals(1, buf.physCompare(buf2));
+
+		buf2 = buf - 2;
+		Assert.isTrue(buf > buf2);
+		Assert.isTrue(buf >= buf2);
+		Assert.isFalse(buf == buf2);
+		Assert.isFalse(buf <= buf2);
+		Assert.isFalse(buf < buf2);
+		Assert.equals(1, buf.physCompare(buf2));
+		buf2++;
+		Assert.isTrue(buf > buf2);
+		Assert.isTrue(buf >= buf2);
+		Assert.isFalse(buf == buf2);
+		Assert.isFalse(buf <= buf2);
+		Assert.isFalse(buf < buf2);
+		Assert.equals(1, buf.physCompare(buf2));
+		buf2++;
+		Assert.isFalse(buf > buf2);
+		Assert.isTrue(buf >= buf2);
+		Assert.isTrue(buf == buf2);
+		Assert.isTrue(buf <= buf2);
+		Assert.isFalse(buf < buf2);
+		Assert.equals(0, buf.physCompare(buf2));
+		buf2++;
+		Assert.isFalse(buf > buf2);
+		Assert.isFalse(buf >= buf2);
+		Assert.isFalse(buf == buf2);
+		Assert.isTrue(buf <= buf2);
+		Assert.isTrue(buf < buf2);
+		Assert.equals(-1, buf.physCompare(buf2));
+		free(buf);
+	}
+
+	public function test_add()
+	{
+		var buf = alloc(64);
+		var buf2 = buf + 30;
+		for (i in 0...64)
+			buf.setUInt8(i,i);
+		Assert.equals(30,buf2.getUInt8(0));
+		Assert.equals(31,buf2.getUInt8(1));
+		Assert.equals(32,buf2.getUInt8(2));
+		buf.setUInt8(32,100);
+
+		Assert.equals(30,buf2.getUInt8(0));
+		Assert.equals(31,buf2.getUInt8(1));
+		Assert.equals(100,buf2.getUInt8(2));
+		buf2 = buf2 - 15;
+		Assert.equals(15,buf2.getUInt8(0));
+		Assert.equals(16,buf2.getUInt8(1));
+		Assert.equals(17,buf2.getUInt8(2));
+		Assert.equals(100,buf2.getUInt8(17));
+		buf = buf2 + 15;
+		Assert.equals(30,buf.getUInt8(0));
+		Assert.equals(31,buf.getUInt8(1));
+		Assert.equals(100,buf.getUInt8(2));
+
+		buf -= 30;
+		free(buf);
 	}
 
 }

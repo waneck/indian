@@ -1,41 +1,24 @@
 package indian;
+#if !macro
 import indian.Buffer;
+#else
+import haxe.macro.Expr;
+import haxe.macro.Context;
+#end
 
 @:unsafe class Indian
 {
+#if !macro
 	/**
 		Allocates non-gc heap bytes, and returns a pointer to it.
-		Any memmory allocated with this method *must* be freed by calling `Indian.free`
+		Any memory allocated with this method *must* be freed by calling `Indian.free`
 	**/
-	public static function alloc(bytesLength:Int):Buffer
+	inline public static function alloc(bytesLength:Int):Buffer
 	{
-#if cpp
-		return cast indian._internal.cpp.Memory.alloc(bytesLength);
-#elseif neko
-		return cast indian._internal.neko.PointerHelper.alloc(bytesLength);
-#elseif java
-		return cast indian._internal.java.Pointer.alloc(bytesLength);
-#elseif cs
-		return cast cs.system.runtime.interopservices.Marshal.AllocHGlobal(bytesLength).ToPointer();
-#else
-#error 'Unsupported platform'
-#end
+		return Memory.alloc(bytesLength);
 	}
 
-	/**
-		Tries to allocate a memory of size `bytesLength` in the stack.
-		The success of the operation depends on the platform support for it.
-		If it is not possible to allocate in the stack, `bytesLength` will be allocated in the heap instead.
-		Any memory allocated with this method *must* be freed by calling `Indian.stackfree`
-	**/
-	macro public static function stackalloc(bytesLength:Int):Buffer
-	{
-	}
-
-	/**
-		Frees the memory allocated by `stackalloc`.
-	**/
-	macro public static function stackfree(ptr:Buffer)
+	inline public static function free(ptr:Buffer):Void
 	{
 	}
 
@@ -47,4 +30,46 @@ import indian.Buffer;
 		return false;
 #end
 	}
+
+	/**
+		Gets a pointer to a directly-accessed
+	**/
+	public static function stringPtr(string:String):Null<Buffer>
+	{
+	}
+
+	public static function arrayPtr<T>(array:Array<T>):Null<Buffer>
+	{
+	}
+
+#end
+	/**
+		Tries to allocate a memory of size `bytesLength` in the stack.
+		The success of the operation depends on the platform support for it.
+		If it is not possible to allocate in the stack, `bytesLength` will be allocated in the heap instead.
+		Any memory allocated with this method *must* be freed by calling `Indian.stackfree`
+	**/
+	macro public static function stackalloc(bytesLength:ExprOf<Int>):ExprOf<Buffer>
+	{
+	}
+
+	/**
+		Frees the memory allocated by `stackalloc`.
+	**/
+	macro public static function stackfree(ptr:ExprOf<Buffer>):Void
+	{
+	}
+
+	/**
+		```
+		Indian.auto(var a = alloc(10), b = stackalloc(20), c = stringPtr("someStr"), {
+			// all the declarations above will be automatically freed after the scope leaves the block.
+			// even if an exception is thrown
+		});
+		```
+	**/
+	macro public static function auto(exprs:Array<Expr>):Expr
+	{
+	}
+
 }

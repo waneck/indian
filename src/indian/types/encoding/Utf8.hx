@@ -1,5 +1,5 @@
 package indian.types.encoding;
 
-@:dce class Utf8 extends Encoding
+@:unsafe @:final @:dce class Utf8 extends Encoding
 {
 }

@@ -35,6 +35,9 @@ extern "C" {
 
 typedef unsigned long long hx_uint64;
 
+typedef long long hx_int64;
+
+hx_int64 val_int64(value v);
 hx_uint64 val_uint64(value v);
 value alloc_uint64(hx_uint64 v);
 

@@ -92,7 +92,7 @@ DEFINE_PRIM(tau_i64_to_int, 1);
 static value tau_i64_to_str( value this1 )
 {
 	char str[25];
-	sprintf(str, "%lld", (val_uint64(this1)));
+	sprintf(str, "%lld", (val_int64(this1)));
 	return alloc_string(str);
 }
 DEFINE_PRIM(tau_i64_to_str, 1);

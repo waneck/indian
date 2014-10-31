@@ -53,6 +53,43 @@ hx_uint64 val_uint64(value v)
 	}
 }
 
+hx_int64 val_int64(value v)
+{
+		if (val_is_any_int(v))
+	{
+		return (hx_int64) val_any_int(v);
+	} else if (val_is_abstract(v)) {
+		if (val_is_kind(v,k_ui64))
+			return ((i64_container *) val_data(v))->value;
+		else
+			return (hx_int64) val_data(v);
+	} else if (val_is_object(v)) {
+		static field id_high = val_id("high");
+		static field id_low = val_id("low");
+		value vhigh = val_field(v,id_high);
+		value vlow = val_field(v,id_low);
+		if (!val_is_any_int(vhigh) || !val_is_any_int(vlow))
+		{
+			buffer buf = alloc_buffer( "(val_uint64) Invalid haxe.Int64 parameter: " );
+			val_buffer(buf,v);
+			val_throw( buffer_to_string(buf) );
+		}
+		return ( ((hx_int64) val_any_int(vhigh)) << 32 ) | ( (hx_int64) val_any_int(vlow) );
+	} else if (val_is_float(v)) {
+		return (hx_int64) val_float(v);
+	} else {
+		{
+			buffer buf = alloc_buffer( "(val_uint64) Invalid Int64 parameter: " );
+			val_buffer(buf,alloc_int(val_type(v)));
+			val_buffer(buf,alloc_string(", "));
+			val_buffer(buf,v);
+			val_throw( buffer_to_string(buf) );
+		}
+		return 0ULL;
+	}
+return (hx_int64) val_uint64(v);
+}
+
 static void i64_container_finalize( value v ) 
 {
 	free( val_data(v) );

@@ -84,12 +84,14 @@ import indian._internal.cpp.*;
 	/**
 		Physically compares `this` Buffer to `to`.
 	**/
-	public function physCompare(to:Buffer):Int
+	@:unsafe public function physCompare(to:Buffer):Int
 	{
 #if neko
 		return indian._internal.neko.PointerHelper.physcmp(this,to);
 #elseif cpp
-		return (this == to.t()) ? 0 : (cast(this, Int64) < cast(to.t(), Int64)) ? -1 : 1;
+		return (this == to.t()) ? 0 : (this.lt(to.t())) ? -1 : 1;
+#elseif java
+		return (this == to.t()) ? 0 : (this.addr() < to.t().addr()) ? -1 : 1;
 #else
 		return (this == to.t()) ? 0 : (this < to.t()) ? -1 : 1;
 #end
@@ -109,7 +111,9 @@ import indian._internal.cpp.*;
 #if neko
 		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) >= 0;
 #elseif cpp
-		return cast(this,Int64) >= cast(to.t(), Int64);
+		return this.geq(to.t());
+#elseif java
+		return this.addr() >= to.t().addr();
 #else
 		return this >= to.t();
 #end
@@ -120,7 +124,9 @@ import indian._internal.cpp.*;
 #if neko
 		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) > 0;
 #elseif cpp
-		return cast(this,Int64) > cast(to.t(), Int64);
+		return this.gt(to.t());
+#elseif java
+		return this.addr() > to.t().addr();
 #else
 		return this > to.t();
 #end
@@ -131,7 +137,9 @@ import indian._internal.cpp.*;
 #if neko
 		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) <= 0;
 #elseif cpp
-		return cast(this,Int64) <= cast(to.t(), Int64);
+		return this.leq(to.t());
+#elseif java
+		return this.addr() <= to.t().addr();
 #else
 		return this <= to.t();
 #end
@@ -142,7 +150,9 @@ import indian._internal.cpp.*;
 #if neko
 		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) < 0;
 #elseif cpp
-		return cast(this,Int64) < cast(to.t(), Int64);
+		return this.lt(to.t());
+#elseif java
+		return this.addr() < to.t().addr();
 #else
 		return this < to.t();
 #end
@@ -514,19 +524,29 @@ import indian._internal.cpp.*;
 #if (cs || cpp || java)
 		return cast this.add(byteOffset);
 #elseif neko
-		return new Buffer(indian._internal.neko.PointerHelper.add(byteOffset));
+		return new Buffer(indian._internal.neko.PointerHelper.add(this, byteOffset));
 #else
 		//TODO
 		throw "not available";
 #end
 	}
 
+	@:op(A++) @:extern inline public function incr():Buffer
+	{
+		return cast this = add(1).t();
+	}
+
+	@:op(A--) @:extern inline public function decr():Buffer
+	{
+		return cast this = add(-1).t();
+	}
+
 	@:op(A-B) @:extern inline public function sub(byteOffset:Int):Buffer
 	{
 #if (cs || cpp || java)
-		return new Buffer(this.add(-byteOffset));
+		return cast this.add(-byteOffset);
 #elseif neko
-		return new Buffer(indian._internal.neko.PointerHelper.add(-byteOffset));
+		return new Buffer(indian._internal.neko.PointerHelper.add(this, -byteOffset));
 #else
 		//TODO
 		throw "not available";

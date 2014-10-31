@@ -27,7 +27,7 @@ class Int64Tests
 		Assert.equals(Int64.ofInt(0).toString(), "0");
 	}
 
-	public function testMath() {
+	public function test_math() {
 		var a = Int64.make(0, 0x239B0E13);
 		var b = Int64.make(0, 0x39193D1B);
 		var c = a * b;
@@ -56,7 +56,7 @@ class Int64Tests
 	}
 
 	// tests taken from https://github.com/candu/node-int64-native/blob/master/test/int64.js
-	public function testCompare()
+	public function test_compare()
 	{
     var a = ofInt(2),
         b = ofInt(3);
@@ -67,7 +67,7 @@ class Int64Tests
 		Assert.equals(b.compare(a), 1);
 	}
 
-	public function testBits()
+	public function test_bits()
 	{
 	  var x = make(0xfedcba98,0x76543210);
     var y = x & (ofInt(0xffff)),
@@ -87,7 +87,7 @@ class Int64Tests
     Assert.equals(b.toHex(), '0x000000000000000e');
 	}
 
-	public function testAdd()
+	public function test_add()
 	{
 		var a = ofInt(3),
 				b = ofInt(2),

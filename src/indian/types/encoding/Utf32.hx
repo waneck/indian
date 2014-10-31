@@ -1,5 +1,5 @@
 package indian.types.encoding;
 
-@:dce class Utf32 extends Encoding
+@:unsafe @:final @:dce class Utf32 extends Encoding
 {
 }
