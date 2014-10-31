@@ -5,6 +5,5 @@ package indian.types.encoding;
 **/
 enum EncodingError
 {
-	OverlappingSource;
 	InvalidEncoding(encoding:String, col:Int, char:Int);
 }

@@ -531,12 +531,26 @@ import indian._internal.cpp.*;
 #end
 	}
 
-	@:op(A++) @:extern inline public function incr():Buffer
+	@:op(A++) @:extern inline public function preincr():Buffer
+	{
+		var t = this;
+		this = add(1).t();
+		return cast t;
+	}
+
+	@:op(A--) @:extern inline public function predecr():Buffer
+	{
+		var t = this;
+		this = add(-1).t();
+		return cast t;
+	}
+
+	@:op(++A) @:extern inline public function incr():Buffer
 	{
 		return cast this = add(1).t();
 	}
 
-	@:op(A--) @:extern inline public function decr():Buffer
+	@:op(--A) @:extern inline public function decr():Buffer
 	{
 		return cast this = add(-1).t();
 	}
