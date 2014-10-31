@@ -81,6 +81,73 @@ import indian._internal.cpp.*;
 #end
 	}
 
+	/**
+		Physically compares `this` Buffer to `to`.
+	**/
+	public function physCompare(to:Buffer):Int
+	{
+#if neko
+		return indian._internal.neko.PointerHelper.physcmp(this,to);
+#elseif cpp
+		return (this == to.t()) ? 0 : (cast(this, Int64) < cast(to.t(), Int64)) ? -1 : 1;
+#else
+		return (this == to.t()) ? 0 : (this < to.t()) ? -1 : 1;
+#end
+	}
+
+	@:op(A == B) inline public function equals(to:Buffer):Bool
+	{
+#if neko
+		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) == 0;
+#else
+		return this == to.t();
+#end
+	}
+
+	@:op(A >= B) inline public function gte(to:Buffer):Bool
+	{
+#if neko
+		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) >= 0;
+#elseif cpp
+		return cast(this,Int64) >= cast(to.t(), Int64);
+#else
+		return this >= to.t();
+#end
+	}
+
+	@:op(A > B) inline public function gt(to:Buffer):Bool
+	{
+#if neko
+		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) > 0;
+#elseif cpp
+		return cast(this,Int64) > cast(to.t(), Int64);
+#else
+		return this > to.t();
+#end
+	}
+
+	@:op(A <= B) inline public function lte(to:Buffer):Bool
+	{
+#if neko
+		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) <= 0;
+#elseif cpp
+		return cast(this,Int64) <= cast(to.t(), Int64);
+#else
+		return this <= to.t();
+#end
+	}
+
+	@:op(A < B) inline public function lt(to:Buffer):Bool
+	{
+#if neko
+		return indian._internal.neko.PointerHelper.physcmp(this,to.t()) < 0;
+#elseif cpp
+		return cast(this,Int64) < cast(to.t(), Int64);
+#else
+		return this < to.t();
+#end
+	}
+
 #if (cs || java)
 	@:unsafe
 #else

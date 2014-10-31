@@ -31,9 +31,24 @@ value tau_memcmp(value ptr1_ptr, value ptr1_pos, value ptr2_ptr, value ptr2_pos,
 }
 DEFINE_PRIM(tau_memcmp,5);
 
+value tau_physcmp(value ptr1_ptr, value ptr2_ptr)
+{
+	void *ptr1 = (void *) val_ptr(ptr1_ptr);
+	void *ptr2 = (void *) val_ptr(ptr2_ptr);
+
+	if (ptr1 < ptr2)
+		return alloc_int(-1);
+	else if (ptr1 > ptr2)
+		return alloc_int(1);
+	else
+		return alloc_int(0);
+}
+DEFINE_PRIM(tau_physcmp,2);
+
 value tau_strlen(value ptr, value offset)
 {
-	return alloc_int( strlen((const char *) (val_ptr(ptr) + ( (size_t) val_uint64(offset) ))) );
+	char *ptr1 = (char *) val_ptr(ptr);
+	return alloc_int( strlen((const char *) (ptr1 + ( (size_t) val_uint64(offset) ))) );
 }
 DEFINE_PRIM(tau_strlen,2);
 

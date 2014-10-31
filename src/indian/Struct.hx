@@ -12,13 +12,9 @@ extern class Struct<T>
 {
 	private static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
 #if STACKALLOC
-	private static function stackalloc<T>(size:Int):EphPtr<Struct<T>>;
+	private static function stackalloc<T>(size:Int):Ptr<Struct<T>>;
 #end
 	private static function array<T>(size:Int):Ptr<Struct<T>>;
-	@:generic inline public static function test<T>(t:T):Ptr<T>
-	{
-		return cast t;
-	}
 	function copy():Struct<T>;
 	/*macro*/ function with(tdef:{}):Struct<T>;
 	function address():Ptr<Struct<T>>;

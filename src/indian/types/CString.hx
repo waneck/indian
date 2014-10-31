@@ -8,7 +8,7 @@ abstract CString(indian.Buffer) from indian.Buffer
 		this = ptr;
 	}
 
-	public static function fromString(arg) {
-
+	public static function fromString(arg)
+	{
 	}
 }

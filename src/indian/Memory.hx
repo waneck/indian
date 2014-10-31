@@ -1,5 +1,4 @@
 package indian;
-
 import indian.Buffer in HeapPtr;
 
 @:unsafe class Memory
