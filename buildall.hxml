@@ -1,7 +1,6 @@
 -cp src
 -cp tests
 -main Test
--lib taurine-core
 -lib utest
 -lib indian
 -debug
