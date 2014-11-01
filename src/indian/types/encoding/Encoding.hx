@@ -1,4 +1,5 @@
 package indian.types.encoding;
+import indian.*;
 
 @:unsafe @:dce class Encoding
 {
@@ -21,11 +22,6 @@ package indian.types.encoding;
 	public function convertFromUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
 	{
 		return throw "Not Implemented";
-	}
-
-	@:extern inline public static function utf8iter(source:indian.Buffer, byteLength:Int, iter:Int->Void):Void
-	{
-
 	}
 
 	/**
@@ -71,7 +67,63 @@ package indian.types.encoding;
 		} else if (sourceEncoding.isUtf8()) {
 			return this.convertFromUtf8(source,byteLength, out,maxByteLength);
 		} else {
+			inline function getConsumedFromUtf8(utf8:Buffer, utf8ByteLength:Int)
+			{
+				var len = Utf8.count(utf8, utf8ByteLength);
+				return getPosOffset(source, byteLength, len);
+			}
+
+			var consumed = sourceEncoding.convertToUtf8(source,byteLength, out,maxByteLength, false);
+			if (consumed < byteLength)
+			{
+				// does not fit entirely in the buffer - use a temporary buffer for the rest
+				var written = this.convertFromUtf8(out,maxByteLength, out,maxByteLength);
+				if (written < maxByteLength)
+				{
+					var len = this.count(out,maxByteLength);
+					return getPosOffset(source, byteLength, len);
+				}
+
+				var buf = Indian.stackalloc(256);
+				while(written < maxByteLength && consumed < byteLength)
+				{
+					var c2 = sourceEncoding.convertToUtf8(source + consumed,byteLength - consumed, buf,256, false);
+					consumed += c2;
+					var w2 = this.convertFromUtf8(buf,c2, out + written,maxByteLength - written);
+					written += w2;
+				}
+				return consumed;
+			} else {
+				var len = sourceEncoding.count(source,byteLength),
+						pos = Utf8.getPosOffset(out, byteLength, len);
+
+				var written = this.convertFromUtf8(out,pos+1, out,maxByteLength);
+				if (written < pos+1)
+				{
+					var len = this.count(out,maxByteLength);
+					return getPosOffset(source, byteLength, len);
+				}
+				return consumed;
+			}
 		}
+	}
+
+	/**
+		Returns the number of unicode code points that exist in `buf` with byte length `byteLength`.
+		If the encoding is not unicode, a character mapping will be used so that the returned length is still in unicode code point units.
+	 **/
+	public function count(buf:Buffer, byteLength:Int):Int
+	{
+		return throw "Not Implemented";
+	}
+
+	/**
+		Gets the byte offset for the unicode code point at position `pos` on buffer `buf`, with length `byteLength`
+		If the encoding is not unicode, a character mapping will be used so that the position count is still in unicode code point units.
+	**/
+	public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
+	{
+		return throw "Not Implemented";
 	}
 
 	private function isUtf8():Bool

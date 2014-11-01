@@ -1,9 +1,6 @@
 package indian;
 import indian.types.*;
 import indian._impl.*;
-#if java
-import indian._impl.java.Pointer;
-#end
 
 /**
 	Any pointer can be accessed as a Buffer type.
@@ -178,7 +175,7 @@ import indian._impl.java.Pointer;
 		{
 			for (i in 0...llen)
 			{
-				var v = Pointer.getUInt8(ptr1, i) - Pointer.getUInt8(ptr2, i);
+				var v = indian._impl.java.Pointer.getUInt8(ptr1, i) - indian._impl.java.Pointer.getUInt8(ptr2, i);
 				if (v != 0)
 					return v;
 			}
@@ -189,13 +186,13 @@ import indian._impl.java.Pointer;
 			llen = len >>> 3;
 			for (i in 0...llen)
 			{
-				var v1 = Pointer.getInt64(ptr1, i<<3),
-						v2 = Pointer.getInt64(ptr2, i<<3);
+				var v1 = indian._impl.java.Pointer.getInt64(ptr1, i<<3),
+						v2 = indian._impl.java.Pointer.getInt64(ptr2, i<<3);
 				if (v1 != v2)
 				{
 					for (j in 0...8)
 					{
-						var v = Pointer.getUInt8(ptr1, (i<<3) + j) - Pointer.getUInt8(ptr2, (i<<3) + j);
+						var v = indian._impl.java.Pointer.getUInt8(ptr1, (i<<3) + j) - indian._impl.java.Pointer.getUInt8(ptr2, (i<<3) + j);
 						if (v != 0) return v;
 					}
 				}
@@ -207,7 +204,7 @@ import indian._impl.java.Pointer;
 				ptr2 += llen * 8;
 				for (i in 0...len)
 				{
-					var v = Pointer.getUInt8(ptr1, i) - Pointer.getUInt8(ptr2, i);
+					var v = indian._impl.java.Pointer.getUInt8(ptr1, i) - indian._impl.java.Pointer.getUInt8(ptr2, i);
 					if (v != 0)
 						return v;
 				}
@@ -217,7 +214,7 @@ import indian._impl.java.Pointer;
 		} else {
 			for (i in 0...len)
 			{
-				var v = Pointer.getUInt8(ptr1, i) - Pointer.getUInt8(ptr2, i);
+				var v = indian._impl.java.Pointer.getUInt8(ptr1, i) - indian._impl.java.Pointer.getUInt8(ptr2, i);
 				if (v != 0)
 					return v;
 			}

@@ -1,24 +1,9 @@
 package indian._impl.java;
 import indian.types.*;
-import java.sun.misc.Unsafe;
+import indian._impl.java.Unsafe.*;
 
-@:suppressWarnings("deprecation")
 @:dce abstract Pointer(Int64) from Int64
 {
-	private static var unsafe:Unsafe = {
-		try
-		{
-			var ctor = java.Lib.toNativeType(Unsafe).getDeclaredConstructor(new java.NativeArray(0));
-			ctor.setAccessible(true);
-			cast ctor.newInstance(new java.NativeArray(0));
-		}
-		catch(e:Dynamic)
-		{
-			trace('Unsafe is not supported on this platform. Error:',e);
-			null;
-		}
-	}
-
 	@:extern inline public static function copy(src:Pointer, dest:Pointer, bytes:Int64)
 	{
 		unsafe.copyMemory(cast src,cast dest,cast bytes);
