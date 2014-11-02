@@ -70,21 +70,78 @@ import indian.Indian.*;
 		Assert.isTrue(true);
 		var str = "a",
 				str2 = new StringBuf(),
-				arr1 = [1,2,3,4],
-				arr2 = haxe.ds.Vector.fromArrayCopy([1.1,1.2,1.3,1.4]);
+				arr1 = [0,1,2,3],
+				arr2 = haxe.ds.Vector.fromArrayCopy([1.1,1.2,1.3,1.4]),
+				big = [ for (i in 0...1000) i ];
 		str2.add('b');
 		str2.add('c');
-		var str2 = str2.toString();
-		pin(p1 = ptr(str), p2 = ptr(str2), p3 = ptr(arr1), p4 = ptr(arr2), {
+		pin(p1 = ptr(str), p2 = ptr(str2.toString()), p3 = ptr(arr1), p4 = ptr(arr2), p5 = ptr(big), {
 #if (cs || cpp)
 			Assert.equals('a'.code, p1.getUInt8(0));
+			Assert.equals('b'.code, p2.getUInt8(0));
+			for (i in 0...4)
+				Assert.equals(i, p3.getInt32(i*4));
+			for (i in 0...4)
+			{
+				var val = 1 + (i + 1)/10;
+				Assert.equals(val, p4.getFloat64(i*8));
+			}
+			for (i in 0...1000)
+				Assert.equals(i, p5.getInt32(i*4));
+			//no aligned pointer to the original structure
+			p1++; p2++; p3++; p4++;p5++;
+			str = null; str2 = null; arr1 = null; arr2 = null; big = null;
+			doSomeWork();
+			Assert.equals('a'.code, p1.getUInt8(-1));
+			Assert.equals('b'.code, p2.getUInt8(-1));
+			for (i in 0...4)
+				Assert.equals(i, p3.getInt32(i*4-1));
+			for (i in 0...4)
+			{
+				var val = 1 + (i + 1)/10;
+				Assert.equals(val, p4.getFloat64(i*8-1));
+			}
+			for (i in 0...1000)
+				Assert.equals(i, p5.getInt32(i*4-1));
 #else
-			$type(p1);
-			$type(p2);
-			$type(p3);
-			$type(p4);
 #end
 		});
+	}
+
+	private function doSomeWork()
+	{
+		// this function is here to add some strain on the GC. We force GC to make a collection also, if we can
+		for (j in 0...100)
+		{
+			var arr1 = [],
+					arr2 = new Map();
+			for (i in 0...100000)
+			{
+				arr1.push(i);
+				arr2[i] = i+"";
+				}
+			// please optimizer don't optimize everything away
+			if (arr1[j] != j || arr2[j] != j + '')
+			{
+				Assert.fail();
+			}
+			if (j % 10 == 0)
+			{
+#if cs
+				cs.system.GC.Collect();
+				cs.system.GC.WaitForPendingFinalizers();
+#elseif cpp
+				cpp.vm.Gc.run(true);
+				cpp.vm.Gc.compact();
+#elseif java
+				java.vm.Gc.run(true);
+				java.vm.Gc.run(true);
+#elseif neko
+				neko.vm.Gc.run(true);
+				neko.vm.Gc.run(true);
+#end
+			}
+		}
 	}
 
 	private function getTrue()
