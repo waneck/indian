@@ -33,7 +33,7 @@ import indian.Indian.*;
 		var didThrow = false;
 		try
 		{
-			autofree(buf = alloc(256), {
+			autofree(buf = $alloc(256), {
 				bufTest(buf,256);
 				throw "exc";
 			});
@@ -44,7 +44,7 @@ import indian.Indian.*;
 		}
 		Assert.isTrue(didThrow);
 
-		autofree(buf = stackalloc(256), buf2 = stackalloc(x), buf3 = alloc(256), buf4 = alloc(x), {
+		autofree(buf = $stackalloc(256), buf2 = $stackalloc(x), buf3 = $alloc(256), buf4 = $alloc(x), {
 			Assert.isTrue(buf != null);
 			Assert.isTrue(buf2 != null);
 			Assert.isTrue(buf3 != null);
@@ -75,7 +75,7 @@ import indian.Indian.*;
 				big = [ for (i in 0...1000) i ];
 		str2.add('b');
 		str2.add('c');
-		pin(p1 = ptr(str), p2 = ptr(str2.toString()), p3 = ptr(arr1), p4 = ptr(arr2), p5 = ptr(big), {
+		pin(p1 = $ptr(str), p2 = $ptr(str2.toString()), p3 = $ptr(arr1), p4 = $ptr(arr2), p5 = $ptr(big), {
 #if (cs || cpp)
 			Assert.equals('a'.code, p1.getUInt8(0));
 			Assert.equals('b'.code, p2.getUInt8(0));

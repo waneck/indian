@@ -118,13 +118,13 @@ using haxe.macro.TypeTools;
 		return `null` as a pointer.
 
 		There are special identifiers that can be used in the variable declarations:
-			- `ptr` will reinterpret the object to be pinned as a Buffer. It always returns `Buffer`
-			- `addr` will take the address of the variable that points to the pinned object, or the address of
+			- `$ptr` will reinterpret the object to be pinned as a Buffer. It always returns `Buffer`
+			- `$addr` will take the address of the variable that points to the pinned object, or the address of
 			a field of the pinned object. It works like the `&` operator in C. It always returns `Buffer`
 
 		example:
 		```haxe
-		Indian.pin(a = ptr("someString"), b = ptr(Vector.ofArrayCopy([1,2,3,4])), c = addr(someObject.someField), d = addr(someVar), {
+		Indian.pin(a = $ptr("someString"), b = $ptr(Vector.ofArrayCopy([1,2,3,4])), c = $addr(someObject.someField), d = $addr(someVar), {
 			//a, b, c and d will all be typed here as Buffer
 		});
 		```
@@ -147,7 +147,7 @@ using haxe.macro.TypeTools;
 						var targetType = null;
 						v = switch(v.expr)
 						{
-							case ECall(macro addr,[v]):
+							case ECall({ expr: EConst(CIdent("$addr")) },[v]):
 								// store an actual reference to it
 								var changed = switch (v.expr)
 								{
@@ -157,7 +157,7 @@ using haxe.macro.TypeTools;
 									case EConst(CIdent(i)):
 										v;
 									case _:
-										throw new Error('Only fields and local variables can have their address extracted through `addr`', e.pos);
+										throw new Error('Only fields and local variables can have their address extracted through `$$addr`', e.pos);
 								};
 								if (defined('cs'))
 								{
@@ -168,7 +168,7 @@ using haxe.macro.TypeTools;
 									// not available
 									macro null;
 								}
-							case ECall(macro ptr, [v]):
+							case ECall({ expr: EConst(CIdent("$ptr")) }, [v]):
 								var t = typeof(v);
 								beforeFixed.push({ name: allocname, type:null, expr:v });
 								function getPointerType(t:haxe.macro.Type):ComplexType
@@ -212,10 +212,10 @@ using haxe.macro.TypeTools;
 										var t = getPointerType(t);
 										macro ( untyped __ptr__($i{allocname}) : $t );
 									case _:
-										throw new Error('Invalid type used with `addr` for var `$name`',e.pos);
+										throw new Error('Invalid type used with `$$addr` for var `$name`',e.pos);
 								}
 							case _:
-								throw new Error('`ptr` or `addr` expected inside a `pin` statement',e.pos);
+								throw new Error('`$$ptr` or `$$addr` expected inside a `pin` statement',e.pos);
 						}
 					}
 					ret.push({ name:name + '_alloc', type:null, expr:v });
@@ -245,13 +245,13 @@ using haxe.macro.TypeTools;
 		All variable declared this way will be automatically be freed at the end of the scope
 
 		There are special identifiers that can be used in the variable declarations:
-			- `alloc` is an alias to `Indian.alloc`; It will be automatically freed at the end of the scope
-			- `stackalloc` is an alias to `Indian.stackalloc`; It will be automatically freed with `Indian.stackfree` at the end of the scope
-		Please note that `stackfree` will only be used if `stackalloc` or `Indian.stackalloc` is called directly; otherwise `free` will be called instead
+			- `$alloc` is an alias to `Indian.alloc`; It will be automatically freed at the end of the scope
+			- `$stackalloc` is an alias to `Indian.stackalloc`; It will be automatically freed with `Indian.stackfree` at the end of the scope
+		Please note that `stackfree` will only be used if `$stackalloc` or `Indian.stackalloc` is called directly; otherwise `free` will be called instead
 
 		example:
 		```haxe
-		Indian.autofree(a = alloc(10), b = stackalloc(20), c = getSomeBuffer(), {
+		Indian.autofree(a = $alloc(10), b = $stackalloc(20), c = getSomeBuffer(), {
 			// all the declarations above will be automatically freed after the scope leaves the block.
 			// even if an exception is thrown
 		});
@@ -273,14 +273,14 @@ using haxe.macro.TypeTools;
 					{
 						return switch(e.expr)
 						{
-							case ECall(macro stackalloc,[v]):
+							case ECall({ expr:EConst(CIdent("$stackalloc")) },[v]):
 								isStack = true;
 								{ expr:ECall(macro indian.Indian.stackalloc, [v]), pos: e.pos };
 							case ECall(macro indian.Indian.stackalloc,[v]),
 									ECall(macro Indian.stackalloc,[v]):
 								isStack = true;
 								e;
-							case ECall(macro alloc, [v]):
+							case ECall({ expr:EConst(CIdent("$alloc")) }, [v]):
 								{ expr: ECall(macro indian.Indian.alloc,[v]), pos:e.pos };
 							case _:
 								haxe.macro.ExprTools.map(e,map);
