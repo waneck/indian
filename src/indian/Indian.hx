@@ -69,20 +69,12 @@ import haxe.macro.Context.*;
 		if (defined('cpp'))
 		{
 			var cls = Context.getLocalClass().get();
-			// if (value != null)
-			// {
-			// 	var tmpNum = Context.getPosInfos(bytesLength.pos);
-			// 	var decl = 'char stackalloc_${tmpNum.min}[$value]',
-			// 			val = '(void *) stackalloc_${tmpNum.min}';
-			// 	macro @:mergeBlock { untyped __cpp__($v{decl}); untyped __cpp__($v{val}); };
-			// } else {
-				if (!cls.meta.has(':alloca'))
-				{
-					cls.meta.add(':alloca',[],bytesLength.pos);
-					cls.meta.add(':headerCode',[macro "#include <alloca.h>\n#ifdef _MSC_VER\n#define HX_ALLOCA(v) (unsigned char *) _malloca(v)\n#define HX_FREEA _freea(v)\n#else\n#define HX_ALLOCA(v) (unsigned char *) alloca(v)\n#define HX_FREEA \n#endif\n"], bytesLength.pos);
-				}
-				return macro ( (untyped __cpp__('HX_ALLOCA({0})',$bytesLength)) : indian.Buffer );
-			// }
+			if (!cls.meta.has(':alloca'))
+			{
+				cls.meta.add(':alloca',[],bytesLength.pos);
+				cls.meta.add(':headerCode',[macro "#ifndef HX_ALLOCA\n#include <alloca.h>\n#ifdef _MSC_VER\n#define HX_ALLOCA(v) (unsigned char *) _malloca(v)\n#define HX_FREEA _freea(v)\n#else\n#define HX_ALLOCA(v) (unsigned char *) alloca(v)\n#define HX_FREEA \n#endif\n#endif\n"], bytesLength.pos);
+			}
+			return macro ( (untyped __cpp__('HX_ALLOCA({0})',$bytesLength)) : indian.Buffer );
 		} else if (defined('cs')) {
 			var tmpNum = Context.getPosInfos(bytesLength.pos);
 			return macro ( (cast untyped __arrptr__(__stackalloc__($bytesLength))) : indian.Buffer );
