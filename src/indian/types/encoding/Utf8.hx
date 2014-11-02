@@ -24,8 +24,9 @@ import indian.types.*;
 		1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,3,1,1,1,1,1,1, // s5..s6
 		1,3,1,1,1,1,1,3,1,3,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // s7..s8
 	]);
+	static inline var replacementChar = 0xFFFD;
 
-	@:extern inline public static function iter(source:indian.Buffer, byteLength:Int, iter:Int->Bool, onReject:Void->Bool, breakOnNull:Bool=false):Void
+	@:extern inline public static function iter(source:indian.Buffer, byteLength:Int, iter:Int->Bool, breakOnNull:Bool=false):Void
 	{
 		var state = 0,
 				codepoint = 0;
@@ -46,14 +47,16 @@ import indian.types.*;
 				(byte & 0x3fu) | (codepoint << 6) :
 				(0xff >> type) & (byte);
 			state = utf8d[256 + state << 4 + type];
+			if (state == REJECT)
+			{
+				state = ACCEPT;
+				codepoint = replacementChar;
+			}
 			if (state == ACCEPT)
 			{
 				var shouldContinue = iter(codepoint);
 				if (!shouldContinue)
 					break;
-			} else if (state == REJECT) {
-				if (onReject())
-					state = ACCEPT;
 			}
 		}
 	}

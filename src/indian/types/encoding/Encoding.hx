@@ -4,6 +4,7 @@ import indian.*;
 @:unsafe @:dce class Encoding
 {
 	public static var Utf8(default,null) = new Utf8();
+	public static var Utf16(default,null) = new Utf16();
 	public static var Utf32(default,null) = new Utf32();
 
 	/**
@@ -12,14 +13,12 @@ import indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `throwErrors` is true, an invalid input will throw an error; Otherwise it will replace it by a valid character (probably `?` or unicode
-		replacement character, `�` - U+FFFD)
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertFromUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
+	public function convertFromUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -30,14 +29,12 @@ import indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `throwErrors` is true, an invalid input will throw an error; Otherwise it will replace it by a valid character (probably `?` or unicode
-		replacement character, `�` - U+FFFD)
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertToUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, throwErrors=false):Int
+	public function convertToUtf8(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -48,8 +45,6 @@ import indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `throwErrors` is true, an invalid input will throw an error; Otherwise it will replace it by a valid character (probably `?` or unicode
-		replacement character, `�` - U+FFFD)
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
@@ -67,12 +62,8 @@ import indian.*;
 		} else if (sourceEncoding.isUtf8()) {
 			return this.convertFromUtf8(source,byteLength, out,maxByteLength);
 		} else {
-			inline function getConsumedFromUtf8(utf8:Buffer, utf8ByteLength:Int)
-			{
-				var len = Utf8.count(utf8, utf8ByteLength);
-				return getPosOffset(source, byteLength, len);
-			}
-
+			//use UTF8 intermediate representation
+			//use the own output buffer
 			var consumed = sourceEncoding.convertToUtf8(source,byteLength, out,maxByteLength, false);
 			if (consumed < byteLength)
 			{
@@ -92,6 +83,7 @@ import indian.*;
 					var w2 = this.convertFromUtf8(buf,c2, out + written,maxByteLength - written);
 					written += w2;
 				}
+				Indian.stackfree(buf);
 				return consumed;
 			} else {
 				var len = sourceEncoding.count(source,byteLength),
@@ -137,8 +129,6 @@ import indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `throwErrors` is true, an invalid input will throw an error; Otherwise it will replace it by a valid character (probably `?` or unicode
-		replacement character, `�` - U+FFFD)
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
@@ -158,7 +148,12 @@ import indian.*;
 	**/
 	public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int):Int
 	{
-		return throw "Not Implemented";
+		return -1;
+		// first try to get string pointer
+		// if failed, use temporary buffer
+#if (cs || java || js) // UTF-16
+#else // UTF-8
+#end
 	}
 
 	/**

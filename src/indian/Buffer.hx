@@ -21,7 +21,7 @@ import indian._impl.*;
 	public static function blit(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
 	{
 #if cpp
-		indian._impl.cpp.Memory.m_memmove(cast (dest + destPos), cast (src + srcPos), len);
+		indian._impl.cpp.Memory.memmove(cast (dest + destPos), cast (src + srcPos), len);
 #elseif java
 		indian._impl.java.Pointer.copy( src.add(srcPos).t(), dest.add(destPos).t(), cast len );
 #elseif (neko && !macro && !interp)
@@ -162,7 +162,7 @@ import indian._impl.*;
 	public static function compare(ptr1:Buffer, ptr1pos:Int, ptr2:Buffer, ptr2pos:Int, len:Int):Int
 	{
 #if cpp
-		return indian._impl.cpp.Memory.m_memcmp(cast (ptr1 + ptr1pos), cast (ptr2 + ptr2pos), len);
+		return indian._impl.cpp.Memory.memcmp(cast (ptr1 + ptr1pos), cast (ptr2 + ptr2pos), len);
 #elseif (neko && !macro && !interp)
 		return indian._impl.neko.PointerHelper.memcmp(ptr1,ptr1pos,ptr2,ptr2pos,len);
 #elseif java
@@ -290,7 +290,7 @@ import indian._impl.*;
 	public static function strlen(src:Buffer, offset:Int):Int
 	{
 #if cpp
-		return indian._impl.cpp.Memory.m_strlen(src + offset);
+		return indian._impl.cpp.Memory.strlen(src + offset);
 #elseif (neko && !macro && !interp)
 		return indian._impl.neko.PointerHelper.strlen(src, offset);
 #else
@@ -499,20 +499,6 @@ import indian._impl.*;
 		// this.setFloat64(offset,val);
 		//TODO
 #end
-	}
-
-	@:extern inline public function getCString()
-	{
-	}
-
-	public static function memcpy(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
-	{
-		//TODO
-	}
-
-	public static function memmove(src:Buffer, srcPos:Int, dest:Buffer, destPos:Int, len:Int):Void
-	{
-		//TODO
 	}
 
 	@:op(A+B) @:extern inline public function add(byteOffset:Int):Buffer
