@@ -6,8 +6,8 @@
 #-cs bin/cs
 -debug
 #-java bin/java
--D real_position
--D unsafe
+#-D real_position
+#-D unsafe
 #-D dump
 -main Test
 -lib utest

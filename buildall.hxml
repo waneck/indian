@@ -22,3 +22,8 @@
 -java bin/java
 -cmd echo "=======java========"
 -cmd java -jar bin/java/Test-Debug.jar
+--next
+-cpp bin/cpp64
+-D HXCPP_M64
+-cmd echo "=======cpp64========"
+-cmd ./bin/cpp64/Test-debug

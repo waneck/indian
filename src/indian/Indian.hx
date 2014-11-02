@@ -77,7 +77,7 @@ import haxe.macro.Context.*;
 			return macro ( (untyped __cpp__('HX_ALLOCA({0})',$bytesLength)) : indian.Buffer );
 		} else if (defined('cs')) {
 			var tmpNum = Context.getPosInfos(bytesLength.pos);
-			return macro ( (cast untyped __arrptr__(__stackalloc__($bytesLength))) : indian.Buffer );
+			return macro ( (cast untyped __ptr__(__stackalloc__($bytesLength))) : indian.Buffer );
 		} else {
 			return macro indian.Indian.alloc($bytesLength);
 		}
