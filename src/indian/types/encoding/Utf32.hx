@@ -84,6 +84,11 @@ import indian.types.*;
 		return 4;
 	}
 
+	override private function hasTermination(buf:Buffer, pos:Int):Bool
+	{
+		return buf.getInt32(pos-4) == 0;
+	}
+
 	override public function count(buf:Buffer, byteLength:Int):Int
 	{
 		var i = 0;
@@ -105,7 +110,7 @@ import indian.types.*;
 				return true;
 			});
 #else // UTF-16
-			Utf16.iter(str,0,len, function(cp,_) {
+			Utf16.iter(str,0,len << 1, function(cp,_) {
 				i++;
 				return true;
 			});

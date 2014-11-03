@@ -8,18 +8,23 @@ import indian.types.*;
 	static inline var replacementChar = 0xFFFD;
 	@:extern inline public static function iter(source:indian.Buffer,offset:Int,byteLength:Int, iter:Int->Int->Bool):Void
 	{
-		var len = byteLength,
-				i = -2,
+		var i = -2,
 				codepoint = 0,
 				surrogate = false;
 		while(true)
 		{
 			i += 2;
-			if (byteLength >= 0 && i >= len)
+			if (byteLength >= 0 && i >= byteLength)
+			{
+				trace('here',i,byteLength);
 				break;
+			}
 			var cp = source.getUInt16(offset+i);
 			if (byteLength < 0 && cp == 0)
+			{
+				trace('here',byteLength,cp);
 				break;
+			}
 			if (surrogate)
 			{
 				surrogate = false;
@@ -34,9 +39,14 @@ import indian.types.*;
 				surrogate = true;
 				codepoint = cp;
 				continue;
+			} else {
+				codepoint = cp;
 			}
 			if (!iter(codepoint,i))
+			{
+				trace('here',i);
 				break;
+			}
 		}
 	}
 
@@ -57,7 +67,7 @@ import indian.types.*;
 			++j;
 			if (byteLength >= 0 && j >= byteLength)
 				break;
-			var cp = source.getInt32(srcoffset + j<<2);
+			var cp = source.getInt32(srcoffset + (j<<2));
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp < 0x10000)
@@ -89,6 +99,7 @@ import indian.types.*;
 				i = -1;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
 			var i2 = (++i) << 2;
+			trace(codepoint,i2,maxByteLength);
 			if (maxByteLength - i2 < 0)
 			{
 				return false;
@@ -99,7 +110,7 @@ import indian.types.*;
 			}
 		});
 		if (maxByteLength >= 0)
-			out.setInt32(i<<2+outoffset,0);
+			out.setInt32(((++i)<<2)+outoffset,0);
 		return lst;
 	}
 
@@ -122,6 +133,11 @@ import indian.types.*;
 	override private function terminationBytes():Int
 	{
 		return 2;
+	}
+
+	override private function hasTermination(buf:Buffer, pos:Int):Bool
+	{
+		return buf.getUInt16(pos-2) == 0;
 	}
 
 	override public function count(buf:Buffer, byteLength:Int):Int
@@ -152,13 +168,15 @@ import indian.types.*;
 #if (cs || java || js)
 	override public function convertToString(buf:indian.Buffer, length:Int):String
 	{
+		if (hasTermination(buf,length))
+			length -= this.terminationBytes();
 		// direct copy
 		var ret = new StringBuf();
 		var i = -2;
 		while(true)
 		{
 			i += 2;
-			if (length >= 0 && i > length)
+			if (length >= 0 && i >= length)
 				break;
 			var chr = buf.getUInt16(i);
 			if (length < 0 && chr == 0)

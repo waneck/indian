@@ -70,22 +70,29 @@ import indian.Indian.*;
 			return this.convertFromUtf32(source,0,byteLength, out,0,maxByteLength);
 		} else {
 			//use UTF32 intermediate representation
-			var len = sourceEncoding.count(source,byteLength) << 2;
+			var len = sourceEncoding.count(source,byteLength);
+			trace('here',len);
 			var written = 0,
 					consumed = 0,
 					consumedCodepoints = 0;
-			var neededBuf = len;
+			var neededBuf = (len + 1) << 2;
 			if (neededBuf > 256)
 				neededBuf = 256;
 			autofree(buf = $stackalloc(neededBuf), {
 				while(written < maxByteLength && consumedCodepoints < len)
 				{
+					trace(written,maxByteLength);
+					trace(consumedCodepoints,len);
 					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf);
+					trace(c2);
 					consumed += c2;
 					consumedCodepoints += neededBuf >> 2;
 					var w2 = this.convertFromUtf32(buf,0,c2, out,written,maxByteLength - written);
-					written += w2;
+					// written += w2 >> 2;
 				}
+				trace(out.getUInt8(maxByteLength-1));
+				trace(out.getUInt8(maxByteLength-2));
+				trace(out.getUInt8(maxByteLength-3));
 				return consumed;
 			});
 		}
@@ -106,6 +113,11 @@ import indian.Indian.*;
 	}
 
 	private function terminationBytes():Int
+	{
+		return throw "Not Implemented";
+	}
+
+	private function hasTermination(buf:Buffer, pos:Int):Bool
 	{
 		return throw "Not Implemented";
 	}
@@ -183,23 +195,29 @@ import indian.Indian.*;
 	**/
 	public function convertToString(buf:indian.Buffer, length:Int):String
 	{
+		if (hasTermination(buf,length))
+			length -= this.terminationBytes();
+
 		var ret = new StringBuf();
 		// first convert into
-		var len = this.count(buf,length) << 2;
+		var len = (this.count(buf,length) + 1) << 2;
 		var neededBuf = len;
 		if (neededBuf > 256)
 			neededBuf = 256;
 		var consumedCodepoints = 0,
 				consumed = 0;
-		autofree(buf = $stackalloc(neededBuf), {
+		trace('here');
+		autofree(tmp = $stackalloc(neededBuf), {
 			while(consumedCodepoints < len)
 			{
-				var c2 = this.convertToUtf32(buf,consumed,length - consumed, buf,0,neededBuf);
+				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf);
+				trace(c2);
 				consumed += c2;
 				consumedCodepoints += neededBuf >> 2;
-				for (i in 0...(c2 >> 2))
+				for (i in 0...c2)
 				{
-					var cp = buf.getInt32(i<<2);
+					var cp = tmp.getInt32(i<<2);
+					trace(cp);
 #if !(cs || java || js) // UTF-8
 					if (cp <= 0x7f)
 					{

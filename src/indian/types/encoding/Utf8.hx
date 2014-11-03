@@ -69,38 +69,39 @@ import indian.Indian.*;
 
 	override public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
 	{
+		trace(srcoffset,byteLength,outoffset,maxByteLength);
 		maxByteLength--;
 		var start = outoffset,
 				i = 0,
 				j = -1,
 				curj = 0;
-		// for (j in 0...(byteLength >> 2))
 		while(true)
 		{
 			++j;
 			if (byteLength >= 0 && j >= byteLength)
 				break;
-			var cp = source.getInt32(srcoffset + j<<2);
+			var cp = source.getInt32(srcoffset + (j<<2));
+			trace(cp,i,maxByteLength);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp <= 0x7f)
 			{
-				if ((i + 1) >= maxByteLength)
+				if ((i + 1) > maxByteLength)
 					break;
 				out.setUInt8(start + i++,cp);
 			} else if (cp <= 0x7FF) {
-				if ((i + 2) >= maxByteLength)
+				if ((i + 2) > maxByteLength)
 					break;
 				out.setUInt8(start+i++,0xC0 | (cp >> 6));
 				out.setUInt8(start+i++,0x80 | (cp & 0x3F));
 			} else if (cp <= 0xFFFF) {
-				if ((i + 3) >= maxByteLength)
+				if ((i + 3) > maxByteLength)
 					break;
 				out.setUInt8(start+i++, 0xE0 | (cp >> 12) );
 				out.setUInt8(start+i++, 0x80 | ((cp >> 6) & 0x3F) );
 				out.setUInt8(start+i++, 0x80 | (cp & 0x3F) );
 			} else {
-				if ((i + 4) >= maxByteLength)
+				if ((i + 4) > maxByteLength)
 					break;
 				out.setUInt8(start+i++, 0xF0 | (cp >> 18) );
 				out.setUInt8(start+i++, 0x80 | ((cp >> 12) & 0x3F) );
@@ -119,6 +120,7 @@ import indian.Indian.*;
 		maxByteLength -= 4;
 		var lst = 0,
 				i = -1;
+		trace(srcoffset,byteLength);
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
 			var i2 = (++i) << 2;
 			if (maxByteLength - i2 < 0)
@@ -126,12 +128,14 @@ import indian.Indian.*;
 				return false;
 			} else {
 				lst = curByte;
+				trace(codepoint);
 				out.setInt32(i2 + outoffset,codepoint);
 				return true;
 			}
 		});
 		if (maxByteLength >= 0)
-			out.setInt32(i<<2+outoffset,0);
+			out.setInt32(((++i)<<2)+outoffset,0);
+		trace(lst);
 		return lst;
 	}
 
@@ -154,6 +158,11 @@ import indian.Indian.*;
 	override private function terminationBytes():Int
 	{
 		return 1;
+	}
+
+	override private function hasTermination(buf:Buffer, pos:Int):Bool
+	{
+		return buf.getUInt8(pos) == 0;
 	}
 
 	override public function count(buf:Buffer, byteLength:Int):Int
@@ -184,6 +193,8 @@ import indian.Indian.*;
 #if !(cs || java || js)
 	override public function convertToString(buf:indian.Buffer, length:Int):String
 	{
+		if (hasTermination(buf,length))
+			length -= this.terminationBytes();
 		// direct copy
 		var ret = new StringBuf();
 		var i = -1;
@@ -208,6 +219,8 @@ import indian.Indian.*;
 		{
 			out.setUInt8(i, chr);
 		}
+		++i;
+		trace(i,maxByteLength);
 		if (i < maxByteLength)
 			out.setUInt8(i, 0);
 		else
@@ -220,7 +233,7 @@ import indian.Indian.*;
 #if !(cs || java || js)
 		return string.length + 1;
 #else
-		var len = string.length;
+		var len = string.length << 1;
 		pin(str = $ptr(string), {
 			var i = 0;
 			Utf16.iter(str,0,len, function(cp,_) {
