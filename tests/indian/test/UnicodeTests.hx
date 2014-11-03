@@ -53,6 +53,17 @@ import utest.Assert;
 		var strings = [
 			'Hello, World',
 			'Just a normal ASCII string here!'
+			'Olá, Mundo',
+			'¡Hola mundo!',
+			'привет мир',
+			'STARGΛ̊TE SG-1, a = v̇ = r̈, a⃑ ⊥ b⃑', //combining characters
+			'Σὲ γνωρίζω ἀπὸ τὴν κόψη', //greek polytonic
+			'Οὐχὶ ταὐτὰ παρίσταταί μοι γιγνώσ\nκειν, ὦ ἄνδρες ᾿Αθηναῖοι', //greek
+			'გთხოვთ ახლავე გაიაროთ რეგისტრა\nცია Unicode-ის მეათე საერთაშორისო', //georgian
+			'Зарегистрируйтесь сейчас \nна Десятую Международную Конференцию по', //russian
+			'๏ แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช  พระปกเกศกองบู๊กู้ขึ้นใหม่', //thai - 2 columns
+			'ሰማይ አይታረስ ንጉሥ አይከሰስ።', //ethiopian
+			'ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ \nᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ', //runes
 		];
 		for (s in strings)
 		{
