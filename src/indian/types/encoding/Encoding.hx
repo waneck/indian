@@ -78,8 +78,7 @@ import indian.Indian.*;
 					consumedCodepoints = 0;
 			var writtenLoc = 0;
 			var neededBuf = len << 2;
-			if (neededBuf > 256)
-				neededBuf = 256;
+			if (neededBuf > 256) neededBuf = 256;
 			autofree(buf = $stackalloc(neededBuf), {
 				var writtenLoc = addr(writtenLoc);
 				if (writtenLoc == null) writtenLoc = writtenOut;
@@ -88,15 +87,16 @@ import indian.Indian.*;
 
 				while(written < maxByteLength && consumedCodepoints < len)
 				{
-					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf, null);
+					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf, writtenLoc);
 					consumed += c2;
 					consumedCodepoints += neededBuf >> 2;
-					this.convertFromUtf32(buf,0,c2, out,written,maxByteLength - written, writtenLoc);
+					this.convertFromUtf32(buf,0,writtenLoc.getInt32(0), out,written,maxByteLength - written, writtenLoc);
 					written += writtenLoc.getInt32(0);
 				}
 				if (needsAlloc) free(writtenLoc);
 			});
 			if (writtenOut != null) writtenOut.setInt32(0,written);
+			if (written <= (maxByteLength - terminationBytes())) this.addTermination(out,written);
 			return consumed;
 		}
 	}

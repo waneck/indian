@@ -61,7 +61,7 @@ import indian.types.*;
 		while(true)
 		{
 			++j;
-			if (byteLength >= 0 && j > byteLength)
+			if (byteLength >= 0 && (j<<2) >= byteLength)
 				break;
 			var cp = source.getInt32(srcoffset + (j<<2));
 			if (byteLength < 0 && cp == 0)
@@ -85,7 +85,7 @@ import indian.types.*;
 		}
 		if (writtenOut != null) writtenOut.setInt32(0,i << 1);
 
-		return j<<2;
+		return curj<<2;
 	}
 
 	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
@@ -188,8 +188,7 @@ import indian.types.*;
 
 		var chr = -1,
 				i = -1;
-		maxByteLength -= 2;
-		while ( !StringTools.isEof(chr = StringTools.fastCodeAt(string,++i)) && i < maxByteLength )
+		while ( !StringTools.isEof(chr = StringTools.fastCodeAt(string,++i)) && (i << 1) < maxByteLength )
 		{
 			out.setUInt16(i << 1, chr);
 		}

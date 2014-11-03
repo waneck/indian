@@ -16,36 +16,69 @@ import utest.Assert;
 			'Hello, World',
 			'Just a normal ASCII string here!',
 			'We only\n\rtest\r\n ASCII strings here. Promise!',
+			''
 		];
 		for (s in strings)
 		{
+			trace(s.length);
 			for (e1 in encodings)
 			{
 				var l1 = e1.neededLength(s, true);
 				autofree(
-					b1e1 = $alloc(l1),
-					b2e1 = $alloc(Std.int(l1/2)),
-					b3e1 = $alloc(l1*2),
-					b4e1 = $alloc(l1-1),
+					b1 = $alloc(l1),
+					b2 = $alloc(Std.int(l1/2)),
+					b3 = $alloc(l1<<1),
+					b4 = $alloc(l1-1),
 				{
+					trace(e1,l1);
 					//test from string
-					e1.convertFromString(s,b1e1,l1,true);
-					switch(e1.name())
-					{
-						case 'UTF-8':
-							for (i in 0...s.length)
-								Assert.equals(s.charCodeAt(i), b1e1.getUInt8(i));
-						case 'UTF-16':
-							for (i in 0...s.length)
-								Assert.equals(s.charCodeAt(i), b1e1.getUInt16(i<<1));
-						case 'UTF-32':
-							for (i in 0...s.length)
-								Assert.equals(s.charCodeAt(i), b1e1.getInt32(i<<2));
-						case _:
-							Assert.fail();
-					}
+					for (i in 0...l1) b1.setUInt8(i,0xff);
+					e1.convertFromString(s,b1,l1,true);
+					checkEncodedString(e1, s,b1, s.length);
+					Assert.equals(0, b1.getUInt8(l1-1));
+
+					e1.convertFromString(s,b2,Std.int(l1/2),true);
+					checkEncodedString(e1,s,b2,Std.int(s.length/2)-1);
+					for (i in 0...(l1<<1)) b3.setUInt8(i,0xff);
+					e1.convertFromString(s,b3,l1<<1,true);
+					checkEncodedString(e1,s,b3,s.length);
+					Assert.equals(0, b3.getUInt8(l1-1));
+					Assert.equals(0xFF, b3.getUInt8(l1));
 				});
 			}
+		}
+	}
+
+	inline private static function checkEncodedString(encoding:Encoding, str:String, buf:Buffer, len:Int, ?pos:haxe.PosInfos)
+	{
+		switch(encoding.name())
+		{
+			case 'UTF-8':
+				for (i in 0...len)
+				{
+					var exp = str.charCodeAt(i),
+							got = buf.getUInt8(i);
+					var msg = 'For $encoding expected char ${String.fromCharCode(exp)}($exp), but got ${String.fromCharCode(got)}($got) at $i (string (${str.length}) $str)';
+					Assert.equals(str.charCodeAt(i), buf.getUInt8(i), msg, pos);
+				}
+			case 'UTF-16':
+				for (i in 0...len)
+				{
+					var exp = str.charCodeAt(i),
+							got = buf.getUInt16(i<<1);
+					var msg = 'For $encoding expected char ${String.fromCharCode(exp)}($exp), but got ${String.fromCharCode(got)}($got) at $i (string (${str.length}) $str)';
+					Assert.equals(str.charCodeAt(i), buf.getUInt16(i<<1),msg, pos);
+				}
+			case 'UTF-32':
+				for (i in 0...len)
+				{
+					var exp = str.charCodeAt(i),
+							got = buf.getInt32(i<<2);
+					var msg = 'For $encoding expected char ${String.fromCharCode(exp)}($exp), but got ${String.fromCharCode(got)}($got) at $i (string (${str.length}) $str)';
+					Assert.equals(str.charCodeAt(i), buf.getInt32(i<<2),msg, pos);
+				}
+			case _:
+				Assert.fail();
 		}
 	}
 

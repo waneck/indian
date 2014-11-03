@@ -3,13 +3,15 @@
 -main Test
 -lib utest
 -lib indian
--debug
+#-debug
 --each
 --next
 -neko bin/neko.n
 -cmd echo "=======neko========"
 -cmd neko bin/neko.n
+-debug
 --next
+-debug
 -cs bin/cs
 -D unsafe
 -cmd echo "=======cs========"
@@ -17,8 +19,9 @@
 --next
 -cpp bin/cpp
 -cmd echo "=======cpp========"
--cmd ./bin/cpp/Test-debug
+-cmd ./bin/cpp/Test
 --next
+-debug
 -java bin/java
 -cmd echo "=======java========"
 -cmd java -jar bin/java/Test-Debug.jar
@@ -26,4 +29,4 @@
 -cpp bin/cpp64
 -D HXCPP_M64
 -cmd echo "=======cpp64========"
--cmd ./bin/cpp64/Test-debug
+-cmd ./bin/cpp64/Test

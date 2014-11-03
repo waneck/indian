@@ -71,14 +71,14 @@ import indian.Indian.*;
 	{
 		var start = outoffset,
 				i = 0,
-				j = -1,
+				j = -4,
 				curj = 0;
 		while(true)
 		{
-			++j;
+			j += 4;
 			if (byteLength >= 0 && j >= byteLength)
 				break;
-			var cp = source.getInt32(srcoffset + (j<<2));
+			var cp = source.getInt32(srcoffset + j);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp <= 0x7f)
@@ -108,7 +108,7 @@ import indian.Indian.*;
 			curj = j;
 		}
 		if (writtenOut != null) writtenOut.setInt32(0,i);
-		return curj<<2;
+		return curj;
 	}
 
 	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
@@ -127,7 +127,10 @@ import indian.Indian.*;
 			}
 		});
 		++i;
-		if (writtenOut != null) writtenOut.setInt32(0,i << 2);
+		if (writtenOut != null)
+		{
+			writtenOut.setInt32(0,i << 2);
+		}
 		return lst;
 	}
 
