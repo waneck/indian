@@ -16,13 +16,11 @@ import indian.types.*;
 			i += 2;
 			if (byteLength >= 0 && i >= byteLength)
 			{
-				trace('here',i,byteLength);
 				break;
 			}
 			var cp = source.getUInt16(offset+i);
 			if (byteLength < 0 && cp == 0)
 			{
-				trace('here',byteLength,cp);
 				break;
 			}
 			if (surrogate)
@@ -44,7 +42,6 @@ import indian.types.*;
 			}
 			if (!iter(codepoint,i))
 			{
-				trace('here',i);
 				break;
 			}
 		}
@@ -99,7 +96,6 @@ import indian.types.*;
 				i = -1;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
 			var i2 = (++i) << 2;
-			trace(codepoint,i2,maxByteLength);
 			if (maxByteLength - i2 < 0)
 			{
 				return false;

@@ -69,7 +69,6 @@ import indian.Indian.*;
 
 	override public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
 	{
-		trace(srcoffset,byteLength,outoffset,maxByteLength);
 		maxByteLength--;
 		var start = outoffset,
 				i = 0,
@@ -81,7 +80,6 @@ import indian.Indian.*;
 			if (byteLength >= 0 && j >= byteLength)
 				break;
 			var cp = source.getInt32(srcoffset + (j<<2));
-			trace(cp,i,maxByteLength);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp <= 0x7f)
@@ -120,7 +118,6 @@ import indian.Indian.*;
 		maxByteLength -= 4;
 		var lst = 0,
 				i = -1;
-		trace(srcoffset,byteLength);
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
 			var i2 = (++i) << 2;
 			if (maxByteLength - i2 < 0)
@@ -128,14 +125,12 @@ import indian.Indian.*;
 				return false;
 			} else {
 				lst = curByte;
-				trace(codepoint);
 				out.setInt32(i2 + outoffset,codepoint);
 				return true;
 			}
 		});
 		if (maxByteLength >= 0)
 			out.setInt32(((++i)<<2)+outoffset,0);
-		trace(lst);
 		return lst;
 	}
 
@@ -220,7 +215,6 @@ import indian.Indian.*;
 			out.setUInt8(i, chr);
 		}
 		++i;
-		trace(i,maxByteLength);
 		if (i < maxByteLength)
 			out.setUInt8(i, 0);
 		else

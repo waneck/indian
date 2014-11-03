@@ -71,7 +71,6 @@ import indian.Indian.*;
 		} else {
 			//use UTF32 intermediate representation
 			var len = sourceEncoding.count(source,byteLength);
-			trace('here',len);
 			var written = 0,
 					consumed = 0,
 					consumedCodepoints = 0;
@@ -81,18 +80,12 @@ import indian.Indian.*;
 			autofree(buf = $stackalloc(neededBuf), {
 				while(written < maxByteLength && consumedCodepoints < len)
 				{
-					trace(written,maxByteLength);
-					trace(consumedCodepoints,len);
 					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf);
-					trace(c2);
 					consumed += c2;
 					consumedCodepoints += neededBuf >> 2;
 					var w2 = this.convertFromUtf32(buf,0,c2, out,written,maxByteLength - written);
 					// written += w2 >> 2;
 				}
-				trace(out.getUInt8(maxByteLength-1));
-				trace(out.getUInt8(maxByteLength-2));
-				trace(out.getUInt8(maxByteLength-3));
 				return consumed;
 			});
 		}
@@ -206,18 +199,15 @@ import indian.Indian.*;
 			neededBuf = 256;
 		var consumedCodepoints = 0,
 				consumed = 0;
-		trace('here');
 		autofree(tmp = $stackalloc(neededBuf), {
 			while(consumedCodepoints < len)
 			{
 				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf);
-				trace(c2);
 				consumed += c2;
 				consumedCodepoints += neededBuf >> 2;
 				for (i in 0...c2)
 				{
 					var cp = tmp.getInt32(i<<2);
-					trace(cp);
 #if !(cs || java || js) // UTF-8
 					if (cp <= 0x7f)
 					{
@@ -244,7 +234,6 @@ import indian.Indian.*;
 						ret.addChar( (cp & 0x3FF) + 0xDC00 );
 					} else {
 						//invalid - shouldn't happen
-						trace('assert');
 						ret.addChar(0xFFFD);
 					}
 #end
