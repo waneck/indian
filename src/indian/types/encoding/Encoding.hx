@@ -1,5 +1,6 @@
 package indian.types.encoding;
 import indian.*;
+import indian.Indian.*;
 
 @:unsafe @:dce class Encoding
 {
@@ -14,6 +15,7 @@ import indian.*;
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
@@ -30,6 +32,7 @@ import indian.*;
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
@@ -46,6 +49,7 @@ import indian.*;
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
@@ -75,16 +79,16 @@ import indian.*;
 					return getPosOffset(source, byteLength, len);
 				}
 
-				var buf = Indian.stackalloc(256);
-				while(written < maxByteLength && consumed < byteLength)
-				{
-					var c2 = sourceEncoding.convertToUtf8(source + consumed,byteLength - consumed, buf,256, false);
-					consumed += c2;
-					var w2 = this.convertFromUtf8(buf,c2, out + written,maxByteLength - written);
-					written += w2;
-				}
-				Indian.stackfree(buf);
-				return consumed;
+				autofree(buf = $stackalloc(256), {
+					while(written < maxByteLength && consumed < byteLength)
+					{
+						var c2 = sourceEncoding.convertToUtf8(source + consumed,byteLength - consumed, buf,256, false);
+						consumed += c2;
+						var w2 = this.convertFromUtf8(buf,c2, out + written,maxByteLength - written);
+						written += w2;
+					}
+					return consumed;
+				});
 			} else {
 				var len = sourceEncoding.count(source,byteLength),
 						pos = Utf8.getPosOffset(out, byteLength, len);
@@ -102,6 +106,7 @@ import indian.*;
 
 	/**
 		Returns the number of unicode code points that exist in `buf` with byte length `byteLength`.
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 		If the encoding is not unicode, a character mapping will be used so that the returned length is still in unicode code point units.
 	 **/
 	public function count(buf:Buffer, byteLength:Int):Int
@@ -111,6 +116,7 @@ import indian.*;
 
 	/**
 		Gets the byte offset for the unicode code point at position `pos` on buffer `buf`, with length `byteLength`
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 		If the encoding is not unicode, a character mapping will be used so that the position count is still in unicode code point units.
 	**/
 	public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
@@ -130,6 +136,7 @@ import indian.*;
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
 		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
@@ -144,24 +151,27 @@ import indian.*;
 		The conversion will not exceed the length defined by `maxByteLength`.
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
+		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 		@returns the amount of source bytes consumed in the operation
 	**/
 	public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int):Int
 	{
-		return -1;
-		// first try to get string pointer
-		// if failed, use temporary buffer
-#if (cs || java || js) // UTF-16
-#else // UTF-8
+		var len = string.length;
+		pin(str = $ptr(string), {
+#if !(cs || java || js) // UTF-8
+			return this.convertFromUtf8(str,len, out,maxByteLength);
+#else // UTF-16
+			return this.convertFromEncoding(str,len,Utf16, out,maxByteLength);
 #end
+		});
 	}
 
 	/**
 		Converts `buf`, with byte length `length` into a String enconded on the native target enconding.
+		If `length` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 	**/
 	public function convertToString(buf:indian.Buffer, length:Int):String
 	{
-		return throw "Not Implemented";
 	}
 
 	/**

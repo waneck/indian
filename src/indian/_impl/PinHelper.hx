@@ -137,6 +137,7 @@ class PinHelper
 }
 
 #if java
+//TODO clean this up. Check performance and maybe eliminate this.
 @:final @:nativeGen class JavaStringCopy
 {
 	public var value(default,null):Int64;

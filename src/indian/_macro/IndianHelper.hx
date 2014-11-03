@@ -5,6 +5,7 @@ import haxe.macro.Context.*;
 using haxe.macro.ExprTools;
 using haxe.macro.TypeTools;
 
+//TODO clean this up. Please.
 class IndianHelper
 {
 

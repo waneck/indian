@@ -57,21 +57,6 @@ import indian._macro.IndianHelper;
 #end
 	}
 
-	/**
-		Gets a pointer to the directly-accessed string bytes. Returns null if this operation is not available on this platform.
-	**/
-	// public static function stringPtr(string:String):Null<Buffer>
-	// {
-	// 	retur
-	// }
-
-	// public static function arrayPtr<T>(array:Array<T>):Null<Buffer>
-	// {
-	// }
-
-	// public static function addrOf<T>(val:T):Ptr<T>
-	// {
-	// }
 #end
 	/**
 		Tries to allocate a memory of size `bytesLength` in the stack.
@@ -90,7 +75,7 @@ import indian._macro.IndianHelper;
 		memory while inside this scope.
 		A pinned object is an object that is guaranteed not to be moved by the garbage collector.
 
-		There are special identifiers that can be used in the variable declarations:
+		There are special identifiers that should be used in the variable declarations:
 			- `$ptr` will reinterpret the object to be pinned as a Buffer. It always returns `Buffer`
 			- `$addr` will take the address of the variable that points to the pinned object, or the address of
 			a field of the pinned object. It works like the `&` operator in C. It always returns `Buffer`
