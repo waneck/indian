@@ -62,23 +62,25 @@ import indian.types.*;
 		while(true)
 		{
 			++j;
-			if (byteLength >= 0 && j >= byteLength)
+			if (byteLength >= 0 && j > byteLength)
 				break;
 			var cp = source.getInt32(srcoffset + (j<<2));
+			trace(cp,byteLength,j);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp < 0x10000)
 			{
-				if ((i + 1) << 1 >= maxByteLength)
+				trace(cp, (i+1) <<1, maxByteLength);
+				if ((i + 1) << 1 > maxByteLength)
 					break;
 				out.setUInt16(start + ((i++) << 1),cp);
 			} else if (cp <= 0x10FFFF) {
-				if ((i + 1) << 1 >= maxByteLength)
+				if ((i + 2) << 1 > maxByteLength)
 					break;
 				out.setUInt16(start + ((i++) << 1), (cp >> 10) + 0xD7C0 );
 				out.setUInt16(start + ((i++) << 1), (cp & 0x3FF) + 0xDC00 );
 			} else {
-				if ((i + 1) << 1 >= maxByteLength)
+				if ((i + 1) << 1 > maxByteLength)
 					break;
 				out.setUInt16(start + ((i++) << 1),0xFFFD);
 			}

@@ -215,10 +215,10 @@ import indian.Indian.*;
 			out.setUInt8(i, chr);
 		}
 		++i;
-		if (i < maxByteLength)
-			out.setUInt8(i, 0);
-		else
-			out.setUInt8(maxByteLength, 0);
+		// if (i < maxByteLength)
+		// 	out.setUInt8(i, 0);
+		// else
+		// 	out.setUInt8(maxByteLength, 0);
 	}
 #end
 
