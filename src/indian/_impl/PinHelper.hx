@@ -157,12 +157,11 @@ class PinHelper
 			inline function getOffset(f:String)
 				return unsafe.objectFieldOffset(str.getDeclaredField(f));
 			var val = getOffset('value'),
-					off = getOffset('offset');
+					off = try getOffset('offset') catch(e:Dynamic) cast -1;
 			new JavaStringCopy(val,off);
 		}
 		catch(e:Dynamic)
 		{
-			trace(e);
 			null;
 		}
 	};
@@ -173,8 +172,9 @@ class PinHelper
 		if (cur != null)
 		{
 			var unsafe = indian._impl.java.Unsafe.unsafe;
+			var off = cur.offset;
 			var val:CharArray = cast unsafe.getObject(from, cur.value),
-					offset = unsafe.getInt(from, cur.offset);
+					offset = off == -1 ? 0 : unsafe.getInt(from, off);
 			JavaCharArray.arrayCopy(val, offset, to);
 		} else {
 			var chr:Int = -1,
@@ -216,10 +216,12 @@ class PinHelper
 		{
 			var unsafe = indian._impl.java.Unsafe.unsafe,
 					baseOffset = cur.baseOffset;
-			var len = Std.int(Math.floor( (from.length - offset) / 4 ));
+			// var len = Std.int(Math.floor( (from.length - offset) / 4 ));
+			var len = Std.int(Math.ceil( (from.length - offset) / 2));
 			for (i in 0...len)
 			{
-				to.setInt64(i << 3, unsafe.getLong(from,baseOffset + i << 3));
+				to.setUInt16(i<<2,unsafe.getInt(from,baseOffset + (i<<2)));
+				// to.setInt64(i << 3, unsafe.getLong(from,baseOffset + i << 3));
 			}
 		} else {
 			for (i in offset...from.length)

@@ -108,7 +108,11 @@ import indian.Indian.*;
 	private function doSomeWork()
 	{
 		// this function is here to add some strain on the GC. We force GC to make a collection also, if we can
+#if neko
+		var j = 0;
+#else
 		for (j in 0...100)
+#end
 		{
 			var arr1 = [],
 					arr2 = new Map();
