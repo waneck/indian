@@ -1,7 +1,10 @@
 package indian.types.encoding;
+import indian.Indian.*;
+import indian.types.*;
 
 @:unsafe @:final @:dce class Utf32 extends Encoding
 {
+	public static var cur(default,null) = new Utf32();
 	static inline var replacementChar = 0xFFFD;
 
 	@:extern inline public static function iter(source:indian.Buffer,offset:Int,byteLength:Int, iter:Int->Int->Bool):Void
@@ -25,20 +28,9 @@ package indian.types.encoding;
 	{
 	}
 
-	/**
-		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
-		The conversion will not exceed the length defined by `maxByteLength`.
-
-		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
-		and the function will return the amount of source bytes consumed.
-		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-
-		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
-		@returns the amount of source bytes consumed in the operation
-	**/
 	override public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
 	{
+		if (out == null) return byteLength;
 		maxByteLength -= 4;
 		var length = byteLength < maxByteLength ? byteLength : maxByteLength;
 		if (source == out || maxByteLength < 0)
@@ -49,20 +41,9 @@ package indian.types.encoding;
 		return length;
 	}
 
-	/**
-		Converts `source` encoded with current encoding to the byte array specified in `out` - encoded in UTF32.
-		The conversion will not exceed the length defined by `maxByteLength`.
-
-		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
-		and the function will return the amount of source bytes consumed.
-		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-
-		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
-		@returns the amount of source bytes consumed in the operation
-	**/
 	override public function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
 	{
+		if (out == null) return byteLength;
 		maxByteLength -= 4;
 		var lst = 0,
 				i = -4;
@@ -82,15 +63,12 @@ package indian.types.encoding;
 		return lst;
 	}
 
-	/**
-		Called internally to get the byte length of unknown length when needed
-	 **/
 	override private function getByteLength(buf:Buffer):Int
 	{
 		var i = -4;
 		while(true)
 		{
-			if (buf.getUInt32( (i += 4)) == 0)
+			if (buf.getInt32( (i += 4)) == 0)
 				return i;
 		}
 		return -1;
@@ -98,33 +76,45 @@ package indian.types.encoding;
 
 	override private function addTermination(buf:Buffer, pos:Int):Void
 	{
-		buf.setUInt32(pos,0);
+		buf.setInt32(pos,0);
 	}
 
 	override private function terminationBytes():Int
 	{
 		return 4;
 	}
-	/**
-		Returns the number of unicode code points that exist in `buf` with byte length `byteLength`.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-		If the encoding is not unicode, a character mapping will be used so that the returned length is still in unicode code point units.
-	 **/
+
 	override public function count(buf:Buffer, byteLength:Int):Int
 	{
 		var i = 0;
 		iter(buf,0,byteLength, function(_,_) {
-			i++
+			i++;
 			return true;
 		});
 		return i;
 	}
 
-	/**
-		Gets the byte offset for the unicode code point at position `pos` on buffer `buf`, with length `byteLength`
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-		If the encoding is not unicode, a character mapping will be used so that the position count is still in unicode code point units.
-	**/
+	override public function neededLength(string:String):Int
+	{
+		var len = string.length;
+		pin(str = $ptr(string), {
+			var i = 0;
+#if !(cs || java || js) // UTF-8
+			Utf8.iter(str,0,len, function(cp,_) {
+				i++;
+				return true;
+			});
+#else // UTF-16
+			Utf16.iter(str,0,len, function(cp,_) {
+				i++;
+				return true;
+			});
+#end
+			return (i + 1) << 2;
+		});
+		throw 'assert';
+	}
+
 	override public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
 	{
 		if (byteLength >= 0)
@@ -141,14 +131,13 @@ package indian.types.encoding;
 			if (--pos <= 0)
 			{
 				return false;
+			} else {
+				return true;
 			}
 		});
 		return byte;
 	}
 
-	/**
-		Returns encoding name
-	**/
 	override public function name():String
 	{
 		return "UTF-32";

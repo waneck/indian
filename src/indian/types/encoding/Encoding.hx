@@ -7,17 +7,12 @@ import indian.Indian.*;
 **/
 @:unsafe @:dce class Encoding
 {
-	public static var Utf8(default,null) = new Utf8();
-	public static var Utf16(default,null) = new Utf16();
-	public static var Utf32(default,null) = new Utf32();
-
 	/**
 		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
 		The conversion will not exceed the length defined by `maxByteLength`.
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
@@ -34,7 +29,6 @@ import indian.Indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
@@ -51,7 +45,6 @@ import indian.Indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
@@ -65,8 +58,8 @@ import indian.Indian.*;
 			{
 				var outlen = byteLength < 0 ? getByteLength(source) : byteLength;
 				outlen -= terminationBytes();
-				if (maxByteLen < outlen)
-					outlen = maxByteLen;
+				if (maxByteLength < outlen)
+					outlen = maxByteLength;
 				Buffer.blit(source,0, out,0, outlen);
 				addTermination(out,outlen);
 			}
@@ -87,7 +80,7 @@ import indian.Indian.*;
 			autofree(buf = $stackalloc(neededBuf), {
 				while(written < maxByteLength && consumedCodepoints < len)
 				{
-					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf, false);
+					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf);
 					consumed += c2;
 					consumedCodepoints += neededBuf >> 2;
 					var w2 = this.convertFromUtf32(buf,0,c2, out,written,maxByteLength - written);
@@ -96,6 +89,7 @@ import indian.Indian.*;
 				return consumed;
 			});
 		}
+		throw 'assert';
 	}
 
 	/**
@@ -146,7 +140,6 @@ import indian.Indian.*;
 
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
-		If `out` is null, the conversion will not be performed and the total number of bytes needed to perform the conversion will be returned.
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
@@ -155,6 +148,14 @@ import indian.Indian.*;
 	inline public function convertToEncoding(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, outEncoding:Encoding):Int
 	{
 		return outEncoding.convertFromEncoding(source,byteLength,this,out,maxByteLength);
+	}
+
+	/**
+		Returns the needed byte length to convert from string `str`
+	**/
+	public function neededLength(str:String):Int
+	{
+		return throw "Not Implemented";
 	}
 
 	/**
@@ -169,9 +170,9 @@ import indian.Indian.*;
 		var len = string.length;
 		pin(str = $ptr(string), {
 #if !(cs || java || js) // UTF-8
-			this.convertFromEncoding(str,0,len,Utf8, out,0,maxByteLength);
+			this.convertFromEncoding(str,len,Utf8.cur, out,maxByteLength);
 #else // UTF-16
-			this.convertFromEncoding(str,0,len << 1,Utf16, out,0,maxByteLength);
+			this.convertFromEncoding(str,len << 1,Utf16.cur, out,maxByteLength);
 #end
 		});
 	}
@@ -188,11 +189,13 @@ import indian.Indian.*;
 		var neededBuf = len;
 		if (neededBuf > 256)
 			neededBuf = 256;
-		var consumedCodepoints = 0;
+		var consumedCodepoints = 0,
+				consumed = 0;
 		autofree(buf = $stackalloc(neededBuf), {
 			while(consumedCodepoints < len)
 			{
-				var c2 = this.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf, false);
+				var c2 = this.convertToUtf32(buf,consumed,length - consumed, buf,0,neededBuf);
+				consumed += c2;
 				consumedCodepoints += neededBuf >> 2;
 				for (i in 0...(c2 >> 2))
 				{
@@ -200,37 +203,37 @@ import indian.Indian.*;
 #if !(cs || java || js) // UTF-8
 					if (cp <= 0x7f)
 					{
-						buf.addChar(cp);
+						ret.addChar(cp);
 					} else if (cp <= 0x7FF) {
-						buf.addChar(0xC0 | (cp >> 6));
-						buf.addChar(0x80 | (cp & 0x3F));
+						ret.addChar(0xC0 | (cp >> 6));
+						ret.addChar(0x80 | (cp & 0x3F));
 					} else if (cp <= 0xFFFF) {
-						buf.addChar( 0xE0 | (cp >> 12) );
-						buf.addChar( 0x80 | ((cp >> 6) & 0x3F) );
-						buf.addChar( 0x80 | (cp & 0x3F) );
+						ret.addChar( 0xE0 | (cp >> 12) );
+						ret.addChar( 0x80 | ((cp >> 6) & 0x3F) );
+						ret.addChar( 0x80 | (cp & 0x3F) );
 					} else {
-						buf.addChar( 0xF0 | (cp >> 18) );
-						buf.addChar( 0x80 | ((cp >> 12) & 0x3F) );
-						buf.addChar( 0x80 | ((cp >> 6) & 0x3F) );
-						buf.addChar( 0x80 | (cp & 0x3F) );
+						ret.addChar( 0xF0 | (cp >> 18) );
+						ret.addChar( 0x80 | ((cp >> 12) & 0x3F) );
+						ret.addChar( 0x80 | ((cp >> 6) & 0x3F) );
+						ret.addChar( 0x80 | (cp & 0x3F) );
 					}
 #else // UTF-16
 					if (cp < 0x10000)
 					{
-						buf.addChar(cp);
+						ret.addChar(cp);
 					} else if (cp <= 0x10FFFF) {
-						buf.addChar( (cp >> 10) + 0xD7C0 );
-						buf.addChar( (cp & 0x3FF) + 0xDC00 );
+						ret.addChar( (cp >> 10) + 0xD7C0 );
+						ret.addChar( (cp & 0x3FF) + 0xDC00 );
 					} else {
 						//invalid - shouldn't happen
 						trace('assert');
-						buf.addChar(0xFFFD);
+						ret.addChar(0xFFFD);
 					}
 #end
 				}
 			}
 		});
-		return buf.toString();
+		return ret.toString();
 	}
 
 	/**

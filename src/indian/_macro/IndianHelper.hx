@@ -145,7 +145,7 @@ class IndianHelper
 		{
 			if (toRelease.length > 0) throw 'assert';
 			var fixedBlock = { expr:EBlock([{ expr:EVars(ret), pos:currentPos() }, { expr:EBlock([{ expr:EVars(afterFixed), pos:currentPos() }, block]), pos:currentPos() } ]), pos:currentPos() };
-			var fixed = macro cs.Lib.fixed($fixedBlock);
+			var fixed = macro @:pos(fixedBlock.pos) cs.Lib.fixed($fixedBlock);
 			var exprs = [ { expr:EVars(beforeFixed), pos:currentPos() }, fixed ];
 			var exprsBlock = { expr:EBlock(exprs), pos:currentPos() };
 			// trace(exprsBlock.toString());
@@ -243,6 +243,8 @@ class IndianHelper
 					var ret = e.map(map);
 					inLoop =false;
 					ret;
+				case EFunction(n,f):
+					e;
 				case _:
 					e.map(map);
 			}

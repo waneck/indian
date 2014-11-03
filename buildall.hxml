@@ -6,10 +6,10 @@
 -debug
 --each
 --next
--neko bin/neko.n
--cmd echo "=======neko========"
--cmd neko bin/neko.n
---next
+#-neko bin/neko.n
+#-cmd echo "=======neko========"
+#-cmd neko bin/neko.n
+#--next
 -cs bin/cs
 -D unsafe
 -cmd echo "=======cs========"
