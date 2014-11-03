@@ -126,6 +126,7 @@ import indian.Indian.*;
 				return true;
 			}
 		});
+		++i;
 		if (writtenOut != null) writtenOut.setInt32(0,i << 2);
 		return lst;
 	}

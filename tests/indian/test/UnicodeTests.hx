@@ -15,7 +15,7 @@ import utest.Assert;
 		var strings = [
 			'Hello, World',
 			'Just a normal ASCII string here!',
-			'We only\n\btest ASCII strings here. Promise!',
+			'We only\n\rtest\r\n ASCII strings here. Promise!',
 		];
 		for (s in strings)
 		{
