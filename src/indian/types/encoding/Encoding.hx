@@ -96,6 +96,7 @@ import indian.Indian.*;
 				}
 				if (needsAlloc) free(writtenLoc);
 			});
+			if (writtenOut != null) writtenOut.setInt32(0,written);
 			return consumed;
 		}
 	}
@@ -193,8 +194,7 @@ import indian.Indian.*;
 		var writtenLoc = addr(writtenLoc);
 		pin(str = $ptr(string), {
 			var wasNull = writtenLoc == null;
-			if (wasNull)
-				writtenLoc = alloc(4);
+			if (wasNull) writtenLoc = alloc(4);
 #if !(cs || java || js) // UTF-8
 			this.convertFromEncoding(str,len,Utf8.cur, out,maxByteLength, writtenLoc);
 #else // UTF-16

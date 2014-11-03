@@ -14,7 +14,8 @@ import utest.Assert;
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
 		var strings = [
 			'Hello, World',
-			'Just a normal ASCII string here!'
+			'Just a normal ASCII string here!',
+			'We only\n\btest ASCII strings here. Promise!',
 		];
 		for (s in strings)
 		{
