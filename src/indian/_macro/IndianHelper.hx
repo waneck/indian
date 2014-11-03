@@ -55,15 +55,22 @@ class IndianHelper
 										beforeFixed.push({ name: allocname, type:null, expr: e1 });
 										{ expr:EField(macro @:pos(e1.pos) $i{allocname}, f), pos: v.pos };
 									case EConst(CIdent(i)):
+										var t = typeExpr(v);
+										switch(t.expr)
+										{
+											case TLocal(_) if (isBasic(t.t)):
+												throw new Error('Cannot pin already pinned object',v.pos);
+											case _:
+										}
 										v;
 									case _:
 										throw new Error('Only fields and local variables can have their address extracted through `$$addr`', e.pos);
 								};
 								if (defined('cs'))
 								{
-									macro untyped __ptr__(__addressOf__($changed));
+									macro @:pos(v.pos) (untyped __ptr__(__addressOf__($changed)) : indian.Buffer);
 								} else if (defined('cpp')) {
-									macro untyped __cpp__('&{0}',$changed);
+									macro @:pos(v.pos) untyped __cpp__('&{0}',$changed);
 								} else {
 									// not available
 									macro null;
@@ -262,4 +269,35 @@ class IndianHelper
 		return macro try {$block; ${getRelease(null)};} catch(exception_:Dynamic) { ${getRelease(null)}; $rethrow; };
 	}
 
+	private static function isBasic(t:haxe.macro.Type)
+	{
+		return switch(follow(t))
+		{
+			case TAbstract(_.get() => a,_) if (a.meta.has(':coreType')):
+				true;
+			case _:
+				false;
+		}
+	}
+
+	public static function addr(e:Expr):Expr
+	{
+		var tx = typeExpr(e);
+		switch(tx.expr)
+		{
+			case TLocal(_) if (isBasic(tx.t)):
+				if (defined('cs'))
+				{
+					var type = tx.t.toComplexType();
+					type = macro : cs.Pointer<$type>;
+					return macro @:pos(e.pos) ( (cast ((untyped __addressOf__($e) : $type)) ) : indian.Buffer );
+				} else if (defined('cpp')) {
+					return macro @:pos(e.pos) (untyped __cpp__('(unsigned char *) &{0}',$e) : indian.Buffer);
+				} else {
+					return macro @:pos(e.pos) (null : indian.Buffer);
+				}
+			case _:
+				throw new Error('`addr` must only called in a local variable with a basic type only',e.pos);
+		}
+	}
 }

@@ -51,9 +51,8 @@ import indian.types.*;
 	{
 	}
 
-	override public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		maxByteLength -= 2;
 		var start = outoffset,
 				i = 0,
 				j = -1,
@@ -84,14 +83,13 @@ import indian.types.*;
 			}
 			curj = j;
 		}
-		if (maxByteLength >= 0)
-			out.setUInt16(start+(i<<1), 0);
+		if (writtenOut != null) writtenOut.setInt32(0,i << 1);
+
 		return j<<2;
 	}
 
-	override public function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		maxByteLength -= 4;
 		var lst = 0,
 				i = -1;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
@@ -105,8 +103,7 @@ import indian.types.*;
 				return true;
 			}
 		});
-		// if (maxByteLength >= 0)
-			// out.setInt32(((++i)<<2)+outoffset,0);
+		if (writtenOut != null) writtenOut.setInt32(0,i << 2);
 		return lst;
 	}
 
@@ -182,8 +179,12 @@ import indian.types.*;
 		return ret.toString();
 	}
 
-	override public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int):Void
+	override public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int, reserveTermination:Bool):Int
 	{
+		var origMaxByte = maxByteLength,
+				termBytes = 2;
+		if (reserveTermination) maxByteLength -= termBytes;
+
 		var chr = -1,
 				i = -1;
 		maxByteLength -= 2;
@@ -191,15 +192,19 @@ import indian.types.*;
 		{
 			out.setUInt16(i << 1, chr);
 		}
-		if (maxByteLength >= 0)
+		var written = i << 1;
+		if (written <= (origMaxByte - termBytes))
 			out.setUInt16(i << 1, 0);
+
+		return written;
 	}
 #end
 
-	override public function neededLength(string:String):Int
+	override public function neededLength(string:String, addTermination:Bool):Int
 	{
+		var term = addTermination ? 1 : 0;
 #if (cs || java || js)
-		return (string.length + 1) << 1;
+		return (string.length + term) << 1;
 #else
 		var len = string.length;
 		pin(str = $ptr(string), {
@@ -210,7 +215,7 @@ import indian.types.*;
 					i++;
 				return true;
 			});
-			return (i + 1) << 1;
+			return (i + term) << 1;
 		});
 #end
 	}

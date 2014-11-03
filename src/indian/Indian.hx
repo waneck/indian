@@ -129,4 +129,12 @@ import indian._macro.IndianHelper;
 		return IndianHelper.autofree(exprs);
 	}
 
+	/**
+		Gets the address of the local stack variable. This only works with stack variables, and may return null on platforms that don't support it.
+	**/
+	macro public static function addr(of:Expr):Expr
+	{
+		return IndianHelper.addr(of);
+	}
+
 }

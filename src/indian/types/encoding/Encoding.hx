@@ -18,7 +18,7 @@ import indian.Indian.*;
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:indian.Buffer):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -34,7 +34,7 @@ import indian.Indian.*;
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:indian.Buffer):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -50,46 +50,54 @@ import indian.Indian.*;
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	public function convertFromEncoding(source:indian.Buffer,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,maxByteLength:Int):Int
+	public function convertFromEncoding(source:indian.Buffer,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,maxByteLength:Int, writtenOut:indian.Buffer):Int
 	{
 		if (this == sourceEncoding || this.name() == sourceEncoding.name())
 		{
 			if (source != out)
 			{
 				var outlen = byteLength < 0 ? getByteLength(source) : byteLength;
-				outlen -= terminationBytes();
 				if (maxByteLength < outlen)
 					outlen = maxByteLength;
 				Buffer.blit(source,0, out,0, outlen);
-				addTermination(out,outlen);
+				if (outlen <= (maxByteLength - terminationBytes()))
+					this.addTermination(out,outlen);
+				if (writtenOut != null)
+					writtenOut.setInt32(0,outlen);
 			}
 			return byteLength;
 		} else if (this.isUtf32()) {
-			return sourceEncoding.convertToUtf32(source,0,byteLength, out,0,maxByteLength);
+			return sourceEncoding.convertToUtf32(source,0,byteLength, out,0,maxByteLength, writtenOut);
 		} else if (sourceEncoding.isUtf32()) {
-			return this.convertFromUtf32(source,0,byteLength, out,0,maxByteLength);
+			return this.convertFromUtf32(source,0,byteLength, out,0,maxByteLength, writtenOut);
 		} else {
 			//use UTF32 intermediate representation
 			var len = sourceEncoding.count(source,byteLength);
 			var written = 0,
 					consumed = 0,
 					consumedCodepoints = 0;
-			var neededBuf = (len + 1) << 2;
+			var writtenLoc = 0;
+			var neededBuf = len << 2;
 			if (neededBuf > 256)
 				neededBuf = 256;
 			autofree(buf = $stackalloc(neededBuf), {
+				var writtenLoc = addr(writtenLoc);
+				if (writtenLoc == null) writtenLoc = writtenOut;
+				var needsAlloc = writtenLoc == null;
+				if (needsAlloc) writtenLoc = alloc(4);
+
 				while(written < maxByteLength && consumedCodepoints < len)
 				{
-					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf);
+					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf, null);
 					consumed += c2;
 					consumedCodepoints += neededBuf >> 2;
-					var w2 = this.convertFromUtf32(buf,0,c2, out,written,maxByteLength - written);
-					// written += w2 >> 2;
+					this.convertFromUtf32(buf,0,c2, out,written,maxByteLength - written, writtenLoc);
+					written += writtenLoc.getInt32(0);
 				}
-				return consumed;
+				if (needsAlloc) free(writtenLoc);
 			});
+			return consumed;
 		}
-		throw 'assert';
 	}
 
 	/**
@@ -150,15 +158,16 @@ import indian.Indian.*;
 		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
 		@returns the amount of source bytes consumed in the operation
 	**/
-	inline public function convertToEncoding(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, outEncoding:Encoding):Int
+	inline public function convertToEncoding(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, outEncoding:Encoding, writtenOut:indian.Buffer):Int
 	{
-		return outEncoding.convertFromEncoding(source,byteLength,this,out,maxByteLength);
+		return outEncoding.convertFromEncoding(source,byteLength,this,out,maxByteLength, writtenOut);
 	}
 
 	/**
 		Returns the needed byte length to convert from string `str`
+		If `reserveTermination` is true, an extra space is reserved for the termination bytes.
 	**/
-	public function neededLength(str:String):Int
+	public function neededLength(str:String, reserveTermination:Bool):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -168,18 +177,37 @@ import indian.Indian.*;
 		The conversion will not exceed the length defined by `maxByteLength`.
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
+		If `reserveTermination` is true, an extra space is reserved for the termination bytes. Termination will always be added if there are enough bytes.
+
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
+		@returns the amount of bytes written
 	**/
-	public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int):Void
+	public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int, reserveTermination:Bool):Int
 	{
 		var len = string.length;
+		var writtenLoc = 0;
+		var origMaxByte = maxByteLength,
+				termBytes = terminationBytes();
+
+		if (reserveTermination) maxByteLength -= termBytes;
+		var writtenLoc = addr(writtenLoc);
 		pin(str = $ptr(string), {
+			var wasNull = writtenLoc == null;
+			if (wasNull)
+				writtenLoc = alloc(4);
 #if !(cs || java || js) // UTF-8
-			this.convertFromEncoding(str,len,Utf8.cur, out,maxByteLength);
+			this.convertFromEncoding(str,len,Utf8.cur, out,maxByteLength, writtenLoc);
 #else // UTF-16
-			this.convertFromEncoding(str,len << 1,Utf16.cur, out,maxByteLength);
+			this.convertFromEncoding(str,len << 1,Utf16.cur, out,maxByteLength, writtenLoc);
 #end
+			var written = writtenLoc.getInt32(0);
+			if (written <= (origMaxByte - termBytes))
+				this.addTermination(out,written);
+
+			if (wasNull) free(writtenLoc);
+			return written;
 		});
+		throw 'assert';
 	}
 
 	/**
@@ -188,7 +216,7 @@ import indian.Indian.*;
 	**/
 	public function convertToString(buf:indian.Buffer, length:Int):String
 	{
-		if (hasTermination(buf,length))
+		if (length >= 0 && hasTermination(buf,length))
 			length -= this.terminationBytes();
 
 		var ret = new StringBuf();
@@ -199,13 +227,20 @@ import indian.Indian.*;
 			neededBuf = 256;
 		var consumedCodepoints = 0,
 				consumed = 0;
-		autofree(tmp = $stackalloc(neededBuf), {
+		var writtenLoc = 0;
+		autofree(tmp = $stackalloc(neededBuf),  {
+			var writtenLoc = addr(writtenLoc);
+			var wasNull = writtenLoc == null;
+			if (wasNull)
+				writtenLoc = alloc(4);
+
 			while(consumedCodepoints < len)
 			{
-				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf);
+				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf, writtenLoc);
 				consumed += c2;
-				consumedCodepoints += neededBuf >> 2;
-				for (i in 0...c2)
+				var written = writtenLoc.getInt32(0) >> 2;
+				consumedCodepoints += written;
+				for (i in 0...written)
 				{
 					var cp = tmp.getInt32(i<<2);
 #if !(cs || java || js) // UTF-8
@@ -239,6 +274,7 @@ import indian.Indian.*;
 #end
 				}
 			}
+			if (wasNull) free(writtenLoc);
 		});
 		return ret.toString();
 	}

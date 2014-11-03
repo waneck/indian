@@ -67,9 +67,8 @@ import indian.Indian.*;
 	{
 	}
 
-	override public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		maxByteLength--;
 		var start = outoffset,
 				i = 0,
 				j = -1,
@@ -108,14 +107,12 @@ import indian.Indian.*;
 			}
 			curj = j;
 		}
-		if (maxByteLength >= 0)
-			out.setUInt8(start+i, 0);
-		return j<<2;
+		if (writtenOut != null) writtenOut.setInt32(0,i);
+		return curj<<2;
 	}
 
-	override public function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		maxByteLength -= 4;
 		var lst = 0,
 				i = -1;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
@@ -129,8 +126,7 @@ import indian.Indian.*;
 				return true;
 			}
 		});
-		// if (maxByteLength >= 0)
-			// out.setInt32(((++i)<<2)+outoffset,0);
+		if (writtenOut != null) writtenOut.setInt32(0,i << 2);
 		return lst;
 	}
 
@@ -206,30 +202,34 @@ import indian.Indian.*;
 		return ret.toString();
 	}
 
-	override public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int):Void
+	override public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int, reserveTermination:Bool):Int
 	{
+		var origMaxByte = maxByteLength,
+				termBytes = 1;
+		if (reserveTermination) maxByteLength -= termBytes;
+
 		var chr = -1,
 				i = -1;
 		while ( !StringTools.isEof(chr = StringTools.fastCodeAt(string,++i)) && i < maxByteLength )
 		{
 			out.setUInt8(i, chr);
 		}
-		++i;
-		// if (i < maxByteLength)
-		// 	out.setUInt8(i, 0);
-		// else
-		// 	out.setUInt8(maxByteLength, 0);
+		if (i <= (origMaxByte - termBytes))
+			out.setUInt8(i, 0);
+
+		return i;
 	}
 #end
 
-	override public function neededLength(string:String):Int
+	override public function neededLength(string:String, addTermination:Bool):Int
 	{
+		var term = addTermination ? 1 : 0;
 #if !(cs || java || js)
-		return string.length + 1;
+		return string.length + term;
 #else
 		var len = string.length << 1;
+		var i = 0;
 		pin(str = $ptr(string), {
-			var i = 0;
 			Utf16.iter(str,0,len, function(cp,_) {
 				if (cp <= 0x7f)
 				{
@@ -243,9 +243,8 @@ import indian.Indian.*;
 				}
 				return true;
 			});
-			return i + 1;
 		});
-		throw 'assert';
+		return i + term;
 #end
 	}
 

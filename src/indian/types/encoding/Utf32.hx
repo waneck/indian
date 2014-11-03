@@ -28,23 +28,21 @@ import indian.types.*;
 	{
 	}
 
-	override public function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
 		if (out == null) return byteLength;
-		maxByteLength -= 4;
 		var length = byteLength < maxByteLength ? byteLength : maxByteLength;
+		if (writtenOut != null) writtenOut.setInt32(0,length);
 		if (source == out || maxByteLength < 0)
 			return length;
 
 		Buffer.blit(source,srcoffset, out,outoffset, length);
-		out.setInt32(outoffset+length,0);
 		return length;
 	}
 
-	override public function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int):Int
+	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
 		if (out == null) return byteLength;
-		maxByteLength -= 4;
 		var lst = 0,
 				i = -4;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
@@ -58,8 +56,7 @@ import indian.types.*;
 				return true;
 			}
 		});
-		if (maxByteLength >= 0)
-			out.setInt32(i+outoffset,0);
+		if (writtenOut != null) writtenOut.setInt32(0,i);
 		return lst;
 	}
 
@@ -99,11 +96,11 @@ import indian.types.*;
 		return i;
 	}
 
-	override public function neededLength(string:String):Int
+	override public function neededLength(string:String, addTermination:Bool):Int
 	{
 		var len = string.length;
+		var i = 0;
 		pin(str = $ptr(string), {
-			var i = 0;
 #if !(cs || java || js) // UTF-8
 			Utf8.iter(str,0,len, function(cp,_) {
 				i++;
@@ -115,9 +112,10 @@ import indian.types.*;
 				return true;
 			});
 #end
-			return (i + 1) << 2;
 		});
-		throw 'assert';
+		if (addTermination)
+			i++;
+		return i << 2;
 	}
 
 	override public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int

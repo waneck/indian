@@ -20,14 +20,15 @@ import utest.Assert;
 		{
 			for (e1 in encodings)
 			{
-				var l1 = e1.neededLength(s);
+				var l1 = e1.neededLength(s, true);
 				autofree(
 					b1e1 = $alloc(l1),
 					b2e1 = $alloc(Std.int(l1/2)),
 					b3e1 = $alloc(l1*2),
+					b4e1 = $alloc(l1-1),
 				{
 					//test from string
-					e1.convertFromString(s,b1e1,l1);
+					e1.convertFromString(s,b1e1,l1,true);
 					switch(e1.name())
 					{
 						case 'UTF-8':
@@ -135,4 +136,5 @@ import utest.Assert;
 	//- string -> encoding and back. with same obj, exact length, less length and much more length
 	//- encoding -> encoding and back. same obj, exact length, less length and much more length
 	//- encoding -> utf32 and back. same obj, exact length, less length and much more length
+	//- length 0 objects
 }
