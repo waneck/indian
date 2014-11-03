@@ -3,9 +3,9 @@
 #--interp
 #-cpp bin/cpp
 #-neko bin/neko.n
--cs bin/cs
+#-cs bin/cs
 -debug
-#-java bin/java
+-java bin/java
 -D real_position
 -D unsafe
 #-D dump

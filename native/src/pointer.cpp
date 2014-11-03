@@ -1,5 +1,13 @@
 #include "common.h"
 
+/** `pinning` and address get **/
+value tau_strptr(value str)
+{
+	val_check(str,string);
+	return alloc_ptr(val_string(str));
+}
+DEFINE_PRIM(tau_strptr,1);
+
 /** pointer manipulation helpers **/
 
 value tau_memmove(value src_ptr, value src_pos, value dest_ptr, value dest_pos, value len)

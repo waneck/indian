@@ -76,7 +76,6 @@ import indian.Indian.*;
 		str2.add('b');
 		str2.add('c');
 		pin(p1 = $ptr(str), p2 = $ptr(str2.toString()), p3 = $ptr(arr1), p4 = $ptr(arr2), p5 = $ptr(big), {
-#if (cs || cpp)
 			Assert.equals('a'.code, p1.getUInt8(0));
 			Assert.equals('b'.code, p2.getUInt8(0));
 			for (i in 0...4)
@@ -103,8 +102,6 @@ import indian.Indian.*;
 			}
 			for (i in 0...1000)
 				Assert.equals(i, p5.getInt32(i*4-1));
-#else
-#end
 		});
 	}
 
