@@ -47,6 +47,29 @@ import utest.Assert;
 		}
 	}
 
+	public function test_very_simple()
+	{
+		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
+		var strings = [
+			'Hello, World',
+			'Just a normal ASCII string here!'
+		];
+		for (s in strings)
+		{
+			var len = s.length;
+			pin(str = $ptr(s), {
+				for (i in 0...s.length)
+				{
+#if (java || cs || js)
+					Assert.equals(s.charCodeAt(i), str.getUInt16(i<<1));
+#else
+					Assert.equals(s.charCodeAt(i), str.getUInt8(i));
+#end
+				}
+			});
+		}
+	}
+
 	// public function test_string()
 	// {
 	// 	var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];

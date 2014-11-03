@@ -218,10 +218,10 @@ class PinHelper
 			var unsafe = indian._impl.java.Unsafe.unsafe,
 					baseOffset = cur.baseOffset;
 			// var len = Std.int(Math.floor( (from.length - offset) / 4 ));
-			var len = Std.int(Math.ceil( (from.length - offset) / 2));
-			for (i in 0...len)
+			// var len = Std.int(Math.ceil( (from.length - offset) / 2));
+			for (i in offset...from.length)
 			{
-				to.setUInt16(i<<2,unsafe.getInt(from,baseOffset + (i<<2)));
+				to.setUInt16(i<<1,unsafe.getInt(from,baseOffset + (i<<1)));
 				// to.setInt64(i << 3, unsafe.getLong(from,baseOffset + i << 3));
 			}
 		} else {
