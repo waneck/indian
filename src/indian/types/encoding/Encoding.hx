@@ -80,7 +80,6 @@ import indian.Indian.*;
 			autofree(buf = $stackalloc(neededBuf), {
 				while(written < maxByteLength && consumedCodepoints < len)
 				{
-					trace(written,maxByteLength,consumedCodepoints,len);
 					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf);
 					consumed += c2;
 					consumedCodepoints += neededBuf >> 2;

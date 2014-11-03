@@ -147,4 +147,9 @@ import indian.types.*;
 	{
 		return "UTF-32";
 	}
+
+	override private function isUtf32():Bool
+	{
+		return true;
+	}
 }

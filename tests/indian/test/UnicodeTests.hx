@@ -52,7 +52,7 @@ import utest.Assert;
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
 		var strings = [
 			'Hello, World',
-			'Just a normal ASCII string here!'
+			'Just a normal ASCII string here!',
 			'Olá, Mundo',
 			'¡Hola mundo!',
 			'привет мир',

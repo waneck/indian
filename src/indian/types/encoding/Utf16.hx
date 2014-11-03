@@ -65,12 +65,10 @@ import indian.types.*;
 			if (byteLength >= 0 && j > byteLength)
 				break;
 			var cp = source.getInt32(srcoffset + (j<<2));
-			trace(cp,byteLength,j);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp < 0x10000)
 			{
-				trace(cp, (i+1) <<1, maxByteLength);
 				if ((i + 1) << 1 > maxByteLength)
 					break;
 				out.setUInt16(start + ((i++) << 1),cp);
@@ -107,8 +105,8 @@ import indian.types.*;
 				return true;
 			}
 		});
-		if (maxByteLength >= 0)
-			out.setInt32(((++i)<<2)+outoffset,0);
+		// if (maxByteLength >= 0)
+			// out.setInt32(((++i)<<2)+outoffset,0);
 		return lst;
 	}
 

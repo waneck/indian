@@ -129,8 +129,8 @@ import indian.Indian.*;
 				return true;
 			}
 		});
-		if (maxByteLength >= 0)
-			out.setInt32(((++i)<<2)+outoffset,0);
+		// if (maxByteLength >= 0)
+			// out.setInt32(((++i)<<2)+outoffset,0);
 		return lst;
 	}
 
