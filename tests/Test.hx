@@ -12,8 +12,6 @@ class Test
 
 	static function main()
 	{
-		var map = new Map();
-		map[10] = 10;
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.PointerTests());
@@ -26,7 +24,7 @@ class Test
 		runner.run();
 
 #if sys
-		// Sys.exit(report.allOk() ? 0 : 1);
+		Sys.exit(untyped report.result.stats.isOk ? 0 : 1);
 #end
 	}
 

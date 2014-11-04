@@ -53,7 +53,7 @@ import indian.types.*;
 		buf.setInt32(pos,0);
 	}
 
-	override private function terminationBytes():Int
+	override public function terminationBytes():Int
 	{
 		return 4;
 	}

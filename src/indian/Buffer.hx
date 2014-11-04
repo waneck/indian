@@ -31,9 +31,6 @@ import indian._impl.*;
 				dest = dest.t() + destPos;
 		var src64:Int64 = cast src,
 				dest64:Int64 = cast dest;
-		var src64_7:Int = cast (src64 & 7);
-		var dest64_7:Int = cast (dest64 & 7);
-		var llen = 8 - src64_7;
 		if (src64 < dest64 && (src64+len) > dest64)
 		{
 			//copy from the back - slow
@@ -41,16 +38,10 @@ import indian._impl.*;
 			{
 				dest[len] = src[len];
 			}
-		} else if (src64_7 == dest64_7 && len > llen) {
-			// optimized case when both are aligned the same way
-			for (i in 0...llen)
-			{
-				src[i] = dest[i];
-			}
-			len -= llen;
-
-			var lsrc:cs.Pointer<Int64> = cast (src + llen);
-			var ldest:cs.Pointer<Int64> = cast (dest + llen);
+		} else {
+			//copy using Int64's
+			var lsrc:cs.Pointer<Int64> = cast src;
+			var ldest:cs.Pointer<Int64> = cast dest;
 			var ilen = len >>> 3;
 			for (i in 0...ilen)
 			{
@@ -59,17 +50,11 @@ import indian._impl.*;
 			len -= ilen << 3;
 			if (len > 0)
 			{
-				src += llen + (ilen << 3);
-				dest += llen + (ilen << 3);
+				var offset = ilen << 3;
 				for (i in 0...len)
 				{
-					dest[i] = src[i];
+					dest[offset+i] = src[offset+i];
 				}
-			}
-		} else {
-			for (i in 0...len)
-			{
-				dest[i] = src[i];
 			}
 		}
 #else

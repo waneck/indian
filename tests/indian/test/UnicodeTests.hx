@@ -16,38 +16,42 @@ import utest.Assert;
 			'Hello, World',
 			'Just a normal ASCII string here!',
 			'We only\n\rtest\r\n ASCII strings here. Promise!',
-			''
+			'',
+			// 'Olá, Mundo',
 		];
 		for (s in strings)
 		{
-			trace(s.length);
 			for (e1 in encodings)
 			{
 				var l1 = e1.neededLength(s, true);
+				var l1by2 = e1.neededLength(s.substr(0,Std.int(s.length/2)),true);
 				autofree(
 					b1 = $alloc(l1),
-					b2 = $alloc(Std.int(l1/2)),
+					b2 = $alloc(l1by2),
 					b3 = $alloc(l1<<1),
 					b4 = $alloc(l1-1),
 				{
-					trace(e1,l1);
 					//test from string
 					for (i in 0...l1) b1.setUInt8(i,0xff);
 					e1.convertFromString(s,b1,l1,true);
 					checkEncodedString(e1, s,b1, s.length);
 					Assert.equals(0, b1.getUInt8(l1-1));
 
-					e1.convertFromString(s,b2,Std.int(l1/2),true);
-					checkEncodedString(e1,s,b2,Std.int(s.length/2)-1);
+					e1.convertFromString(s,b2,l1by2,true);
+					checkEncodedString(e1,s,b2,Std.int(s.length/2));
 					for (i in 0...(l1<<1)) b3.setUInt8(i,0xff);
 					e1.convertFromString(s,b3,l1<<1,true);
 					checkEncodedString(e1,s,b3,s.length);
-					Assert.equals(0, b3.getUInt8(l1-1));
-					Assert.equals(0xFF, b3.getUInt8(l1));
+					if (s.length > 0)
+					{
+						Assert.equals(0, b3.getUInt8(l1-1));
+						Assert.equals(0xFF, b3.getUInt8(l1));
+					}
 
 					e1.convertFromString(s,b4,l1-1,true);
 					checkEncodedString(e1, s,b4, s.length-1);
-					Assert.equals(0, b1.getUInt8(l1-1));
+					if (s.length > 0)
+						Assert.equals(0, b4.getUInt8(l1-e1.terminationBytes()-1));
 
 					for (i in 0...(l1-1)) b4.setUInt8(i,0xff);
 					e1.convertFromString(s,b4,l1-1,false);
@@ -67,27 +71,25 @@ import utest.Assert;
 						Assert.equals(s1,s2,msg,pos);
 					}
 
-					var s2 = e1.convertToString(b1,l1,true);
-					trace(s,s2);
-					trace(s == s2);
-					trace(s.length,s2.length);
+					var s2:String = null;
+					s2 = e1.convertToString(b1,l1,true);
 					strEq(s,s2);
-					s2 = e1.convertToString(b2,(l1>>1),true);
+					s2 = e1.convertToString(b2,l1by2,true);
 					var len = s.length>>1;
 					strEq(s.substr(0,len),s2);
 					s2 = e1.convertToString(b3,l1,true);
 					strEq(s,s2);
-					s2 = e1.convertToString(b4,l1-1,false);
+					s2 = e1.convertToString(b4,l1-e1.terminationBytes(),false);
 					strEq(s,s2);
 
 					//take off the termination bit
-					s2 = e1.convertToString(b1,l1-1,false);
+					s2 = e1.convertToString(b1,l1-e1.terminationBytes(),false);
 					strEq(s,s2);
-					s2 = e1.convertToString(b2,(l1>>1)-1,false);
-					strEq(s.substr(0,(s.length>>1)-1),s2);
-					s2 = e1.convertToString(b3,l1-1,false);
+					s2 = e1.convertToString(b2,l1by2-e1.terminationBytes(),false);
+					strEq(s.substr(0,(s.length>>1)),s2);
+					s2 = e1.convertToString(b3,l1-e1.terminationBytes(),false);
 					strEq(s,s2);
-					s2 = e1.convertToString(b4,l1-1,false);
+					s2 = e1.convertToString(b4,l1-e1.terminationBytes(),false);
 					strEq(s,s2);
 
 				});

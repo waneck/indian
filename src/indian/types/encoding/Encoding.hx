@@ -114,7 +114,7 @@ import indian.Indian.*;
 		throw "Not Implemented";
 	}
 
-	private function terminationBytes():Int
+	public function terminationBytes():Int
 	{
 		return throw "Not Implemented";
 	}
@@ -249,10 +249,7 @@ import indian.Indian.*;
 			while(consumed < len)
 			{
 				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf, writtenLoc);
-				trace(consumed,length,c2);
-				trace(consumed,len,writtenLoc.getInt32(0));
 
-				consumed += c2;
 				var written = writtenLoc.getInt32(0);
 				consumed += written;
 				for (i in 0...(written >> 2))

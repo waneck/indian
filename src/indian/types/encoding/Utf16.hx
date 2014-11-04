@@ -124,7 +124,7 @@ import indian.types.*;
 		buf.setUInt16(pos,0);
 	}
 
-	override private function terminationBytes():Int
+	override public function terminationBytes():Int
 	{
 		return 2;
 	}
