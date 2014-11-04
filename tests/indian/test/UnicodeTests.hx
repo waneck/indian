@@ -244,7 +244,7 @@ import utest.Assert;
 							e1.convertFromString(s,buf1,l1,true);
 							var s2 = e1.convertToString(buf1,l1,true);
 							trace(s.length,s2.length);
-							var msg = 's2: For glyph "$glyph" and length $len, the encoding $e1 have shown different contents: ${s.length} and ${s2.length}';
+							var msg = 's2: For glyph "$glyph" and length $len, the encoding $e1 has shown different contents: ${s.length} and ${s2.length}';
 							if (s != s2)
 							{
 								trace(s,s2);
@@ -252,13 +252,17 @@ import utest.Assert;
 							Assert.equals(s.length,s2.length,msg);
 							Assert.equals(s,s2,msg);
 							var pos = e1.convertToEncoding(buf1,l1, buf2,l2, e2);
-							trace(pos);
-							e2.addTermination(buf2,pos);
+							trace(pos,l2);
+							// e2.addTermination(buf2,pos);
 							var s3 = e2.convertToString(buf2,l2,true);
-							var msg = 's3: For glyph "$glyph" and length $len, the encoding $e2 have shown different contents: ${s2.length} and ${s3.length}';
+							var msg = 's3: For glyph "$glyph" and length $len, the encoding $e2 has shown different contents: ${s2.length} and ${s3.length}';
 							Assert.equals(s2.length,s3.length,msg);
 							Assert.equals(s2,s3,msg);
-							var msg = 's3: For glyph "$glyph" and length $len, the encoding $e2 have shown different contents: ${s.length} and ${s3.length}';
+							if (s2 != s3 || s2.length != s3.length)
+							{
+								trace(s,s2,s3);
+							}
+							var msg = 's3: For glyph "$glyph" and length $len, the encoding $e2 has shown different contents: ${s.length} and ${s3.length}';
 							Assert.equals(s.length,s3.length,msg);
 							Assert.equals(s,s3,msg);
 							var msg = 'glyph $glyph length $len e1 $e1 e2 $e2 count: ${e1.count(buf1,l1)},${e2.count(buf2,l2)}';

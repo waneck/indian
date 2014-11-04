@@ -56,7 +56,6 @@ import indian.Indian.*;
 			}
 			if (state == ACCEPT)
 			{
-				trace(codepoint);
 				var shouldContinue = iter(codepoint,srcptr);
 				if (!shouldContinue)
 					break;

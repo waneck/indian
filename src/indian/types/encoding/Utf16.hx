@@ -16,10 +16,11 @@ import indian.types.*;
 		while(true)
 		{
 			srcptr += 2;
+			// trace(srcptr,byteLength);
 			if (byteLength >= 0 && srcptr >= byteLength)
 				break;
 			var cp = source.getUInt16(offset+srcptr);
-			trace(cp);
+			// trace(cp);
 			if (cp == 0 && byteLength < 0)
 				break;
 
@@ -90,9 +91,9 @@ import indian.types.*;
 		var read = 0,
 				written = 0;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
-			trace(codepoint);
-			trace(StringTools.hex(codepoint));
 			var next = written + 4;
+			trace(codepoint,outMaxByteLength,next);
+			trace(StringTools.hex(codepoint));
 			if (outMaxByteLength - next < 0)
 			{
 				return false;
@@ -192,7 +193,7 @@ import indian.types.*;
 			var needed = 0;
 			Utf8.iter(str,0,len, function(cp,_) {
 				needed++;
-				if (cp >= 0xD800 && cp <= 0xDBFF)
+				if (cp > 0x10000 && cp <= 0x10FFFF)
 					needed++;
 				return true;
 			});
