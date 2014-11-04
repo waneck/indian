@@ -406,6 +406,8 @@ import indian._impl.*;
 		return indian._impl.neko.PointerHelper.getPointer(this,offset);
 #elseif cpp
 		return this.add(offset).reinterpret()[0];
+#elseif java
+		return cast this.getFloat64(offset);
 #else
 		// return this.getFloat64(offset);
 		//TODO
@@ -422,6 +424,8 @@ import indian._impl.*;
 #elseif cpp
 		var p:PointerType<PointerType<T>> = this.add(offset).reinterpret();
 		p[0] = pointer;
+#elseif java
+		this.setFloat64(offset, cast pointer);
 #else
 		// this.setFloat64(offset,val);
 		//TODO

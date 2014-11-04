@@ -394,43 +394,46 @@ import utest.Assert;
 
 	public function test_compare()
 	{
-		function getMem()
+		for (align in 0...3)
 		{
-			var mem = alloc(16);
-			for (i in 0...16)
-				mem.setUInt8(i,i+0x70);
-			return mem;
-		}
-
-		var src = getMem();
-		for (result in [-3,-2,-1,0,1,2,3])
-		{
-			for (i in 0...16)
+			function getMem()
 			{
-				var dest = getMem();
-				dest.setUInt8(i, dest.getUInt8(i) + result);
-				if (result < 0)
+				var mem = alloc(16 + align) + align;
+				for (i in 0...16)
+					mem.setUInt8(i,i+0x70);
+				return mem;
+			}
+
+			var src = getMem();
+			for (result in [-3,-2,-1,0,1,2,3])
+			{
+				for (i in 0...16)
 				{
-					Assert.isTrue(RawMem.compare(src,0,dest,0,16) > 0);
-					if (RawMem.compare(src,0,dest,0,16) <= 0)
-						trace(RawMem.compare(src,0,dest,0,16));
-					Assert.isTrue(RawMem.compare(dest,0,src,0,16) < 0);
-					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) < 0);
-					if (i > 0)
-						dest.setUInt8(i-1, dest.getUInt8(i) - result);
-					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) > 0);
-				} else if (result == 0) {
-					Assert.equals(RawMem.compare(src,0,dest,0,16), 0);
-					Assert.equals(RawMem.compare(dest,0,src,0,16), 0);
-				} else {
-					Assert.isTrue(RawMem.compare(src,0,dest,0,16) < 0);
-					Assert.isTrue(RawMem.compare(dest,0,src,0,16) > 0);
-					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) > 0);
-					if (i > 0)
-						dest.setUInt8(i-1, dest.getUInt8(i) - result);
-					Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) < 0);
+					var dest = getMem();
+					dest.setUInt8(i, dest.getUInt8(i) + result);
+					if (result < 0)
+					{
+						Assert.isTrue(RawMem.compare(src,0,dest,0,16) > 0);
+						if (RawMem.compare(src,0,dest,0,16) <= 0)
+							trace(RawMem.compare(src,0,dest,0,16));
+						Assert.isTrue(RawMem.compare(dest,0,src,0,16) < 0);
+						Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) < 0);
+						if (i > 0)
+							dest.setUInt8(i-1, dest.getUInt8(i) - result);
+						Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) > 0);
+					} else if (result == 0) {
+						Assert.equals(RawMem.compare(src,0,dest,0,16), 0);
+						Assert.equals(RawMem.compare(dest,0,src,0,16), 0);
+					} else {
+						Assert.isTrue(RawMem.compare(src,0,dest,0,16) < 0);
+						Assert.isTrue(RawMem.compare(dest,0,src,0,16) > 0);
+						Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) > 0);
+						if (i > 0)
+							dest.setUInt8(i-1, dest.getUInt8(i) - result);
+						Assert.isTrue(RawMem.compare(src,i,dest,i,16 - i) < 0);
+					}
+					free(dest - align);
 				}
-				free(dest);
 			}
 		}
 	}
