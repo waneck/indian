@@ -664,97 +664,97 @@ typedef Int64_t = #if cpp cpp.Int64 #else haxe.Int64 #end
 {
 	@:extern public static function ixor(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function compare(i:Int64_t, i2:Int64_t):Int
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function xor_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function ior(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function or_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function iand(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function and_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function shr(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function ushr(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function shl(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function mul(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function mul_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function div(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function div_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function mod(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function mod_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function add(i:Int64_t, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function add_i64(i:Int64_t, i2:Int64_t):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function make(i1:Int, i2:Int):Int64
 	{
-		return 1;
+		return cast 1;
 	}
 
 	@:extern public static function toStr(i:Int64_t):String

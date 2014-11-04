@@ -163,11 +163,26 @@ import utest.Assert;
 		}
 	}
 
-	// public function test_empty()
-	// {
-	// 	autofree(buf1 = $stackalloc(128), {
-	// 	});
-	// }
+	public function test_empty()
+	{
+		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
+		autofree(
+			buf1 = $stackalloc(128),
+			buf2 = $stackalloc(128),
+		{
+			var s = '';
+			for (enc in encodings)
+			{
+				buf1.set(0, 0xff, 128);
+				buf2.set(0, 0xff, 128);
+				enc.convertFromString(s,buf1,128,true);
+				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes(),128 - enc.terminationBytes()));
+				var s2 = enc.convertToString(buf1,-1,true);
+				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes(),128 - enc.terminationBytes()));
+				Assert.equals(s,s2);
+			}
+		});
+	}
 
 	public function test_string()
 	{

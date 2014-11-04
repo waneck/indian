@@ -207,6 +207,46 @@ import indian._impl.*;
 #end
 	}
 
+	/**
+		Simplified compare form. Calls internally `Buffer.compare`
+	**/
+	@:extern inline public function cmp(to:Buffer, len:Int):Int
+	{
+		return compare(cast this,0, to,0, len);
+	}
+
+	/**
+		Sets `num` bytes from `this` - starting from `offset` - to `value`
+	**/
+	@:unsafe public function set(offset:Int, value:Int, num:Int):Void
+	{
+		value = value & 0xff;
+		if (num < 16)
+		{
+			for (i in offset...(offset+num))
+			{
+				setUInt8(i,value);
+			}
+		} else {
+			var val:Int64 = cast (value | (value << 8));
+			val |= (val << 16);
+			val |= (val << 32);
+
+			var len = num >>> 3;
+			for (i in 0...len)
+			{
+				setInt64(i<<3, val);
+			}
+			var offset = len <<3;
+			num -= offset;
+			//epilogue
+			for (i in 0...num)
+			{
+				setUInt8(offset+i, value);
+			}
+		}
+	}
+
 #if !(neko || cpp)
 	@:unsafe
 #else

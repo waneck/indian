@@ -392,6 +392,21 @@ import utest.Assert;
 		free(vec3); free(vec4); free(vec5);
 	}
 
+	public function test_set()
+	{
+		var mem = alloc(256),
+				mem2 = alloc(256);
+		mem.set(0,0xff,256);
+		mem2.set(0,0xff,256);
+		Assert.isTrue(mem.cmp(mem2,256) == 0);
+		for (i in 0...(256 >> 2))
+		{
+			Assert.equals(-1, mem.getInt32(i<<2));
+		}
+		free(mem);
+		free(mem2);
+	}
+
 	public function test_compare()
 	{
 		for (align in 0...3)
