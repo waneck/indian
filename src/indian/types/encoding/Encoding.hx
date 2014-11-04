@@ -55,7 +55,7 @@ import indian.Indian.*;
 
 		@returns the amount of source bytes written and read in the operation
 	**/
-	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int):EncodingReturn
+	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int,hasMore:Bool):EncodingReturn
 	{
 #if assertations
 		if (byteLength > 0xFFFF || maxOutByteLength > 0xFFFF || maxOutByteLength < 0) throw 'assert: byteLength: $byteLength ; maxOutByteLength: $maxOutByteLength';
@@ -92,8 +92,11 @@ import indian.Indian.*;
 					if (er.isEmpty())
 						break;
 					trace(Utf32.cur.convertToString(buf, er.written, false));
-					read += er.read;
+					var er_read = er.read;
 					er = this.convertFromUtf32(buf,0,er.written, out,outoffset + written,maxOutByteLength - written);
+					// if (er.isEmpty() && hasMore)
+						// break;
+					read += er_read;
 					written += er.written;
 				}
 			});
@@ -117,11 +120,12 @@ import indian.Indian.*;
 				written = 0;
 		while( written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
 		{
+			var hasMore = false;
 			var srclen = byteLength - read;
-			if (srclen > 0xFFFF) srclen = 0xFFFF;
+			if (srclen > 0xFFFF) { srclen = 0xFFFF; hasMore = true; }
 			var outlen = maxOutByteLength - written;
-			if (outlen > 0xFFFF) outlen = 0xFFFF;
-			var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen);
+			if (outlen > 0xFFFF) { outlen = 0xFFFF; hasMore = true; }
+			var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen,hasMore);
 			if (er.isEmpty())
 				break;
 			read += er.read;
@@ -227,14 +231,15 @@ import indian.Indian.*;
 		pin(str = $ptr(string), {
 			while (written < maxOutByteLength && read < readLen)
 			{
+				var hasMore = false;
 				var curLen = readLen - read;
-				if (curLen > 0xFFFF) curLen = 0xFFFF;
+				if (curLen > 0xFFFF) { curLen = 0xFFFF; hasMore = true; }
 				var curOut = maxOutByteLength - written;
-				if (curOut > 0xFFFF) curOut = 0xFFFF;
+				if (curOut > 0xFFFF) { curOut = 0xFFFF; hasMore = true; }
 #if !(cs || java || js) // UTF-8
-				var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut);
+				var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut, hasMore);
 #else // UTF-16
-				var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut);
+				var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut, hasMore);
 #end
 				if (re.isEmpty())
 					break;
@@ -334,7 +339,11 @@ abstract EncodingReturn(Int)
 	@:extern inline public function new(read,written,?pos:haxe.PosInfos)
 	{
 #if assertations
-		if (written > MAX_VALUE || read > MAX_VALUE) throw 'assert: $written/$read';
+		if (written > MAX_VALUE || read > MAX_VALUE)
+		{
+			haxe.Log.trace('throwing error. read: $read, written: $written',pos);
+			throw 'assert: $written/$read';
+		}
 		haxe.Log.trace('read: $read, written: $written',pos);
 #end
 		this = ((written & 0xFFFF) << 16) | (read & 0xFFFF);
