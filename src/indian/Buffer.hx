@@ -151,119 +151,59 @@ import indian._impl.*;
 #elseif (neko && !macro && !interp)
 		return indian._impl.neko.PointerHelper.memcmp(ptr1,ptr1pos,ptr2,ptr2pos,len);
 #elseif java
-		var ptr1 = ptr1.t().addr() + ptr1pos,
-				ptr2 = ptr2.t().addr() + ptr2pos;
-		var ptr1_7:Int = cast (ptr1 & 7);
-		var ptr2_7:Int = cast (ptr2 & 7);
-		var llen = 8 - ptr1_7;
-		if (ptr1_7 == ptr2_7 && len > llen)
+		ptr1 = ptr1 + ptr1pos;
+		ptr2 = ptr2 + ptr2pos;
+		var llen = len >>> 3;
+		for (i in 0...llen)
 		{
-			for (i in 0...llen)
+			var v1 = ptr1.getInt64(i<<3),
+					v2 = ptr2.getInt64(i<<3);
+			if (v1 != v2)
 			{
-				var v = indian._impl.java.Pointer.getUInt8(ptr1, i) - indian._impl.java.Pointer.getUInt8(ptr2, i);
-				if (v != 0)
-					return v;
-			}
-			len -= llen;
-			ptr1 = ptr1 + llen;
-			ptr2 = ptr2 + llen;
-
-			llen = len >>> 3;
-			for (i in 0...llen)
-			{
-				var v1 = indian._impl.java.Pointer.getInt64(ptr1, i<<3),
-						v2 = indian._impl.java.Pointer.getInt64(ptr2, i<<3);
-				if (v1 != v2)
+				for (j in 0...4)
 				{
-					for (j in 0...8)
-					{
-						var v = indian._impl.java.Pointer.getUInt8(ptr1, (i<<3) + j) - indian._impl.java.Pointer.getUInt8(ptr2, (i<<3) + j);
-						if (v != 0) return v;
-					}
+					var v = ptr1.getUInt16( (i<<3) + (j << 1) ) - ptr2.getUInt16( (i<<3) + (j << 1) );
+					if (v != 0) return v;
 				}
 			}
-			len -= llen << 3;
-			if (len > 0)
+		}
+		len -= llen << 3;
+		if (len > 0)
+		{
+			var offset = llen << 3;
+			for (j in 0...len)
 			{
-				ptr1 += llen * 8;
-				ptr2 += llen * 8;
-				for (i in 0...len)
-				{
-					var v = indian._impl.java.Pointer.getUInt8(ptr1, i) - indian._impl.java.Pointer.getUInt8(ptr2, i);
-					if (v != 0)
-						return v;
-				}
+				var v = ptr1.getUInt8( offset + j ) - ptr2.getUInt8( offset + j );
+				if (v != 0) return v;
 			}
-
-			return 0;
-		} else {
-			for (i in 0...len)
-			{
-				var v = indian._impl.java.Pointer.getUInt8(ptr1, i) - indian._impl.java.Pointer.getUInt8(ptr2, i);
-				if (v != 0)
-					return v;
-			}
-
-			return 0;
 		}
 
+		return 0;
 #elseif cs
-		var ptr1 = ptr1.t() + ptr1pos,
-				ptr2 = ptr2.t() + ptr2pos;
-		var ptr164:Int64 = cast ptr1,
-				ptr264:Int64 = cast ptr2;
-		var ptr164_7:Int = cast (ptr164 & 7);
-		var ptr264_7:Int = cast (ptr264 & 7);
-		var llen = 8 - ptr164_7;
-		if (ptr164_7 == ptr264_7 && len > llen)
+		ptr1 = ptr1 + ptr1pos;
+		ptr2 = ptr2 + ptr2pos;
+		var llen = len >>> 3;
+		for (i in 0...llen)
 		{
-			// optimized case when both are aligned the same way
-			for (i in 0...llen)
+			var v1:cs.StdTypes.UInt64 = cast ptr1.getInt64(i<<3),
+					v2:cs.StdTypes.UInt64 = cast ptr2.getInt64(i<<3);
+			if (v1 != v2)
 			{
-				var v = cast(ptr1[i], Int) - cast(ptr2[i],Int);
-				if (v != 0)
-					return v;
+				return v1 < v2 ? -1 : 1;
 			}
-			len -= llen;
-
-			var lptr1:cs.Pointer<cs.StdTypes.UInt64> = cast (ptr1 + llen);
-			var lptr2:cs.Pointer<cs.StdTypes.UInt64> = cast (ptr2 + llen);
-			var ilen = len >>> 3;
-			for (i in 0...ilen)
-			{
-				var v1 = lptr1[i],
-						v2 = lptr2[i];
-				if (v1 != v2)
-				{
-					if (v1 < v2)
-						return -1;
-					else
-						return 1;
-				}
-			}
-			len -= ilen << 3;
-			if (len > 0)
-			{
-				ptr1 += llen + (ilen << 3);
-				ptr2 += llen + (ilen << 3);
-				for (i in 0...len)
-				{
-					var v = cast(ptr1[i],Int) - cast(ptr2[i],Int);
-					if (v != 0)
-						return v;
-				}
-			}
-
-			return 0;
-		} else {
-			for (i in 0...len)
-			{
-				var v = cast(ptr1[i],Int) - cast(ptr2[i],Int);
-				if (v != 0)
-					return v;
-			}
-			return 0;
 		}
+		len -= llen << 3;
+		if (len > 0)
+		{
+			var offset = llen << 3;
+			for (j in 0...len)
+			{
+				var v = ptr1.getUInt8( offset + j ) - ptr2.getUInt8( offset + j );
+				if (v != 0) return v;
+			}
+		}
+
+		return 0;
 #end
 	}
 
@@ -380,7 +320,7 @@ import indian._impl.*;
 		var p:PointerType<Int64> = this.add(offset).reinterpret();
 		return p[0];
 #elseif java
-		return this.getInt32(offset);
+		return this.getInt64(offset);
 #else
 		//TODO
 #end
@@ -395,6 +335,8 @@ import indian._impl.*;
 #elseif cpp
 		var p:PointerType<Int64> = this.add(offset).reinterpret();
 		p[0] = val;
+#elseif java
+		this.setInt64(offset,val);
 #else
 		this.setInt64(offset,val);
 #end

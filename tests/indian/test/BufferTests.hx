@@ -398,7 +398,7 @@ import utest.Assert;
 		{
 			var mem = alloc(16);
 			for (i in 0...16)
-				mem.setUInt8(i,i+100);
+				mem.setUInt8(i,i+0x70);
 			return mem;
 		}
 
@@ -412,6 +412,8 @@ import utest.Assert;
 				if (result < 0)
 				{
 					Assert.isTrue(RawMem.compare(src,0,dest,0,16) > 0);
+					if (RawMem.compare(src,0,dest,0,16) <= 0)
+						trace(RawMem.compare(src,0,dest,0,16));
 					Assert.isTrue(RawMem.compare(dest,0,src,0,16) < 0);
 					Assert.isTrue(RawMem.compare(dest,0,src,0,i+1) < 0);
 					if (i > 0)

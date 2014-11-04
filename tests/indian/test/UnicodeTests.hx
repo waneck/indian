@@ -163,6 +163,12 @@ import utest.Assert;
 		}
 	}
 
+	// public function test_empty()
+	// {
+	// 	autofree(buf1 = $stackalloc(128), {
+	// 	});
+	// }
+
 	public function test_string()
 	{
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
@@ -185,6 +191,7 @@ import utest.Assert;
 			'Hello world, Καλημέρα κ\nόσμε, コンニチハ', //more hello worlds
 			''
 		];
+		var utf32 = Utf32.cur;
 		for (s in strings)
 		{
 			for (e1 in encodings)
@@ -192,14 +199,22 @@ import utest.Assert;
 				for (e2 in encodings)
 				{
 					var l1 = e1.neededLength(s,true),
-							l2 = e2.neededLength(s,true);
+							l2 = e2.neededLength(s,true),
+							l3 = utf32.neededLength(s,true);
 					autofree(
-						buf = $alloc(l1),
+						buf1 = $alloc(l1),
+						buf2 = $alloc(l2),
+						buf_u32_1 = $alloc(l3),
+						buf_u32_2 = $alloc(l3),
+						out = $stackalloc(4),
 					{
 						// test back and forth
-						e1.convertFromString(s,buf,l1,true);
-						var s2 = e1.convertToString(buf,l1,true);
+						e1.convertFromString(s,buf1,l1,true);
+						var s2 = e1.convertToString(buf1,l1,true);
 						Assert.equals(s,s2);
+						e1.convertToEncoding(buf1,l1, buf2,l2, e2, out);
+						var s3 = e2.convertToString(buf2,l2,true);
+						Assert.equals(s,s3);
 						// trace(e1,l1);
 						// trace(s.length,s2.length);
 						// trace(s,s2,s == s2);
