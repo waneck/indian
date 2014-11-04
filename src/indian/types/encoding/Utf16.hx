@@ -160,10 +160,10 @@ import indian.types.*;
 	}
 
 #if (cs || java || js)
-	override public function convertToString(buf:indian.Buffer, length:Int):String
+	override public function convertToString(buf:indian.Buffer, length:Int, hasTermination:Bool):String
 	{
-		if (hasTermination(buf,length))
-			length -= this.terminationBytes();
+		if (hasTermination) length -= 2;
+		if (length <= 0) return '';
 		// direct copy
 		var ret = new StringBuf();
 		var i = -2;

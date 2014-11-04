@@ -191,6 +191,16 @@ import indian.Indian.*;
 				termBytes = terminationBytes();
 
 		if (reserveTermination) maxByteLength -= termBytes;
+		if (maxByteLength <= 0)
+		{
+			if (maxByteLength == 0 && origMaxByte > 0)
+			{
+				this.addTermination(out,0);
+				return termBytes;
+			} else {
+				return 0;
+			}
+		}
 		var writtenLoc = addr(writtenLoc);
 		pin(str = $ptr(string), {
 			var wasNull = writtenLoc == null;
@@ -213,20 +223,22 @@ import indian.Indian.*;
 	/**
 		Converts `buf`, with byte length `length` into a String enconded on the native target enconding.
 		If `length` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
+		If `hasTermination` is true, the termination bytes will be discounted from the total length
 	**/
-	public function convertToString(buf:indian.Buffer, length:Int):String
+	public function convertToString(buf:indian.Buffer, length:Int, hasTermination:Bool):String
 	{
-		if (length >= 0 && hasTermination(buf,length))
+		if (length > 0 && hasTermination)
 			length -= this.terminationBytes();
+		if (length <= 0)
+			return '';
 
 		var ret = new StringBuf();
 		// first convert into
-		var len = (this.count(buf,length) + 1) << 2;
+		var len = (this.count(buf,length)) << 2;
 		var neededBuf = len;
 		if (neededBuf > 256)
 			neededBuf = 256;
-		var consumedCodepoints = 0,
-				consumed = 0;
+		var consumed = 0;
 		var writtenLoc = 0;
 		autofree(tmp = $stackalloc(neededBuf),  {
 			var writtenLoc = addr(writtenLoc);
@@ -234,13 +246,16 @@ import indian.Indian.*;
 			if (wasNull)
 				writtenLoc = alloc(4);
 
-			while(consumedCodepoints < len)
+			while(consumed < len)
 			{
 				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf, writtenLoc);
+				trace(consumed,length,c2);
+				trace(consumed,len,writtenLoc.getInt32(0));
+
 				consumed += c2;
-				var written = writtenLoc.getInt32(0) >> 2;
-				consumedCodepoints += written;
-				for (i in 0...written)
+				var written = writtenLoc.getInt32(0);
+				consumed += written;
+				for (i in 0...(written >> 2))
 				{
 					var cp = tmp.getInt32(i<<2);
 #if !(cs || java || js) // UTF-8

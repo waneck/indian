@@ -7,29 +7,13 @@ import indian.types.*;
 	public static var cur(default,null) = new Utf32();
 	static inline var replacementChar = 0xFFFD;
 
-	@:extern inline public static function iter(source:indian.Buffer,offset:Int,byteLength:Int, iter:Int->Int->Bool):Void
-	{
-		var len = byteLength,
-				i = -4;
-		while(true)
-		{
-			i += 4;
-			if (byteLength >= 0 && i >= len)
-				break;
-			var cp = source.getUInt16(offset+i);
-			if (byteLength < 0 && cp == 0)
-				break;
-			if (!iter(cp,i))
-				break;
-		}
-	}
-
 	public function new()
 	{
 	}
 
 	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
+		if (byteLength < 0) byteLength = getByteLength(source);
 		if (out == null) return byteLength;
 		var length = byteLength < maxByteLength ? byteLength : maxByteLength;
 		if (writtenOut != null) writtenOut.setInt32(0,length);
@@ -42,22 +26,15 @@ import indian.types.*;
 
 	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
+		if (byteLength < 0) byteLength = getByteLength(source);
 		if (out == null) return byteLength;
-		var lst = 0,
-				i = -4;
-		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
-			i += 4;
-			if (maxByteLength - i < 0)
-			{
-				return false;
-			} else {
-				lst = curByte;
-				out.setInt32(i + outoffset,codepoint);
-				return true;
-			}
-		});
-		if (writtenOut != null) writtenOut.setInt32(0,i);
-		return lst;
+		var length = byteLength < maxByteLength ? byteLength : maxByteLength;
+		if (writtenOut != null) writtenOut.setInt32(0,length);
+		if (source == out || maxByteLength < 0)
+			return length;
+
+		Buffer.blit(source,srcoffset, out,outoffset, length);
+		return length;
 	}
 
 	override private function getByteLength(buf:Buffer):Int
@@ -88,12 +65,7 @@ import indian.types.*;
 
 	override public function count(buf:Buffer, byteLength:Int):Int
 	{
-		var i = 0;
-		iter(buf,0,byteLength, function(_,_) {
-			i++;
-			return true;
-		});
-		return i;
+		return byteLength >> 2;
 	}
 
 	override public function neededLength(string:String, addTermination:Bool):Int
@@ -120,25 +92,11 @@ import indian.types.*;
 
 	override public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
 	{
-		if (byteLength >= 0)
-		{
-			var ret = pos << 2;
-			if (ret > byteLength)
-				ret = byteLength;
-			return ret;
-		}
-
-		var byte = -1;
-		iter(buf,0,byteLength, function(_,b) {
-			byte = b;
-			if (--pos <= 0)
-			{
-				return false;
-			} else {
-				return true;
-			}
-		});
-		return byte;
+		if (byteLength < 0) byteLength = getByteLength(buf);
+		var ret = pos << 2;
+		if (ret > byteLength)
+			ret = byteLength;
+		return ret;
 	}
 
 	override public function name():String

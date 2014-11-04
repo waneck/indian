@@ -44,6 +44,53 @@ import utest.Assert;
 					checkEncodedString(e1,s,b3,s.length);
 					Assert.equals(0, b3.getUInt8(l1-1));
 					Assert.equals(0xFF, b3.getUInt8(l1));
+
+					e1.convertFromString(s,b4,l1-1,true);
+					checkEncodedString(e1, s,b4, s.length-1);
+					Assert.equals(0, b1.getUInt8(l1-1));
+
+					for (i in 0...(l1-1)) b4.setUInt8(i,0xff);
+					e1.convertFromString(s,b4,l1-1,false);
+					checkEncodedString(e1, s,b4, s.length);
+
+					for (i in 0...l1) b1.setUInt8(i,0xff);
+					e1.convertFromString(s,b1,l1-1,false);
+					checkEncodedString(e1, s,b1, s.length);
+					Assert.equals(0xFF, b1.getUInt8(l1-1)); //no terminator
+
+					e1.convertFromString(s,b1,l1,true); //add terminator again
+
+					//round trip
+					inline function strEq(s1:String, s2:String, ?pos:haxe.PosInfos)
+					{
+						var msg = 'For $e1, expected "$s1" (${s1.length}), but got "$s2" (${s2.length})';
+						Assert.equals(s1,s2,msg,pos);
+					}
+
+					var s2 = e1.convertToString(b1,l1,true);
+					trace(s,s2);
+					trace(s == s2);
+					trace(s.length,s2.length);
+					strEq(s,s2);
+					s2 = e1.convertToString(b2,(l1>>1),true);
+					var len = s.length>>1;
+					if (len > 0) len--;
+					strEq(s.substr(0,len),s2);
+					s2 = e1.convertToString(b3,l1,true);
+					strEq(s,s2);
+					s2 = e1.convertToString(b4,l1-1,false);
+					strEq(s,s2);
+
+					//take off the termination bit
+					s2 = e1.convertToString(b1,l1-1,false);
+					strEq(s,s2);
+					s2 = e1.convertToString(b2,(l1>>1)-1,false);
+					strEq(s.substr(0,(s.length>>1)-1),s2);
+					s2 = e1.convertToString(b3,l1-1,false);
+					strEq(s,s2);
+					s2 = e1.convertToString(b4,l1-1,false);
+					strEq(s,s2);
+
 				});
 			}
 		}

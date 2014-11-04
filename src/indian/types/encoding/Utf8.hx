@@ -186,17 +186,17 @@ import indian.Indian.*;
 	}
 
 #if !(cs || java || js)
-	override public function convertToString(buf:indian.Buffer, length:Int):String
+	override public function convertToString(buf:indian.Buffer, length:Int, hasTermination:Bool):String
 	{
-		if (hasTermination(buf,length))
-			length -= this.terminationBytes();
+		if (hasTermination) length -= 1;
+		if (length <= 0) return '';
 		// direct copy
 		var ret = new StringBuf();
 		var i = -1;
 		while(true)
 		{
 			++i;
-			if (length >= 0 && i > length)
+			if (length >= 0 && i >= length)
 				break;
 			var chr = buf.getUInt8(i);
 			if (length < 0 && chr == 0)
