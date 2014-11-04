@@ -7,6 +7,8 @@ import indian.Indian.*;
 **/
 @:unsafe @:dce class Encoding
 {
+	public var terminationBytes(default,null):Int;
+
 	/**
 		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
 		The conversion will not exceed the length defined by `maxByteLength`.
@@ -60,7 +62,7 @@ import indian.Indian.*;
 				if (maxByteLength < outlen)
 					outlen = maxByteLength;
 				Buffer.blit(source,0, out,0, outlen);
-				if (outlen <= (maxByteLength - terminationBytes()))
+				if (outlen <= (maxByteLength - terminationBytes))
 					this.addTermination(out,outlen);
 				if (writtenOut != null)
 					writtenOut.setInt32(0,outlen);
@@ -96,7 +98,7 @@ import indian.Indian.*;
 				if (needsAlloc) free(writtenLoc);
 			});
 			if (writtenOut != null) writtenOut.setInt32(0,written);
-			if (written <= (maxByteLength - terminationBytes())) this.addTermination(out,written);
+			if (written <= (maxByteLength - terminationBytes)) this.addTermination(out,written);
 			return consumed;
 		}
 	}
@@ -112,11 +114,6 @@ import indian.Indian.*;
 	private function addTermination(buf:Buffer, pos:Int):Void
 	{
 		throw "Not Implemented";
-	}
-
-	public function terminationBytes():Int
-	{
-		return throw "Not Implemented";
 	}
 
 	private function hasTermination(buf:Buffer, pos:Int):Bool
@@ -188,7 +185,7 @@ import indian.Indian.*;
 		var len = string.length;
 		var writtenLoc = 0;
 		var origMaxByte = maxByteLength,
-				termBytes = terminationBytes();
+				termBytes = terminationBytes;
 
 		if (reserveTermination) maxByteLength -= termBytes;
 		if (maxByteLength <= 0)
@@ -228,7 +225,7 @@ import indian.Indian.*;
 	public function convertToString(buf:indian.Buffer, length:Int, hasTermination:Bool):String
 	{
 		if (length > 0 && hasTermination)
-			length -= this.terminationBytes();
+			length -= this.terminationBytes;
 		if (length <= 0)
 			return '';
 

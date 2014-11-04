@@ -65,6 +65,7 @@ import indian.Indian.*;
 
 	public function new()
 	{
+		this.terminationBytes = 1;
 	}
 
 	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
@@ -148,11 +149,6 @@ import indian.Indian.*;
 	override private function addTermination(buf:Buffer, pos:Int):Void
 	{
 		buf.setUInt8(pos,0);
-	}
-
-	override public function terminationBytes():Int
-	{
-		return 1;
 	}
 
 	override private function hasTermination(buf:Buffer, pos:Int):Bool

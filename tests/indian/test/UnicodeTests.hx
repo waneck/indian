@@ -50,7 +50,7 @@ import utest.Assert;
 					e1.convertFromString(s,b4,l1-1,true);
 					checkEncodedString(e1, s,b4, s.length-1);
 					if (s.length > 0)
-						Assert.equals(0, b4.getUInt8(l1-e1.terminationBytes()-1));
+						Assert.equals(0, b4.getUInt8(l1-e1.terminationBytes-1));
 
 					for (i in 0...(l1-1)) b4.setUInt8(i,0xff);
 					e1.convertFromString(s,b4,l1-1,false);
@@ -78,17 +78,17 @@ import utest.Assert;
 					strEq(s.substr(0,len),s2);
 					s2 = e1.convertToString(b3,l1,true);
 					strEq(s,s2);
-					s2 = e1.convertToString(b4,l1-e1.terminationBytes(),false);
+					s2 = e1.convertToString(b4,l1-e1.terminationBytes,false);
 					strEq(s,s2);
 
 					//take off the termination bit
-					s2 = e1.convertToString(b1,l1-e1.terminationBytes(),false);
+					s2 = e1.convertToString(b1,l1-e1.terminationBytes,false);
 					strEq(s,s2);
-					s2 = e1.convertToString(b2,l1by2-e1.terminationBytes(),false);
+					s2 = e1.convertToString(b2,l1by2-e1.terminationBytes,false);
 					strEq(s.substr(0,(s.length>>1)),s2);
-					s2 = e1.convertToString(b3,l1-e1.terminationBytes(),false);
+					s2 = e1.convertToString(b3,l1-e1.terminationBytes,false);
 					strEq(s,s2);
-					s2 = e1.convertToString(b4,l1-e1.terminationBytes(),false);
+					s2 = e1.convertToString(b4,l1-e1.terminationBytes,false);
 					strEq(s,s2);
 
 				});
@@ -176,9 +176,9 @@ import utest.Assert;
 				buf1.set(0, 0xff, 128);
 				buf2.set(0, 0xff, 128);
 				enc.convertFromString(s,buf1,128,true);
-				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes(),128 - enc.terminationBytes()));
+				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes,128 - enc.terminationBytes));
 				var s2 = enc.convertToString(buf1,-1,true);
-				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes(),128 - enc.terminationBytes()));
+				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes,128 - enc.terminationBytes));
 				Assert.equals(s,s2);
 			}
 		});
@@ -230,10 +230,8 @@ import utest.Assert;
 						e1.convertToEncoding(buf1,l1, buf2,l2, e2, out);
 						var s3 = e2.convertToString(buf2,l2,true);
 						Assert.equals(s,s3);
-						// trace(e1,l1);
-						// trace(s.length,s2.length);
-						// trace(s,s2,s == s2);
-						// Assert.equals(l1,r);
+
+
 					});
 				}
 			}
