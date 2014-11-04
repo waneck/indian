@@ -56,6 +56,7 @@ import indian.Indian.*;
 			}
 			if (state == ACCEPT)
 			{
+				trace(codepoint);
 				var shouldContinue = iter(codepoint,srcptr);
 				if (!shouldContinue)
 					break;
@@ -144,12 +145,12 @@ import indian.Indian.*;
 		while(true)
 		{
 			if (buf.getUInt8(++i) == 0)
-				return i - 1;
+				return i;
 		}
 		return -1;
 	}
 
-	override private function addTermination(buf:Buffer, pos:Int):Void
+	override public function addTermination(buf:Buffer, pos:Int):Void
 	{
 		buf.setUInt8(pos,0);
 	}

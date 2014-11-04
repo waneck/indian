@@ -42,7 +42,7 @@ import indian.Indian.*;
 		return throw "Not Implemented";
 	}
 
-	private function addTermination(buf:Buffer, pos:Int):Void
+	public function addTermination(buf:Buffer, pos:Int):Void
 	{
 		throw "Not Implemented";
 	}
@@ -83,12 +83,15 @@ import indian.Indian.*;
 					read = 0;
 			var neededBuf = byteLength << 2;
 			if (neededBuf > 256) neededBuf = 256;
+			var j = 0;
 			autofree(buf = $stackalloc(neededBuf), {
 				while(written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
 				{
+					trace(written,maxOutByteLength, read,byteLength, j++);
 					var er = sourceEncoding.convertToUtf32(source,srcoffset+read,byteLength - read, buf,0,neededBuf);
 					if (er.isEmpty())
 						break;
+					trace(Utf32.cur.convertToString(buf, er.written, false));
 					read += er.read;
 					er = this.convertFromUtf32(buf,0,er.written, out,outoffset + written,maxOutByteLength - written);
 					written += er.written;

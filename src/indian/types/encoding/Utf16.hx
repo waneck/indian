@@ -19,6 +19,7 @@ import indian.types.*;
 			if (byteLength >= 0 && srcptr >= byteLength)
 				break;
 			var cp = source.getUInt16(offset+srcptr);
+			trace(cp);
 			if (cp == 0 && byteLength < 0)
 				break;
 
@@ -27,7 +28,7 @@ import indian.types.*;
 				surrogate = false;
 				if (cp >= 0xDC00 && cp <= 0xDFFF)
 				{
-					codepoint = (codepoint << 10) | (cp - 0x35FDC00);
+					codepoint = (codepoint << 10) + (cp - 0x35FDC00);
 				} else {
 					codepoint = replacementChar;
 					srcptr -= 2;
@@ -89,6 +90,8 @@ import indian.types.*;
 		var read = 0,
 				written = 0;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
+			trace(codepoint);
+			trace(StringTools.hex(codepoint));
 			var next = written + 4;
 			if (outMaxByteLength - next < 0)
 			{
@@ -109,12 +112,12 @@ import indian.types.*;
 		while(true)
 		{
 			if (buf.getUInt16( (i += 2)) == 0)
-				return i - 2;
+				return i;
 		}
 		return -1;
 	}
 
-	override private function addTermination(buf:Buffer, pos:Int):Void
+	override public function addTermination(buf:Buffer, pos:Int):Void
 	{
 		buf.setUInt16(pos,0);
 	}

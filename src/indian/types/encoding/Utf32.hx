@@ -51,18 +51,19 @@ import indian.types.*;
 		while(true)
 		{
 			if (buf.getInt32( (i += 4)) == 0)
-				return i - 4;
+				return i;
 		}
 		return -1;
 	}
 
-	override private function addTermination(buf:Buffer, pos:Int):Void
+	override public function addTermination(buf:Buffer, pos:Int):Void
 	{
 		buf.setInt32(pos,0);
 	}
 
 	override public function count(buf:Buffer, byteLength:Int):Int
 	{
+		if (byteLength < 0) byteLength = getByteLength(buf);
 		return byteLength >> 2;
 	}
 
