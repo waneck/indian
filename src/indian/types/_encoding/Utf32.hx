@@ -1,5 +1,4 @@
 package indian.types.encoding;
-import indian.types.encoding.Encoding;
 import indian.Indian.*;
 import indian.types.*;
 
@@ -15,34 +14,30 @@ import indian.types.*;
 		this.name = "UTF-32";
 	}
 
-	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,outMaxByteLength:Int):EncodingReturn
+	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		if (byteLength < 0)
-			byteLength = getByteLength(source);
-		var length = byteLength < outMaxByteLength ? byteLength : outMaxByteLength;
-
-		if (length <= 0)
-			return new EncodingReturn(0,0);
-		if (source == out)
-			return new EncodingReturn(length,length);
+		if (byteLength < 0) byteLength = getByteLength(source);
+		if (out == null) return byteLength;
+		var length = byteLength < maxByteLength ? byteLength : maxByteLength;
+		if (writtenOut != null) writtenOut.setInt32(0,length);
+		if (source == out || maxByteLength < 0)
+			return length;
 
 		Buffer.blit(source,srcoffset, out,outoffset, length);
-		return new EncodingReturn(length,length);
+		return length;
 	}
 
-	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,outMaxByteLength:Int):EncodingReturn
+	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		if (byteLength < 0)
-			byteLength = getByteLength(source);
-
-		var length = byteLength < outMaxByteLength ? byteLength : outMaxByteLength;
-		if (length <= 0)
-			return new EncodingReturn(0,0);
-		if (source == out)
-			return new EncodingReturn(length,length);
+		if (byteLength < 0) byteLength = getByteLength(source);
+		if (out == null) return byteLength;
+		var length = byteLength < maxByteLength ? byteLength : maxByteLength;
+		if (writtenOut != null) writtenOut.setInt32(0,length);
+		if (source == out || maxByteLength < 0)
+			return length;
 
 		Buffer.blit(source,srcoffset, out,outoffset, length);
-		return new EncodingReturn(length,length);
+		return length;
 	}
 
 	override private function getByteLength(buf:Buffer):Int
@@ -51,7 +46,7 @@ import indian.types.*;
 		while(true)
 		{
 			if (buf.getInt32( (i += 4)) == 0)
-				return i - 4;
+				return i;
 		}
 		return -1;
 	}
@@ -59,6 +54,11 @@ import indian.types.*;
 	override private function addTermination(buf:Buffer, pos:Int):Void
 	{
 		buf.setInt32(pos,0);
+	}
+
+	override private function hasTermination(buf:Buffer, pos:Int):Bool
+	{
+		return buf.getInt32(pos-4) == 0;
 	}
 
 	override public function count(buf:Buffer, byteLength:Int):Int
@@ -69,30 +69,28 @@ import indian.types.*;
 	override public function neededLength(string:String, addTermination:Bool):Int
 	{
 		var len = string.length;
-		var needed = 0;
+		var i = 0;
 		pin(str = $ptr(string), {
 #if !(cs || java || js) // UTF-8
 			Utf8.iter(str,0,len, function(cp,_) {
-				needed++;
+				i++;
 				return true;
 			});
 #else // UTF-16
 			Utf16.iter(str,0,len << 1, function(cp,_) {
-				needed++;
+				i++;
 				return true;
 			});
 #end
 		});
 		if (addTermination)
-			needed++;
-		return needed << 2;
+			i++;
+		return i << 2;
 	}
 
 	override public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
 	{
-		if (byteLength < 0)
-			byteLength = getByteLength(buf);
-
+		if (byteLength < 0) byteLength = getByteLength(buf);
 		var ret = pos << 2;
 		if (ret > byteLength)
 			ret = byteLength;
@@ -100,4 +98,3 @@ import indian.types.*;
 	}
 
 }
-

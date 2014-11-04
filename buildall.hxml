@@ -3,6 +3,7 @@
 -main Test
 -lib utest
 -lib indian
+-D assertations
 #-debug
 --each
 --next

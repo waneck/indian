@@ -1,5 +1,4 @@
 package indian.types.encoding;
-import indian.types.encoding.Encoding;
 import indian.types.*;
 import indian.Indian.*;
 
@@ -34,14 +33,15 @@ import indian.Indian.*;
 		var state = 0,
 				codepoint = 0;
 		var utf8d = utf8d;
-		var srcptr = -1;
+		var len = byteLength,
+				i = -1;
 		while(true)
 		{
-			++srcptr;
-			if (byteLength >= 0 && srcptr >= byteLength)
+			++i;
+			if (byteLength >= 0 && i >= len)
 				break;
-			var byte = source.getUInt8(offset+srcptr);
-			if (byte == 0 && byteLength < 0)
+			var byte = source.getUInt8(offset+i);
+			if (byteLength < 0 && byte == 0)
 				break;
 
 			var type = utf8d[byte];
@@ -56,7 +56,7 @@ import indian.Indian.*;
 			}
 			if (state == ACCEPT)
 			{
-				var shouldContinue = iter(codepoint,srcptr);
+				var shouldContinue = iter(codepoint,i);
 				if (!shouldContinue)
 					break;
 			}
@@ -69,12 +69,12 @@ import indian.Indian.*;
 		this.name = "UTF-8";
 	}
 
-	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,outMaxByteLength:Int):EncodingReturn
+	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
 		var start = outoffset,
-				written = 0,
+				i = 0,
 				j = -4,
-				read = 0;
+				curj = 0;
 		while(true)
 		{
 			j += 4;
@@ -85,57 +85,55 @@ import indian.Indian.*;
 				break;
 			if (cp <= 0x7f)
 			{
-				if ((written + 1) > outMaxByteLength)
+				if ((i + 1) > maxByteLength)
 					break;
-				out.setUInt8(start + written++,cp);
+				out.setUInt8(start + i++,cp);
 			} else if (cp <= 0x7FF) {
-				if ((written + 2) > outMaxByteLength)
+				if ((i + 2) > maxByteLength)
 					break;
-				out.setUInt8(start+written++,0xC0 | (cp >> 6));
-				out.setUInt8(start+written++,0x80 | (cp & 0x3F));
+				out.setUInt8(start+i++,0xC0 | (cp >> 6));
+				out.setUInt8(start+i++,0x80 | (cp & 0x3F));
 			} else if (cp <= 0xFFFF) {
-				if ((written + 3) > outMaxByteLength)
+				if ((i + 3) > maxByteLength)
 					break;
-				out.setUInt8(start+written++, 0xE0 | (cp >> 12) );
-				out.setUInt8(start+written++, 0x80 | ((cp >> 6) & 0x3F) );
-				out.setUInt8(start+written++, 0x80 | (cp & 0x3F) );
-			} else if (cp <= 0x10FFFF) {
-				if ((written + 4) > outMaxByteLength)
-					break;
-				out.setUInt8(start+written++, 0xF0 | (cp >> 18) );
-				out.setUInt8(start+written++, 0x80 | ((cp >> 12) & 0x3F) );
-				out.setUInt8(start+written++, 0x80 | ((cp >> 6) & 0x3F) );
-				out.setUInt8(start+written++, 0x80 | (cp & 0x3F) );
+				out.setUInt8(start+i++, 0xE0 | (cp >> 12) );
+				out.setUInt8(start+i++, 0x80 | ((cp >> 6) & 0x3F) );
+				out.setUInt8(start+i++, 0x80 | (cp & 0x3F) );
 			} else {
-				// invalid
-				if ( (written + 3) > outMaxByteLength)
+				if ((i + 4) > maxByteLength)
 					break;
-				out.setUInt8(start+written++, 0xEF);
-				out.setUInt8(start+written++, 0xBF);
-				out.setUInt8(start+written++, 0xBD);
+				out.setUInt8(start+i++, 0xF0 | (cp >> 18) );
+				out.setUInt8(start+i++, 0x80 | ((cp >> 12) & 0x3F) );
+				out.setUInt8(start+i++, 0x80 | ((cp >> 6) & 0x3F) );
+				out.setUInt8(start+i++, 0x80 | (cp & 0x3F) );
 			}
-			read = j;
+			curj = j;
 		}
-		return new EncodingReturn(read,written);
+		if (writtenOut != null) writtenOut.setInt32(0,i);
+		return curj;
 	}
 
-	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,outMaxByteLength:Int):EncodingReturn
+	override private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
 	{
-		var read = 0,
-				written = 0;
+		var lst = 0,
+				i = -1;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
-			var next = written + 4;
-			if (outMaxByteLength - next < 0)
+			var i2 = (++i) << 2;
+			if (maxByteLength - i2 < 0)
 			{
 				return false;
 			} else {
-				read = curByte + 1;
-				out.setInt32(written + outoffset,codepoint);
-				written = next;
+				lst = curByte;
+				out.setInt32(i2 + outoffset,codepoint);
 				return true;
 			}
 		});
-		return new EncodingReturn(read,written);
+		++i;
+		if (writtenOut != null)
+		{
+			writtenOut.setInt32(0,i << 2);
+		}
+		return lst;
 	}
 
 	override private function getByteLength(buf:Buffer):Int
@@ -143,8 +141,8 @@ import indian.Indian.*;
 		var i = -1;
 		while(true)
 		{
-			if (buf.getUInt8(++i) == 0)
-				return i - 1;
+			if (buf.getUInt8(i++) == 0)
+				return i;
 		}
 		return -1;
 	}
@@ -154,21 +152,26 @@ import indian.Indian.*;
 		buf.setUInt8(pos,0);
 	}
 
+	override private function hasTermination(buf:Buffer, pos:Int):Bool
+	{
+		return buf.getUInt8(pos) == 0;
+	}
+
 	override public function count(buf:Buffer, byteLength:Int):Int
 	{
-		var cps = 0;
+		var i = 0;
 		iter(buf,0,byteLength, function(_,_) {
-			cps++;
+			i++;
 			return true;
 		});
-		return cps;
+		return i;
 	}
 
 	override public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
 	{
-		var srcpos = -1;
+		var byte = -1;
 		iter(buf,0,byteLength, function(_,b) {
-			srcpos = b;
+			byte = b;
 			if (--pos <= 0)
 			{
 				return false;
@@ -176,7 +179,7 @@ import indian.Indian.*;
 				return true;
 			}
 		});
-		return srcpos;
+		return byte;
 	}
 
 #if !(cs || java || js)
@@ -200,18 +203,22 @@ import indian.Indian.*;
 		return ret.toString();
 	}
 
-	override private function _convertFromString(string:String, out:indian.Buffer, maxOutByteLength:Int):Int
+	override public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int, reserveTermination:Bool):Int
 	{
-		var origMaxByte = maxOutByteLength,
+		var origMaxByte = maxByteLength,
 				termBytes = 1;
-		var chr = -1,
-				strindex = -1;
-		while ( !StringTools.isEof(chr = StringTools.fastCodeAt(string,++strindex)) && strindex < maxOutByteLength )
-		{
-			out.setUInt8(strindex, chr);
-		}
+		if (reserveTermination) maxByteLength -= termBytes;
 
-		return strindex;
+		var chr = -1,
+				i = -1;
+		while ( !StringTools.isEof(chr = StringTools.fastCodeAt(string,++i)) && i < maxByteLength )
+		{
+			out.setUInt8(i, chr);
+		}
+		if (i <= (origMaxByte - termBytes))
+			out.setUInt8(i, 0);
+
+		return i;
 	}
 #end
 
@@ -222,28 +229,24 @@ import indian.Indian.*;
 		return string.length + term;
 #else
 		var len = string.length << 1;
-		var needed = 0;
+		var i = 0;
 		pin(str = $ptr(string), {
 			Utf16.iter(str,0,len, function(cp,_) {
 				if (cp <= 0x7f)
 				{
-					needed++;
+					i++;
 				} else if (cp <= 0x7FF) {
-					needed += 2;
+					i += 2;
 				} else if (cp <= 0xFFFF) {
-					needed += 3;
-				} else if (cp <= 0x10FFFF) {
-					needed += 4;
+					i += 3;
 				} else {
-					// invalid
-					needed += 3;
+					i += 4;
 				}
 				return true;
 			});
 		});
-		return needed + term;
+		return i + term;
 #end
 	}
 
 }
-

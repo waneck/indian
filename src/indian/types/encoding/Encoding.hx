@@ -2,9 +2,6 @@ package indian.types.encoding;
 import indian.*;
 import indian.Indian.*;
 
-/**
-	Don't trust this API. It will likely change in the future.
-**/
 @:unsafe @:dce class Encoding
 {
 	public var terminationBytes(default,null):Int;
@@ -12,97 +9,29 @@ import indian.Indian.*;
 	var isUtf32(default,null):Bool = false;
 
 	/**
-		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
-		The conversion will not exceed the length defined by `maxByteLength`.
+		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` (excluding the \0 terminator) to the byte array specified in `out`.
+		The conversion will not exceed the length defined by `maxOutByteLength`.
 
-		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
-		and the function will return the amount of source bytes consumed.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
+		- `byteLength` and `maxOutByteLength` cannot be more than 0xFFFF in this point
 
-		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
-		@returns the amount of source bytes consumed in the operation
+		@returns the amount of source bytes read and written in the operation
 	**/
-	private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:indian.Buffer):Int
+	private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,outMaxByteLength:Int):EncodingReturn
 	{
 		return throw "Not Implemented";
 	}
 
 	/**
-		Converts `source` encoded with current encoding to the byte array specified in `out` - encoded in UTF32.
-		The conversion will not exceed the length defined by `maxByteLength`.
+		Converts `source` with exact byte length `byteLength` (excluding the \0 terminator) encoded with current encoding to the byte array specified in `out` - encoded in UTF32.
+		The conversion will not exceed the length defined by `maxOutByteLength`.
 
-		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
-		and the function will return the amount of source bytes consumed.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
+		- `byteLength` and `maxOutByteLength` cannot be more than 0xFFFF in this point
 
-		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
-		@returns the amount of source bytes consumed in the operation
+		@returns the amount of source bytes read and written in the operation
 	**/
-	private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:indian.Buffer):Int
+	private function convertToUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,outMaxByteLength:Int):EncodingReturn
 	{
 		return throw "Not Implemented";
-	}
-
-	/**
-		Converts the byte array `source`, with byte length `byteLength` and encoded with encoding `sourceEncoding` to the byte array specified in `out`,
-		and with max length `maxByteLength` and encoded by `this`.
-
-		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
-		and the function will return the amount of source bytes consumed.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-
-		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
-		@returns the amount of source bytes consumed in the operation
-	**/
-	public function convertFromEncoding(source:indian.Buffer,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,maxByteLength:Int, writtenOut:indian.Buffer):Int
-	{
-		if (this == sourceEncoding || this.name == sourceEncoding.name)
-		{
-			if (source != out)
-			{
-				var outlen = byteLength < 0 ? getByteLength(source) : byteLength;
-				if (maxByteLength < outlen)
-					outlen = maxByteLength;
-				Buffer.blit(source,0, out,0, outlen);
-				if (outlen <= (maxByteLength - terminationBytes))
-					this.addTermination(out,outlen);
-				if (writtenOut != null)
-					writtenOut.setInt32(0,outlen);
-			}
-			return byteLength;
-		} else if (this.isUtf32) {
-			return sourceEncoding.convertToUtf32(source,0,byteLength, out,0,maxByteLength, writtenOut);
-		} else if (sourceEncoding.isUtf32) {
-			return this.convertFromUtf32(source,0,byteLength, out,0,maxByteLength, writtenOut);
-		} else {
-			//use UTF32 intermediate representation
-			var len = sourceEncoding.count(source,byteLength);
-			var written = 0,
-					consumed = 0,
-					consumedCodepoints = 0;
-			var writtenLoc = 0;
-			var neededBuf = len << 2;
-			if (neededBuf > 256) neededBuf = 256;
-			autofree(buf = $stackalloc(neededBuf), {
-				var writtenLoc = addr(writtenLoc);
-				if (writtenLoc == null) writtenLoc = writtenOut;
-				var needsAlloc = writtenLoc == null;
-				if (needsAlloc) writtenLoc = alloc(4);
-
-				while(written < maxByteLength && consumedCodepoints < len)
-				{
-					var c2 = sourceEncoding.convertToUtf32(source,consumed,byteLength - consumed, buf,0,neededBuf, writtenLoc);
-					consumed += c2;
-					consumedCodepoints += neededBuf >> 2;
-					this.convertFromUtf32(buf,0,writtenLoc.getInt32(0), out,written,maxByteLength - written, writtenLoc);
-					written += writtenLoc.getInt32(0);
-				}
-				if (needsAlloc) free(writtenLoc);
-			});
-			if (writtenOut != null) writtenOut.setInt32(0,written);
-			if (written <= (maxByteLength - terminationBytes)) this.addTermination(out,written);
-			return consumed;
-		}
 	}
 
 	/**
@@ -118,16 +47,104 @@ import indian.Indian.*;
 		throw "Not Implemented";
 	}
 
-	private function hasTermination(buf:Buffer, pos:Int):Bool
+	/**
+		Converts the byte array `source`, with byte length `byteLength` (excluding the \0 terminator) and encoded with encoding `sourceEncoding` to the byte array specified in `out`,
+		and with max length `maxOutByteLength` and encoded by `this`.
+
+		- `byteLength` and `maxOutByteLength` cannot be more than 0xFFFF in this point
+
+		@returns the amount of source bytes written and read in the operation
+	**/
+	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int):EncodingReturn
 	{
-		return throw "Not Implemented";
+#if assertations
+		if (byteLength > 0xFFFF || maxOutByteLength > 0xFFFF || maxOutByteLength < 0) throw 'assert: byteLength: $byteLength ; maxOutByteLength: $maxOutByteLength';
+#end
+		if (this == sourceEncoding || this.name == sourceEncoding.name)
+		{
+			if (byteLength < 0)
+				byteLength = getByteLength(source);
+			var outlen = byteLength;
+			if (maxOutByteLength < outlen)
+				outlen = maxOutByteLength;
+
+			if (source != out)
+				Buffer.blit(source,srcoffset, out,outoffset, outlen);
+			return new EncodingReturn(outlen,outlen);
+		} else if (this.isUtf32) {
+			return sourceEncoding.convertToUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
+		} else if (sourceEncoding.isUtf32) {
+			return this.convertFromUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
+		} else {
+			//use UTF32 intermediate representation
+			// var len = sourceEncoding.count(source,srcoffset,byteLength);
+			// var len = byteLength << 2;
+			var written = 0,
+					read = 0;
+			var neededBuf = byteLength << 2;
+			if (neededBuf > 256) neededBuf = 256;
+			autofree(buf = $stackalloc(neededBuf), {
+				while(written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
+				{
+					var er = sourceEncoding.convertToUtf32(source,srcoffset+read,byteLength - read, buf,0,neededBuf);
+					if (er.isEmpty())
+						break;
+					read += er.read;
+					er = this.convertFromUtf32(buf,0,er.written, out,outoffset + written,maxOutByteLength - written);
+					written += er.written;
+				}
+			});
+			return new EncodingReturn(read,written);
+		}
 	}
+
+	/**
+		Converts the byte array `source`, with byte length `byteLength` (excluding the \0 terminator) and encoded with encoding `sourceEncoding` to the byte array specified in `out`,
+		and with max length `maxOutByteLength` and encoded by `this`.
+		If `byteLength` is less than 0, the length is inferred by the first encoding-dependent terminator sequence found.
+
+		@returns the amount of source bytes written
+	**/
+	public function convertFromEncoding(source:indian.Buffer,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,maxOutByteLength:Int):Int
+	{
+#if assertations
+		if (source == null || sourceEncoding == null || out == null || maxOutByteLength < 0) throw 'assert: $source $sourceEncoding $out $maxOutByteLength';
+#end
+		var read = 0,
+				written = 0;
+		while( written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
+		{
+			var srclen = byteLength - read;
+			if (srclen > 0xFFFF) srclen = 0xFFFF;
+			var outlen = maxOutByteLength - written;
+			if (outlen > 0xFFFF) outlen = 0xFFFF;
+			var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen);
+			if (er.isEmpty())
+				break;
+			read += er.read;
+			written += er.written;
+		}
+		return written;
+	}
+
+	/**
+		Converts the byte array `source`, with byte length `byteLength` (excluding the \0 terminator) and encoded with encoding `this` to the byte array specified in `out`,
+		and with max length `maxOutByteLength` and encoded by `outEncoding`.
+		If `byteLength` is less than 0, the length is inferred by the first encondig terminator sequence found.
+
+		@returns the amount of source bytes written
+	**/
+	inline public function convertToEncoding(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxOutByteLength:Int, outEncoding:Encoding):Int
+	{
+		return outEncoding.convertFromEncoding(source,byteLength,this,out,maxOutByteLength);
+	}
+
 	/**
 		Returns the number of unicode code points that exist in `buf` with byte length `byteLength`.
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 		If the encoding is not unicode, a character mapping will be used so that the returned length is still in unicode code point units.
 	 **/
-	public function count(buf:Buffer, byteLength:Int):Int
+	public function count(buf:Buffer,byteLength:Int):Int
 	{
 		return throw "Not Implemented";
 	}
@@ -143,33 +160,17 @@ import indian.Indian.*;
 	}
 
 	/**
-		Converts the byte array `source`, with byte length `byteLength` and encoded with encoding `sourceEncoding` to the byte array specified in `out`,
-		and with max length `maxByteLength` and encoded by `this`.
-
-		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
-		and the function will return the amount of source bytes consumed.
-		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-
-		It is safe to pass the exact same pointer `source` to `out`. This may cause a temporary buffer to be used, so use this with care.
-		@returns the amount of source bytes consumed in the operation
+		Returns the needed byte length to exactly convert from string `str`.
+		If `addTerminator` is true, adds space for the terminator as well
 	**/
-	inline public function convertToEncoding(source:indian.Buffer, byteLength:Int, out:indian.Buffer, maxByteLength:Int, outEncoding:Encoding, writtenOut:indian.Buffer):Int
-	{
-		return outEncoding.convertFromEncoding(source,byteLength,this,out,maxByteLength, writtenOut);
-	}
-
-	/**
-		Returns the needed byte length to convert from string `str`
-		If `reserveTermination` is true, an extra space is reserved for the termination bytes.
-	**/
-	public function neededLength(str:String, reserveTermination:Bool):Int
+	public function neededLength(str:String, addTerminator:Bool):Int
 	{
 		return throw "Not Implemented";
 	}
 
 	/**
 		Converts `string` (assuming native target enconding) to the byte array specified in `out`.
-		The conversion will not exceed the length defined by `maxByteLength`.
+		The conversion will not exceed the length defined by `maxOutByteLength`.
 		If `source` fits entirely into `out`, the function will return `byteLength`. Otherwise - the operation will not complete entirely
 		and the function will return the amount of source bytes consumed.
 		If `reserveTermination` is true, an extra space is reserved for the termination bytes. Termination will always be added if there are enough bytes.
@@ -177,17 +178,21 @@ import indian.Indian.*;
 		If `byteLength` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
 		@returns the amount of bytes written
 	**/
-	public function convertFromString(string:String, out:indian.Buffer, maxByteLength:Int, reserveTermination:Bool):Int
+	public function convertFromString(string:String, out:indian.Buffer, maxOutByteLength:Int, reserveTermination:Bool):Int
 	{
-		var len = string.length;
-		var writtenLoc = 0;
-		var origMaxByte = maxByteLength,
+		if (string.length == 0 && maxOutByteLength <= 0)
+			return 0;
+#if assertations
+		if (string == null || out == null || maxOutByteLength < 0) throw 'assert: ${string==null} $out $maxOutByteLength';
+#end
+		// some input checking
+		var origMaxByte = maxOutByteLength,
 				termBytes = terminationBytes;
 
-		if (reserveTermination) maxByteLength -= termBytes;
-		if (maxByteLength <= 0)
+		if (reserveTermination) maxOutByteLength -= termBytes;
+		if (maxOutByteLength <= 0)
 		{
-			if (maxByteLength == 0 && origMaxByte > 0)
+			if (maxOutByteLength == 0 && origMaxByte > 0)
 			{
 				this.addTermination(out,0);
 				return termBytes;
@@ -195,58 +200,80 @@ import indian.Indian.*;
 				return 0;
 			}
 		}
-		var writtenLoc = addr(writtenLoc);
-		pin(str = $ptr(string), {
-			var wasNull = writtenLoc == null;
-			if (wasNull) writtenLoc = alloc(4);
-#if !(cs || java || js) // UTF-8
-			this.convertFromEncoding(str,len,Utf8.cur, out,maxByteLength, writtenLoc);
-#else // UTF-16
-			this.convertFromEncoding(str,len << 1,Utf16.cur, out,maxByteLength, writtenLoc);
-#end
-			var written = writtenLoc.getInt32(0);
-			if (written <= (origMaxByte - termBytes))
-				this.addTermination(out,written);
 
-			if (wasNull) free(writtenLoc);
-			return written;
-		});
-		throw 'assert';
+		var written = _convertFromString(string,out,maxOutByteLength);
+		if (written <= (origMaxByte - termBytes))
+			this.addTermination(out,written);
+		return written;
 	}
 
 	/**
-		Converts `buf`, with byte length `length` into a String enconded on the native target enconding.
-		If `length` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
-		If `hasTermination` is true, the termination bytes will be discounted from the total length
+		This is where the actual work is done. Override this one
 	**/
-	public function convertToString(buf:indian.Buffer, length:Int, hasTermination:Bool):String
+	private function _convertFromString(string:String, out:indian.Buffer, maxOutByteLength:Int):Int
 	{
-		if (length > 0 && hasTermination)
-			length -= this.terminationBytes;
+		var readLen = string.length;
+#if (cs || java || js)
+		readLen = readLen << 1;
+#end
+		var origMaxByte = maxOutByteLength,
+				termBytes = terminationBytes;
+
+		var written = 0,
+				read = 0;
+		pin(str = $ptr(string), {
+			while (written < maxOutByteLength && read < readLen)
+			{
+				var curLen = readLen - read;
+				if (curLen > 0xFFFF) curLen = 0xFFFF;
+				var curOut = maxOutByteLength - written;
+				if (curOut > 0xFFFF) curOut = 0xFFFF;
+#if !(cs || java || js) // UTF-8
+				var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut);
+#else // UTF-16
+				var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut);
+#end
+				if (re.isEmpty())
+					break;
+				written += re.written;
+				read += re.read;
+			}
+
+		});
+		return written;
+	}
+
+	/**
+		Converts `source`, with byte length `length` into a String enconded on the native target enconding.
+		If `length` is less than 0, the source size will be inferred by looking for the encoding-dependent termination codepoint.
+		The `length` parameter should not consider the \0 termination indicator as part of the length
+	**/
+	public function convertToString(source:indian.Buffer, length:Int, hasTermination:Bool):String
+	{
 		if (length <= 0)
 			return '';
+#if assertations
+		if (source == null) throw 'assert: $source';
+#end
+		if (hasTermination) length -= this.terminationBytes;
 
 		var ret = new StringBuf();
 		// first convert into
-		var len = (this.count(buf,length)) << 2;
-		var neededBuf = len;
-		if (neededBuf > 256)
-			neededBuf = 256;
-		var consumed = 0;
-		var writtenLoc = 0;
-		autofree(tmp = $stackalloc(neededBuf),  {
-			var writtenLoc = addr(writtenLoc);
-			var wasNull = writtenLoc == null;
-			if (wasNull)
-				writtenLoc = alloc(4);
-
-			while(consumed < len)
+		var neededBuf = length << 2;
+		if (neededBuf > 256) neededBuf = 256;
+		var read = 0;
+		autofree(tmp = $stackalloc(neededBuf), {
+			while(length < 0 || read < length)
 			{
-				var c2 = this.convertToUtf32(buf,consumed,length - consumed, tmp,0,neededBuf, writtenLoc);
+				var sendLen = length - read;
+				if (sendLen > 0xFFFF) sendLen = 0xFFFF;
+				var r = this.convertToUtf32(source,read,sendLen, tmp,0,neededBuf);
 
-				var written = writtenLoc.getInt32(0);
-				consumed += written;
-				for (i in 0...(written >> 2))
+				if (r.isEmpty()) //found terminator
+					break;
+
+				read += r.read;
+				for (i in 0...(r.written >> 2))
 				{
 					var cp = tmp.getInt32(i<<2);
 #if !(cs || java || js) // UTF-8
@@ -260,11 +287,14 @@ import indian.Indian.*;
 						ret.addChar( 0xE0 | (cp >> 12) );
 						ret.addChar( 0x80 | ((cp >> 6) & 0x3F) );
 						ret.addChar( 0x80 | (cp & 0x3F) );
-					} else {
+					} else if (cp <= 0x10FFFF) {
 						ret.addChar( 0xF0 | (cp >> 18) );
 						ret.addChar( 0x80 | ((cp >> 12) & 0x3F) );
 						ret.addChar( 0x80 | ((cp >> 6) & 0x3F) );
 						ret.addChar( 0x80 | (cp & 0x3F) );
+					} else {
+						// invalid
+						ret.addChar(0xef); ret.addChar(0xbf); ret.addChar(0xbd);
 					}
 #else // UTF-16
 					if (cp < 0x10000)
@@ -280,13 +310,45 @@ import indian.Indian.*;
 #end
 				}
 			}
-			if (wasNull) free(writtenLoc);
 		});
+
 		return ret.toString();
 	}
 
 	public function toString()
 	{
 		return name + ' Encoding';
+	}
+}
+
+abstract EncodingReturn(Int)
+{
+	public static inline var MAX_VALUE = 0xFFFF;
+
+	public var written(get,never):Int;
+	public var read(get,never):Int;
+
+	@:extern inline public function new(read,written,?pos:haxe.PosInfos)
+	{
+#if assertations
+		if (written > MAX_VALUE || read > MAX_VALUE) throw 'assert: $written/$read';
+		haxe.Log.trace('read: $read, written: $written',pos);
+#end
+		this = ((written & 0xFFFF) << 16) | (read & 0xFFFF);
+	}
+
+	@:extern inline private function get_written():Int
+	{
+		return (this >>> 16);
+	}
+
+	@:extern inline private function get_read():Int
+	{
+		return this & 0xFFFF;
+	}
+
+	@:extern inline public function isEmpty()
+	{
+		return this == 0;
 	}
 }

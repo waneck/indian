@@ -11,6 +11,7 @@ import utest.Assert;
 
 	public function test_simple()
 	{
+		trace('testing simple');
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
 		var strings = [
 			'Hello, World',
@@ -20,8 +21,10 @@ import utest.Assert;
 		];
 		for (s in strings)
 		{
+			trace(s);
 			for (e1 in encodings)
 			{
+				trace(e1);
 				var l1 = e1.neededLength(s, true);
 				var l1by2 = e1.neededLength(s.substr(0,Std.int(s.length/2)),true);
 				autofree(
@@ -131,6 +134,7 @@ import utest.Assert;
 
 	public function test_very_simple()
 	{
+		trace('test very simple');
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
 		var strings = [
 			'Hello, World',
@@ -165,6 +169,7 @@ import utest.Assert;
 
 	public function test_empty()
 	{
+		trace('test empty');
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
 		autofree(
 			buf1 = $stackalloc(128),
@@ -173,19 +178,28 @@ import utest.Assert;
 			var s = '';
 			for (enc in encodings)
 			{
+				trace(enc);
 				buf1.set(0, 0xff, 128);
+				trace(1);
 				buf2.set(0, 0xff, 128);
+				trace(1);
 				enc.convertFromString(s,buf1,128,true);
+				trace(1);
 				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes,128 - enc.terminationBytes));
+				trace(1);
 				var s2 = enc.convertToString(buf1,-1,true);
+				trace(1);
 				Assert.equals(0,buf2.cmp(buf1 + enc.terminationBytes,128 - enc.terminationBytes));
+				trace(1);
 				Assert.equals(s,s2);
+				trace(1);
 			}
 		});
 	}
 
 	public function test_string()
 	{
+		trace('test string');
 		var encodings = [Utf8.cur, Utf16.cur, Utf32.cur];
 		var strings = [
 			'Hello, World',
@@ -221,14 +235,13 @@ import utest.Assert;
 						buf2 = $alloc(l2),
 						buf_u32_1 = $alloc(l3),
 						buf_u32_2 = $alloc(l3),
-						out = $stackalloc(4),
 					{
 						buf1.set(0, 0x7c, l1);
 						// test back and forth
 						e1.convertFromString(s,buf1,l1,true);
 						var s2 = e1.convertToString(buf1,l1,true);
 						Assert.equals(s,s2);
-						e1.convertToEncoding(buf1,l1, buf2,l2, e2, out);
+						e1.convertToEncoding(buf1,l1, buf2,l2, e2);
 						var s3 = e2.convertToString(buf2,l2,true);
 						Assert.equals(s,s3);
 						autofree(
@@ -236,7 +249,7 @@ import utest.Assert;
 						{
 							buf1c.set(0, 0xff, l1);
 							trace('converting');
-							e2.convertToEncoding(buf2,l2, buf1c,l1, e1, out);
+							e2.convertToEncoding(buf2,l2, buf1c,l1, e1);
 							Assert.equals(0, buf1.cmp(buf1c,l1));
 							if (buf1.cmp(buf1c,l1) != 0)
 							{
