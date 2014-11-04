@@ -185,13 +185,13 @@ class IndianHelper
 						{
 							case ECall({ expr:EConst(CIdent("$stackalloc")) },[v]):
 								isStack = true;
-								{ expr:ECall(macro indian.Indian.stackalloc, [v]), pos: e.pos };
+								{ expr:ECall(macro @:pos(v.pos) indian.Indian.stackalloc, [v]), pos: e.pos };
 							case ECall(macro indian.Indian.stackalloc,[v]),
 									ECall(macro Indian.stackalloc,[v]):
 								isStack = true;
 								e;
 							case ECall({ expr:EConst(CIdent("$alloc")) }, [v]):
-								{ expr: ECall(macro indian.Indian.alloc,[v]), pos:e.pos };
+								{ expr: ECall(macro @:pos(v.pos) indian.Indian.alloc,[v]), pos:e.pos };
 							case _:
 								haxe.macro.ExprTools.map(e,map);
 						}
@@ -199,14 +199,14 @@ class IndianHelper
 					var v = map(v);
 					if (isStack)
 					{
-						toRelease.push(macro indian.Indian.stackfree($i{allocname}));
+						toRelease.push(macro @:pos(v.pos) indian.Indian.stackfree($i{allocname}));
 					} else {
-						toRelease.push(macro indian.Indian.free($i{allocname}));
+						toRelease.push(macro @:pos(v.pos) indian.Indian.free($i{allocname}));
 					}
-					toRelease.push(macro $i{name} = null);
-					toRelease.push(macro $i{allocname} = null);
+					toRelease.push(macro @:pos(v.pos) $i{name} = null);
+					toRelease.push(macro @:pos(v.pos) $i{allocname} = null);
 					ret.push({ name:allocname, type:null, expr:v });
-					ret.push({ name:name, type:null, expr:macro $i{allocname} });
+					ret.push({ name:name, type:null, expr:macro @:pos(v.pos) $i{allocname} });
 				case _:
 					throw new Error('Invalid syntax for autofree: Expected `varname = value`', e.pos);
 			}
@@ -214,7 +214,9 @@ class IndianHelper
 
 		var ret = { expr:EVars(ret), pos:currentPos() };
 		var rel = mkRelease(toRelease, block);
-		return macro { $ret; $rel; };
+		var ret = macro @:pos(currentPos()) { $ret; $rel; };
+		// trace(ret.toString());
+		return ret;
 	}
 
 	private static function mkRelease(toRelease:Array<Expr>, block:Expr)
@@ -259,14 +261,14 @@ class IndianHelper
 		block = map(block);
 		var pos = currentPos();
 		var rethrow = if (defined('cs'))
-			macro cs.Lib.rethrow(exception_);
+			macro @:pos(currentPos()) { cs.Lib.rethrow(exception_); throw exception_; }
 		else if (defined('cpp'))
-			macro cpp.Lib.rethrow(exception_);
+			macro @:pos(currentPos()) { cpp.Lib.rethrow(exception_); throw exception_; }
 		else if (defined('neko'))
-			macro neko.Lib.rethrow(exception_);
+			macro @:pos(currentPos()) { neko.Lib.rethrow(exception_); throw exception_; }
 		else
-			macro throw exception_;
-		return macro try {$block; ${getRelease(null)};} catch(exception_:Dynamic) { ${getRelease(null)}; $rethrow; };
+			macro @:pos(currentPos()) throw exception_;
+		return macro @:pos(currentPos()) try {$block; ${getRelease(null)};} catch(exception_:Dynamic) { ${getRelease(null)}; $rethrow; };
 	}
 
 	private static function isBasic(t:haxe.macro.Type)

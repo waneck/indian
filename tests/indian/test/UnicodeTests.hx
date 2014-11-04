@@ -223,6 +223,7 @@ import utest.Assert;
 						buf_u32_2 = $alloc(l3),
 						out = $stackalloc(4),
 					{
+						buf1.set(0, 0x7c, l1);
 						// test back and forth
 						e1.convertFromString(s,buf1,l1,true);
 						var s2 = e1.convertToString(buf1,l1,true);
@@ -233,8 +234,19 @@ import utest.Assert;
 						autofree(
 							buf1c = $alloc(l1),
 						{
+							buf1c.set(0, 0xff, l1);
+							trace('converting');
 							e2.convertToEncoding(buf2,l2, buf1c,l1, e1, out);
 							Assert.equals(0, buf1.cmp(buf1c,l1));
+							if (buf1.cmp(buf1c,l1) != 0)
+							{
+								trace(e1,e2, buf1.cmp(buf1c,l1));
+								trace(e1.convertToString(buf1c,l1,true) == s);
+								trace(e1.convertToString(buf1c,l1,true));
+								trace(buf1.hexString(l1));
+								trace(buf1c.hexString(l1));
+								trace(buf2.hexString(l2));
+							}
 						});
 					});
 				}

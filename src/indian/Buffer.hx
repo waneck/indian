@@ -520,6 +520,19 @@ import indian._impl.*;
 #end
 	}
 
+	@:unsafe public function hexString(length:Int)
+	{
+		var ret = new StringBuf();
+		var first =true;
+		for (i in 0...length)
+		{
+			if (first) first = false; else ret.add(' ');
+			var byte = getUInt8(i);
+			ret.add(StringTools.hex(byte, 2));
+		}
+		return ret.toString();
+	}
+
 	@:extern inline private function t()
 	{
 		return this;
