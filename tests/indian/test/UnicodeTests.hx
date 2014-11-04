@@ -230,8 +230,12 @@ import utest.Assert;
 						e1.convertToEncoding(buf1,l1, buf2,l2, e2, out);
 						var s3 = e2.convertToString(buf2,l2,true);
 						Assert.equals(s,s3);
-
-
+						autofree(
+							buf1c = $alloc(l1),
+						{
+							e2.convertToEncoding(buf2,l2, buf1c,l1, e1, out);
+							Assert.equals(0, buf1.cmp(buf1c,l1));
+						});
 					});
 				}
 			}
