@@ -8,6 +8,8 @@ import indian.Indian.*;
 @:unsafe @:dce class Encoding
 {
 	public var terminationBytes(default,null):Int;
+	public var name(default,null):String;
+	var isUtf32(default,null):Bool = false;
 
 	/**
 		Converts `source` (byte array in UTF32 encoding) with exact byte length `byteLength` to the byte array specified in `out`.
@@ -54,7 +56,7 @@ import indian.Indian.*;
 	**/
 	public function convertFromEncoding(source:indian.Buffer,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,maxByteLength:Int, writtenOut:indian.Buffer):Int
 	{
-		if (this == sourceEncoding || this.name() == sourceEncoding.name())
+		if (this == sourceEncoding || this.name == sourceEncoding.name)
 		{
 			if (source != out)
 			{
@@ -68,9 +70,9 @@ import indian.Indian.*;
 					writtenOut.setInt32(0,outlen);
 			}
 			return byteLength;
-		} else if (this.isUtf32()) {
+		} else if (this.isUtf32) {
 			return sourceEncoding.convertToUtf32(source,0,byteLength, out,0,maxByteLength, writtenOut);
-		} else if (sourceEncoding.isUtf32()) {
+		} else if (sourceEncoding.isUtf32) {
 			return this.convertFromUtf32(source,0,byteLength, out,0,maxByteLength, writtenOut);
 		} else {
 			//use UTF32 intermediate representation
@@ -138,11 +140,6 @@ import indian.Indian.*;
 	public function getPosOffset(buf:Buffer, byteLength:Int, pos:Int):Int
 	{
 		return throw "Not Implemented";
-	}
-
-	private function isUtf32():Bool
-	{
-		return false;
 	}
 
 	/**
@@ -288,16 +285,8 @@ import indian.Indian.*;
 		return ret.toString();
 	}
 
-	/**
-		Returns encoding name
-	**/
-	public function name():String
-	{
-		return throw "Not Implemented";
-	}
-
 	public function toString()
 	{
-		return name() + ' Encoding';
+		return name + ' Encoding';
 	}
 }

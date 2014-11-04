@@ -50,6 +50,7 @@ import indian.types.*;
 	public function new()
 	{
 		this.terminationBytes = 2;
+		this.name = "UTF-16";
 	}
 
 	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
@@ -216,9 +217,5 @@ import indian.types.*;
 #end
 	}
 
-	override public function name():String
-	{
-		return "UTF-16";
-	}
 }
 

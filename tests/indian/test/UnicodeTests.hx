@@ -98,7 +98,7 @@ import utest.Assert;
 
 	inline private static function checkEncodedString(encoding:Encoding, str:String, buf:Buffer, len:Int, ?pos:haxe.PosInfos)
 	{
-		switch(encoding.name())
+		switch(encoding.name)
 		{
 			case 'UTF-8':
 				for (i in 0...len)

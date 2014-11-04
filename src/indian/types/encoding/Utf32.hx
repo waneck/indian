@@ -10,6 +10,8 @@ import indian.types.*;
 	public function new()
 	{
 		this.terminationBytes = 4;
+		this.isUtf32 = true;
+		this.name = "UTF-32";
 	}
 
 	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
@@ -95,13 +97,4 @@ import indian.types.*;
 		return ret;
 	}
 
-	override public function name():String
-	{
-		return "UTF-32";
-	}
-
-	override private function isUtf32():Bool
-	{
-		return true;
-	}
 }

@@ -66,6 +66,7 @@ import indian.Indian.*;
 	public function new()
 	{
 		this.terminationBytes = 1;
+		this.name = "UTF-8";
 	}
 
 	override private function convertFromUtf32(source:indian.Buffer,srcoffset:Int,byteLength:Int, out:indian.Buffer,outoffset:Int,maxByteLength:Int, writtenOut:Buffer):Int
@@ -246,11 +247,6 @@ import indian.Indian.*;
 		});
 		return i + term;
 #end
-	}
-
-	override public function name():String
-	{
-		return "UTF-8";
 	}
 
 }
