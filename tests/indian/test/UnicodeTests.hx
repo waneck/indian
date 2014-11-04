@@ -74,7 +74,6 @@ import utest.Assert;
 					strEq(s,s2);
 					s2 = e1.convertToString(b2,(l1>>1),true);
 					var len = s.length>>1;
-					if (len > 0) len--;
 					strEq(s.substr(0,len),s2);
 					s2 = e1.convertToString(b3,l1,true);
 					strEq(s,s2);
