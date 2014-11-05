@@ -51,8 +51,6 @@ import indian.Indian.*;
 		Converts the byte array `source`, with byte length `byteLength` (excluding the \0 terminator) and encoded with encoding `sourceEncoding` to the byte array specified in `out`,
 		and with max length `maxOutByteLength` and encoded by `this`.
 
-		- `byteLength` and `maxOutByteLength` cannot be more than 0xFFFF in this point
-
 		@returns the amount of source bytes written
 	**/
 	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int):Int
@@ -360,7 +358,7 @@ abstract EncodingReturn(Int)
 			haxe.Log.trace('throwing error. read: $read, written: $written',pos);
 			throw 'assert: $written/$read';
 		}
-		haxe.Log.trace('read: $read, written: $written',pos);
+		// haxe.Log.trace('read: $read, written: $written',pos);
 #end
 		this = ((written & 0xFFFF) << 16) | (read & 0xFFFF);
 	}
