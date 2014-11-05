@@ -73,14 +73,13 @@ import indian.Indian.*;
 	{
 		var start = outoffset,
 				written = 0,
-				j = -4,
-				read = 0;
+				read = -4;
 		while(true)
 		{
-			j += 4;
-			if (byteLength >= 0 && j >= byteLength)
+			read += 4;
+			if (byteLength >= 0 && read >= byteLength)
 				break;
-			var cp = source.getInt32(srcoffset + j);
+			var cp = source.getInt32(srcoffset + read);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp <= 0x7f)
@@ -114,7 +113,6 @@ import indian.Indian.*;
 				out.setUInt8(start+written++, 0xBF);
 				out.setUInt8(start+written++, 0xBD);
 			}
-			read = j;
 		}
 		return new EncodingReturn(read,written);
 	}

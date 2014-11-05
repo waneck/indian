@@ -71,39 +71,39 @@ import indian.Indian.*;
 			if (source != out)
 				Buffer.blit(source,srcoffset, out,outoffset, outlen);
 			return outlen;
-		// } else if (this.isUtf32) {
-		// 	var written = 0,
-		// 			read = 0;
-		// 	while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
-		// 	{
-		// 		var srclen = byteLength - read;
-		// 		if (srclen > 0x7FFF) srclen = 0x7FFF;
-		// 		var outlen = maxOutByteLength - written;
-		// 		if (outlen > 0x7FFF) outlen = 0x7FFF;
-		// 		var er = sourceEncoding.convertToUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
-		// 		if (er.isEmpty())
-		// 			break;
-		// 		read += er.read;
-		// 		written += er.written;
-		// 	}
-		// 	return written;
-		// } else if (sourceEncoding.isUtf32) {
-		// 	var written = 0,
-		// 			read = 0;
-		// 	while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
-		// 	{
-		// 		var srclen = byteLength - read;
-		// 		if (srclen > 0x7FFF) srclen = 0x7FFF;
-		// 		var outlen = maxOutByteLength - written;
-		// 		if (outlen > 0x7FFF) outlen = 0x7FFF;
-		// 		var er = this.convertFromUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
-		// 		if (er.isEmpty())
-		// 			break;
-		// 		read += er.read;
-		// 		written += er.written;
-		// 	}
-		// 	return written;
-		// 	// return this.convertFromUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
+		} else if (this.isUtf32) {
+			var written = 0,
+					read = 0;
+			while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
+			{
+				var srclen = byteLength - read;
+				if (srclen > 0x7FFF) srclen = 0x7FFF;
+				var outlen = maxOutByteLength - written;
+				if (outlen > 0x7FFF) outlen = 0x7FFF;
+				var er = sourceEncoding.convertToUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
+				if (er.isEmpty())
+					break;
+				read += er.read;
+				written += er.written;
+			}
+			return written;
+		} else if (sourceEncoding.isUtf32) {
+			var written = 0,
+					read = 0;
+			while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
+			{
+				var srclen = byteLength - read;
+				if (srclen > 0x7FFF) srclen = 0x7FFF;
+				var outlen = maxOutByteLength - written;
+				if (outlen > 0x7FFF) outlen = 0x7FFF;
+				var er = this.convertFromUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
+				if (er.isEmpty())
+					break;
+				read += er.read;
+				written += er.written;
+			}
+			return written;
+			// return this.convertFromUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
 		} else {
 			//use UTF32 intermediate representation
 			var written = 0,

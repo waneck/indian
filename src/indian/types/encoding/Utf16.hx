@@ -56,14 +56,13 @@ import indian.types.*;
 	{
 		var start = outoffset,
 				written = 0,
-				j = -4,
-				read = 0;
+				read = -4;
 		while(true)
 		{
-			j += 4;
-			if (byteLength >= 0 && j >= byteLength)
+			read += 4;
+			if (byteLength >= 0 && read >= byteLength)
 				break;
-			var cp = source.getInt32(srcoffset + j);
+			var cp = source.getInt32(srcoffset + read);
 			if (byteLength < 0 && cp == 0)
 				break;
 			if (cp < 0x10000)
@@ -81,7 +80,6 @@ import indian.types.*;
 					break;
 				out.setUInt16(start + ((written++) << 1),0xFFFD);
 			}
-			read = j;
 		}
 		return new EncodingReturn(read,written<<1);
 	}
