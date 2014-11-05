@@ -92,8 +92,8 @@ import indian.types.*;
 				written = 0;
 		iter(source,srcoffset,byteLength, function(codepoint:Int, curByte:Int) {
 			var next = written + 4;
-			trace(codepoint,outMaxByteLength,next);
-			trace(StringTools.hex(codepoint));
+			// trace(codepoint,outMaxByteLength,next);
+			// trace(StringTools.hex(codepoint));
 			if (outMaxByteLength - next < 0)
 			{
 				return false;

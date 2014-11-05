@@ -199,12 +199,15 @@ class IndianHelper
 					var v = map(v);
 					if (isStack)
 					{
+						// toRelease.push(macro @:pos(v.pos) trace('freeing 2 ' + $v{allocname}));
 						toRelease.push(macro @:pos(v.pos) indian.Indian.stackfree($i{allocname}));
 					} else {
+						// toRelease.push(macro @:pos(v.pos) trace('freeing ' + $v{allocname}));
 						toRelease.push(macro @:pos(v.pos) indian.Indian.free($i{allocname}));
 					}
 					toRelease.push(macro @:pos(v.pos) $i{name} = null);
 					toRelease.push(macro @:pos(v.pos) $i{allocname} = null);
+					// ret.push({name:'_', type:null, expr:macro @:pos(v.pos) { trace('allocating ' + $v{allocname}); null; }});
 					ret.push({ name:allocname, type:null, expr:v });
 					ret.push({ name:name, type:null, expr:macro @:pos(v.pos) $i{allocname} });
 				case _:

@@ -53,12 +53,12 @@ import indian.Indian.*;
 
 		- `byteLength` and `maxOutByteLength` cannot be more than 0xFFFF in this point
 
-		@returns the amount of source bytes written and read in the operation
+		@returns the amount of source bytes written
 	**/
-	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int,hasMore:Bool):EncodingReturn
+	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int):Int
 	{
 #if assertations
-		if (byteLength > 0xFFFF || maxOutByteLength > 0xFFFF || maxOutByteLength < 0) throw 'assert: byteLength: $byteLength ; maxOutByteLength: $maxOutByteLength';
+		// if (byteLength > 0xFFFF || maxOutByteLength > 0xFFFF || maxOutByteLength < 0) throw 'assert: byteLength: $byteLength ; maxOutByteLength: $maxOutByteLength';
 #end
 		if (this == sourceEncoding || this.name == sourceEncoding.name)
 		{
@@ -70,15 +70,42 @@ import indian.Indian.*;
 
 			if (source != out)
 				Buffer.blit(source,srcoffset, out,outoffset, outlen);
-			return new EncodingReturn(outlen,outlen);
-		} else if (this.isUtf32) {
-			return sourceEncoding.convertToUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
-		} else if (sourceEncoding.isUtf32) {
-			return this.convertFromUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
+			return outlen;
+		// } else if (this.isUtf32) {
+		// 	var written = 0,
+		// 			read = 0;
+		// 	while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
+		// 	{
+		// 		var srclen = byteLength - read;
+		// 		if (srclen > 0x7FFF) srclen = 0x7FFF;
+		// 		var outlen = maxOutByteLength - written;
+		// 		if (outlen > 0x7FFF) outlen = 0x7FFF;
+		// 		var er = sourceEncoding.convertToUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
+		// 		if (er.isEmpty())
+		// 			break;
+		// 		read += er.read;
+		// 		written += er.written;
+		// 	}
+		// 	return written;
+		// } else if (sourceEncoding.isUtf32) {
+		// 	var written = 0,
+		// 			read = 0;
+		// 	while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
+		// 	{
+		// 		var srclen = byteLength - read;
+		// 		if (srclen > 0x7FFF) srclen = 0x7FFF;
+		// 		var outlen = maxOutByteLength - written;
+		// 		if (outlen > 0x7FFF) outlen = 0x7FFF;
+		// 		var er = this.convertFromUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
+		// 		if (er.isEmpty())
+		// 			break;
+		// 		read += er.read;
+		// 		written += er.written;
+		// 	}
+		// 	return written;
+		// 	// return this.convertFromUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
 		} else {
 			//use UTF32 intermediate representation
-			// var len = sourceEncoding.count(source,srcoffset,byteLength);
-			// var len = byteLength << 2;
 			var written = 0,
 					read = 0;
 			var neededBuf = byteLength << 2;
@@ -87,20 +114,15 @@ import indian.Indian.*;
 			autofree(buf = $stackalloc(neededBuf), {
 				while(written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
 				{
-					trace(written,maxOutByteLength, read,byteLength, j++);
 					var er = sourceEncoding.convertToUtf32(source,srcoffset+read,byteLength - read, buf,0,neededBuf);
 					if (er.isEmpty())
 						break;
-					trace(Utf32.cur.convertToString(buf, er.written, false));
-					var er_read = er.read;
+					read += er.read;
 					er = this.convertFromUtf32(buf,0,er.written, out,outoffset + written,maxOutByteLength - written);
-					// if (er.isEmpty() && hasMore)
-						// break;
-					read += er_read;
 					written += er.written;
 				}
 			});
-			return new EncodingReturn(read,written);
+			return written;
 		}
 	}
 
@@ -118,18 +140,15 @@ import indian.Indian.*;
 #end
 		var read = 0,
 				written = 0;
-		while( written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
+		// while( written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
 		{
-			var hasMore = false;
 			var srclen = byteLength - read;
-			if (srclen > 0xFFFF) { srclen = 0xFFFF; hasMore = true; }
 			var outlen = maxOutByteLength - written;
-			if (outlen > 0xFFFF) { outlen = 0xFFFF; hasMore = true; }
-			var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen,hasMore);
-			if (er.isEmpty())
-				break;
-			read += er.read;
-			written += er.written;
+			var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen);
+			// if (er.isEmpty())
+				// break;
+			// read += er.read;
+			written += er;
 		}
 		return written;
 	}
@@ -229,22 +248,19 @@ import indian.Indian.*;
 		var written = 0,
 				read = 0;
 		pin(str = $ptr(string), {
-			while (written < maxOutByteLength && read < readLen)
+			// while (written < maxOutByteLength && read < readLen)
 			{
-				var hasMore = false;
 				var curLen = readLen - read;
-				if (curLen > 0xFFFF) { curLen = 0xFFFF; hasMore = true; }
 				var curOut = maxOutByteLength - written;
-				if (curOut > 0xFFFF) { curOut = 0xFFFF; hasMore = true; }
 #if !(cs || java || js) // UTF-8
-				var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut, hasMore);
+				var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut);
 #else // UTF-16
-				var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut, hasMore);
+				var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut);
 #end
-				if (re.isEmpty())
-					break;
-				written += re.written;
-				read += re.read;
+				// if (re.isEmpty())
+					// break;
+				written += re;
+				// read += re.read;
 			}
 
 		});

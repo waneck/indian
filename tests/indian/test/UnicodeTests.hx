@@ -269,28 +269,28 @@ import utest.Assert;
 							Assert.equals(e1.count(buf1,l1),e2.count(buf2,l2),msg);
 							var msg = 'glyph $glyph length $len e1 $e1 e2 $e2 count: ${e1.count(buf1,-1)},${e2.count(buf2,-1)}';
 							Assert.equals(e1.count(buf1,-1),e2.count(buf2,-1),msg);
-							autofree(
-								buf1c = $alloc(l1),
-							{
-								buf1c.set(0, 0xff, l1);
-								trace('converting');
-								var pos = e2.convertToEncoding(buf2,l2, buf1c,l1, e1);
-								e1.addTermination(buf1c,pos);
-								var msg = 'For glyph "$glyph" and length $len, the encodings $e1 and $e2 have shown different contents when converting from $e2 to $e1: ${buf1.cmp(buf1c,l1)}';
-								Assert.equals(0, buf1.cmp(buf1c,l1), msg);
-								if (buf1.cmp(buf1c,l1) != 0)
-								{
-									trace(e1);
-									trace(buf1.add(l1-130).hexString(130));
-									trace(buf1c.add(l1-130).hexString(130));
-									// trace(e1,e2, buf1.cmp(buf1c,l1));
-									// trace(e1.convertToString(buf1c,l1,true) == s);
-									// trace(e1.convertToString(buf1c,l1,true));
-									// trace(buf1.hexString(l1));
-									// trace(buf1c.hexString(l1));
-									// trace(buf2.hexString(l2));
-								}
-							});
+							// autofree(
+							// 	buf1c = $alloc(l1),
+							// {
+							// 	buf1c.set(0, 0xff, l1);
+							// 	trace('converting');
+							// 	var pos = e2.convertToEncoding(buf2,l2, buf1c,l1, e1);
+							// 	e1.addTermination(buf1c,pos);
+							// 	var msg = 'For glyph "$glyph" and length $len, the encodings $e1 and $e2 have shown different contents when converting from $e2 to $e1: ${buf1.cmp(buf1c,l1)}';
+							// 	Assert.equals(0, buf1.cmp(buf1c,l1), msg);
+							// 	if (buf1.cmp(buf1c,l1) != 0)
+							// 	{
+							// 		trace(e1);
+							// 		trace(buf1.add(l1-130).hexString(130));
+							// 		trace(buf1c.add(l1-130).hexString(130));
+							// 		// trace(e1,e2, buf1.cmp(buf1c,l1));
+							// 		// trace(e1.convertToString(buf1c,l1,true) == s);
+							// 		// trace(e1.convertToString(buf1c,l1,true));
+							// 		// trace(buf1.hexString(l1));
+							// 		// trace(buf1c.hexString(l1));
+							// 		// trace(buf2.hexString(l2));
+							// 	}
+							// });
 						});
 					}
 				}
