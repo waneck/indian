@@ -56,7 +56,7 @@ import indian.Indian.*;
 	private function _convertFromEncoding(source:indian.Buffer,srcoffset:Int,byteLength:Int,sourceEncoding:Encoding, out:indian.Buffer,outoffset:Int,maxOutByteLength:Int):Int
 	{
 #if assertations
-		// if (byteLength > 0xFFFF || maxOutByteLength > 0xFFFF || maxOutByteLength < 0) throw 'assert: byteLength: $byteLength ; maxOutByteLength: $maxOutByteLength';
+		if (maxOutByteLength < 0) throw 'assert: byteLength: $byteLength ; maxOutByteLength: $maxOutByteLength';
 #end
 		if (this == sourceEncoding || this.name == sourceEncoding.name)
 		{
@@ -75,9 +75,9 @@ import indian.Indian.*;
 			while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
 			{
 				var srclen = byteLength - read;
-				if (srclen > 0x7FFF) srclen = 0x7FFF;
+				if (srclen > 0xFFF0) srclen = 0xFFF0;
 				var outlen = maxOutByteLength - written;
-				if (outlen > 0x7FFF) outlen = 0x7FFF;
+				if (outlen > 0xFFF0) outlen = 0xFFF0;
 				var er = sourceEncoding.convertToUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
 				if (er.isEmpty())
 					break;
@@ -91,9 +91,9 @@ import indian.Indian.*;
 			while (written < maxOutByteLength && ( byteLength < 0 || read < byteLength))
 			{
 				var srclen = byteLength - read;
-				if (srclen > 0x7FFF) srclen = 0x7FFF;
+				if (srclen > 0xFFF0) srclen = 0xFFF0;
 				var outlen = maxOutByteLength - written;
-				if (outlen > 0x7FFF) outlen = 0x7FFF;
+				if (outlen > 0xFFF0) outlen = 0xFFF0;
 				var er = this.convertFromUtf32(source,srcoffset+read,srclen, out,outoffset+written,outlen);
 				if (er.isEmpty())
 					break;
@@ -101,7 +101,6 @@ import indian.Indian.*;
 				written += er.written;
 			}
 			return written;
-			// return this.convertFromUtf32(source,srcoffset,byteLength, out,outoffset,maxOutByteLength);
 		} else {
 			//use UTF32 intermediate representation
 			var written = 0,
@@ -288,7 +287,7 @@ import indian.Indian.*;
 			while(length < 0 || read < length)
 			{
 				var sendLen = length - read;
-				if (sendLen > 0xFFFF) sendLen = 0xFFFF;
+				if (sendLen > 0xFFF0) sendLen = 0xFFF0;
 				var r = this.convertToUtf32(source,read,sendLen, tmp,0,neededBuf);
 
 				if (r.isEmpty()) //found terminator
