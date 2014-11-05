@@ -1,4 +1,0 @@
-* um pointer é sempre um buffer no seu underlying type - um buffer pode ter o underlying type de um real C#/C++ Pointer
-* GCBuffer - Ptr<Dynamic> que pode ser Garbage Collected. Não disponível em TODAS as plataformas (e.g. flash lel)
-* Para Java, não usar JNA e fazer próprios bindings: possibilidade de utilizar o modo 'direct' usando memory map anonymous
-* Começar com 3 targets: c#, c++ e neko 
