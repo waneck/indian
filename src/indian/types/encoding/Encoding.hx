@@ -137,16 +137,10 @@ import indian.Indian.*;
 #end
 		var read = 0,
 				written = 0;
-		// while( written < maxOutByteLength && ( byteLength < 0 || read < byteLength) )
-		{
-			var srclen = byteLength - read;
-			var outlen = maxOutByteLength - written;
-			var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen);
-			// if (er.isEmpty())
-				// break;
-			// read += er.read;
-			written += er;
-		}
+		var srclen = byteLength - read;
+		var outlen = maxOutByteLength - written;
+		var er = _convertFromEncoding(source,read,srclen,sourceEncoding, out,written,outlen);
+		written += er;
 		return written;
 	}
 
@@ -245,21 +239,14 @@ import indian.Indian.*;
 		var written = 0,
 				read = 0;
 		pin(str = $ptr(string), {
-			// while (written < maxOutByteLength && read < readLen)
-			{
-				var curLen = readLen - read;
-				var curOut = maxOutByteLength - written;
+			var curLen = readLen - read;
+			var curOut = maxOutByteLength - written;
 #if !(cs || java || js) // UTF-8
-				var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut);
+			var re = this._convertFromEncoding(str,read,curLen,Utf8.cur, out,written,curOut);
 #else // UTF-16
-				var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut);
+			var re = this._convertFromEncoding(str,read,curLen,Utf16.cur, out,written,curOut);
 #end
-				// if (re.isEmpty())
-					// break;
-				written += re;
-				// read += re.read;
-			}
-
+			written += re;
 		});
 		return written;
 	}
