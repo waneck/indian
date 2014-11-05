@@ -4,9 +4,14 @@ package indian;
 extern class HeapPtr<T> implements ArrayAccess<T>
 {
 	/**
-		Returns the size of the type `T`, if known (not Ptr<Dynamic>). Otherwise returns `0`
+		Returns the pointer to the n-th element
 	**/
-	public var bytesSize(default,never):Int;
+	@:op(A+B) public function advance(nth:Int):Ptr<T>;
+
+	/**
+		Reinterprets the pointer as an `indian.Buffer`
+	**/
+	@:to public function asBuffer():Buffer;
 
 	/**
 		Dereferences the pointer to the actual `T` object. If the actual `T` object is a Struct, and
@@ -15,8 +20,20 @@ extern class HeapPtr<T> implements ArrayAccess<T>
 	public function dereference():T;
 
 	/**
+		Gets the concrete `T` reference. If the underlying type is a struct, and
+		the underlying platform doesn't support structs, this field won't be available
+	**/
+	@:arrayAccess public function get(idx:Int):T;
+
+	/**
+		Sets the concrete `T` reference. If the underlying type is a struct, and
+		the underlying platform doesn't support structs, this field won't be available
+	**/
+	@:arrayAccess public function set(idx:Int, val:T):T;
+
+	/**
 		Casts itself to the stack-restricted Ptr type
 	**/
-	@:to public function toPtr():Ptr<T>;
+	@:to public function asPtr():Ptr<T>;
 }
 
