@@ -13,11 +13,19 @@ extern class HeapPtr<T> implements ArrayAccess<T>
 	**/
 	@:to public function asBuffer():Buffer;
 
+	@:to public function asAny():AnyPtrHeap;
+
 	/**
 		Dereferences the pointer to the actual `T` object. If the actual `T` object is a Struct, and
 		the underlying platform doesn't support naked structs, this field won't be available.
 	**/
 	public function dereference():T;
+
+	/**
+		Reinterprets the current pointer as a pointer to another value type.
+		The use of this function instead of performing an unsafe cast is needed in order for the code to work on all targets.
+	**/
+	public function reinterpret<To>():HeapPtr<To>;
 
 	/**
 		Gets the concrete `T` reference. If the underlying type is a struct, and

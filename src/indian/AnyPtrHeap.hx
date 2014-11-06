@@ -1,0 +1,5 @@
+package indian;
+
+abstract AnyPtrHeap
+{
+}

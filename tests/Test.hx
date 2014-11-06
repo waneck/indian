@@ -29,3 +29,5 @@ class Test
 	}
 
 }
+
+// typedef A = Ptr<Int>;

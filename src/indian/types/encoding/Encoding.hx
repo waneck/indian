@@ -265,6 +265,8 @@ import indian.Indian.*;
 #end
 		if (hasTermination) length -= this.terminationBytes;
 
+		//OPTIMIZEME - optimize hxcpp. It seems that using StringBuf here is making hxcpp 3x slower than java/c#
+		// (valgrind points to String.fromCharCode being the culprit)
 		var ret = new StringBuf();
 		// first convert into
 		var neededBuf = length << 2;
