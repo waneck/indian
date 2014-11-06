@@ -322,6 +322,16 @@ import indian._impl.*;
 #end
 	}
 
+	@:extern inline public function getBool(offset:Int):Bool //for compatibility with Ptr<Bool>
+	{
+		return getUInt8(offset) != 0;
+	}
+
+	@:extern inline public function setBool(offset:Int, val:Bool):Void //for compatibility with Ptr<Bool>
+	{
+		setUInt8(offset, val ? 1 : 0);
+	}
+
 	@:extern inline public function getInt32(offset:Int):Int
 	{
 #if cs

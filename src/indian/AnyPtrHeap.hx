@@ -1,5 +1,0 @@
-package indian;
-
-abstract AnyPtrHeap
-{
-}

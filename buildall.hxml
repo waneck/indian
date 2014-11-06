@@ -7,11 +7,11 @@
 #-debug
 --each
 --next
--neko bin/neko.n
--cmd echo "=======neko========"
--cmd neko bin/neko.n
--debug
---next
+#-neko bin/neko.n
+#-cmd echo "=======neko========"
+#-cmd neko bin/neko.n
+#-debug
+#--next
 -debug
 -cs bin/cs
 -D unsafe

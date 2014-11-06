@@ -28,4 +28,5 @@ class PointerHelper
 	public static var physcmp:Dynamic = Lib.load('indian', 'tau_physcmp',2);
 
 	public static var strptr:Dynamic = Lib.load('indian', 'tau_strptr',1);
+	public static var ptrsize:Dynamic = Lib.load('indian', 'tau_ptrsize',0);
 }

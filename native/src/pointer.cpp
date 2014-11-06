@@ -8,6 +8,12 @@ value tau_strptr(value str)
 }
 DEFINE_PRIM(tau_strptr,1);
 
+value tau_ptrsize()
+{
+	return alloc_int(sizeof(void *));
+}
+DEFINE_PRIM(tau_ptrsize,0);
+
 /** pointer manipulation helpers **/
 
 value tau_memmove(value src_ptr, value src_pos, value dest_ptr, value dest_pos, value len)
