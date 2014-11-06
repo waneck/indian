@@ -57,28 +57,50 @@ abstract AnyPtr(AnyPtrType)
 	/**
 		Adds an offset to the value of a pointer
 	**/
-	// @:op(A+B) public function advance(offset:Int):AnyPtr
-	// {
-	// }
+	@:op(A+B) @:extern inline public function advance(bytesOffset:Int):AnyPtr
+	{
+#if cs
+		return cast this.Add(bytesOffset);
+#elseif (cpp || java)
+		return cast this.add(bytesOffset);
+#elseif (neko && !macro && !interp)
+		return new AnyPtr(indian._impl.neko.PointerHelper.add(this, bytesOffset));
+#end
+	}
 
 	/**
 		Subtracts an offset to the value of a pointer
 	**/
-	// @:op(A-B) public function subtract(offset:Int):AnyPtr
-	// {
-	// }
+	@:op(A-B) @:extern inline public function subtract(offset:Int):AnyPtr
+	{
+		return add(-offset);
+	}
 
 	/**
 		Converts the pointer to an Int value
 	**/
-	// public function toInt():Int
-	// {
-	// }
+	@:extern inline public function toInt():Int
+	{
+#if cs
+		return this.ToInt32();
+#elseif (cpp || java)
+		return cast this;
+#elseif neko
+		return indian.types.Int64.toInt(cast this);
+#end
+	}
 
 	/**
 		Converts the pointer to an Int64 value
 	**/
-	// public function toInt64():Int64
-	// {
-	// }
+	@:extern inline public function toInt64():Int64
+	{
+#if cs
+		return this.ToInt64();
+#elseif (cpp || java)
+		return cast this;
+#elseif neko
+		return cast this;
+#end
+	}
 }
