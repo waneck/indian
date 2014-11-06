@@ -5,7 +5,7 @@ typedef PointerType<T> =
 	cpp.Pointer<T>
 #elseif cs
 #if !unsafe
-#error The Pointer type needs -D unsafe to be defined
+#error "The Pointer type needs -D unsafe to be defined"
 #end
 	cs.Pointer<T>
 #elseif java
