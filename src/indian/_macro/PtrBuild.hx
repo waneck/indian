@@ -41,21 +41,23 @@ class PtrBuild
 					var a = abs.get();
 					switch [a.pack, a.name, a.meta.has(':coreType')] {
 						case [ [], 'Int', true ]:
-							return getOrBuild('Int32',a.pack,a.name,4,t,pos);
+							return getOrBuild('Int32',[],a.name,4,t,pos);
 						case [ [], 'Float', true ]:
-							return getOrBuild('Float64',a.pack,a.name,8,t,pos);
+							return getOrBuild('Float64',[],a.name,8,t,pos);
 						case [ [], 'Single', true ]:
-							return getOrBuild('Float32',a.pack,a.name,4,t,pos);
+							return getOrBuild('Float32',[],a.name,4,t,pos);
 						case [ [], 'Bool', true ]:
-							return getOrBuild('Bool',a.pack,a.name,1,t,pos);
+							return getOrBuild('Bool',[],a.name,1,t,pos);
 						case [ _, _, true ]:
-							throw new Error('Unrecognized native type. Please use the `indian.types` package for using basic types',pos);
+							throw new Error('Unrecognized native type ${a.pack.join('.')}.${a.name}. Please use the `indian.types` package for using standardized basic types',pos);
 						case [ ['indian','types'], 'UInt8', false ]:
-							return getOrBuild('UInt8',a.pack,a.name,1,t,pos);
+							return getOrBuild('UInt8',[],a.name,1,t,pos);
 						case [ ['indian','types'], 'UInt16', false ]:
-							return getOrBuild('UInt16',a.pack,a.name,2,t,pos);
+							return getOrBuild('UInt16',[],a.name,2,t,pos);
 						case [ ['indian','types'], 'Int64', false ]:
-							return getOrBuild('Int64',a.pack,a.name,8,t,pos);
+							return getOrBuild('Int64',[],a.name,8,t,pos);
+						case [ _, _, false ] if (a.meta.has(':pointer')):
+							return getOrBuild('Pointer',[],a.name,-1,t,pos);
 						case [ _, _, false ]:
 							recurse(a.type);
 					}
@@ -81,7 +83,7 @@ class PtrBuild
 
 	private static function getOrBuild(fnName:String, pack:Array<String>, name:String, size:Int, derefType:Type, pos:Position):Type
 	{
-		var buildName = "Ptr" +pack.join("_") + (pack.length == 0 ? '' : '_') + name;
+		var buildName = "Ptr_" +pack.join("_") + (pack.length == 0 ? '' : '_') + name;
 		var typeName = 'indian.pointers.' + buildName;
 		var type = try getType(typeName) catch(e:String) { if (e.indexOf('Type not found') >= 0) null; else throw e; };
 		if (type != null)
@@ -102,21 +104,7 @@ class PtrBuild
 		else
 			macro : indian.Buffer;
 
-		function getExpr(nekoFn:String, nekoargs:Array<Expr>, usesBuffer:Expr, nativePtr:Expr)
-		{
-			if (defined('neko'))
-			{
-				var ret = macro indian._impl.neko.PointerHelper.$nekoFn;
-				nekoargs.unshift(macro this);
-				return { expr:ECall(ret,nekoargs), pos:ret.pos };
-			} else if (defined('cs') || defined('cpp')) {
-				return nativePtr;
-			} else { //uses buffer
-				return usesBuffer;
-			}
-		}
-
-		function getExprMap(map:Map<String,Expr>)
+		function getExpr(map:Map<String,Expr>)
 		{
 			if (defined('neko'))
 				return map.exists('neko') ? map['neko'] : map['default'];
@@ -131,16 +119,23 @@ class PtrBuild
 
 		//build here
 		var cls = macro class { //abstract Ptr(indian._impl.PointerType<$T>)
-			public static inline var byteSize:Int = $v{size};
+			public static var byteSize(get,never):Int;
 
-			public static inline var power:Int = $v{Std.int(Math.sqrt(size))};
+			@:extern inline private static function get_byteSize():Int
+				return ${if(size > 0) macro $v{size} else macro indian.AnyPtr.size};
+
+			public static var power(get,never):Int;
+
+			@:extern inline private static function get_power():Int
+				return ${if(size > 0) macro $v{log2(size)} else macro indian.AnyPtr.power};
 
 			/**
 				Returns the pointer to the n-th element
 			**/
 			@:op(A+B) @:extern inline public function advance(nth:Int) : $thisType
-				return ${getExprMap([
-					'neko' => macro indian._impl.neko.PointerHelper.add(this,nth),
+				return ${getExpr([
+					'neko' => macro indian._impl.neko.PointerHelper.add(this,nth << $v{log2(size)}),
+					'java' => macro cast this.add(nth << $v{log2(size)}),
 					'default' => macro cast this.add(nth)
 				])};
 
@@ -166,26 +161,36 @@ class PtrBuild
 
 			@:from @:extern inline public static function fromBuffer(buf : indian.Buffer) : $thisType
 			{
-				${getExprMap([
+				${getExpr([
 					'cpp' => macro return untyped ( buf.t().reinterpret() : $underlying ),
 					'default' => macro return cast buf
 				])};
 			}
+
+			@:from @:extern inline public static function fromAny(any : indian.AnyPtr) : $thisType
+				${getExpr([
+					'cs' => macro return cast @:privateAccess any.t().ToPointer(),
+					'cpp' => macro return untyped ( any.t().reinterpret() : $underlying ),
+					'default' => macro return cast any
+				])};
 
 			/**
 				Reinterprets the pointer as an `indian.Buffer`
 			**/
 			@:to @:extern inline public function asBuffer():Buffer
 			{
-				${getExprMap([
+				${getExpr([
 					'cpp' => macro return untyped ( this.reinterpret() : indian._impl.BufferType ),
 					'default' => macro return cast this,
 				])};
 			}
 
+			/**
+				Reinterprets the pointer as `indian.AnyPtr`
+			**/
 			@:to @:extern inline public function asAny():AnyPtr
 			{
-				return indian.AnyPtr.fromInternalPointer(${getExprMap([
+				return indian.AnyPtr.fromInternalPointer(${getExpr([
 					'cpp' => macro this,
 					'cs' => macro this,
 					'default' => macro @:privateAccess this.t()
@@ -200,27 +205,15 @@ class PtrBuild
 				return get(0);
 
 			/**
-				Reinterprets the current pointer as a pointer to another value type.
-				The use of this function instead of performing an unsafe cast is needed in order for the code to work on all targets.
-			**/
-			@:extern inline public function reinterpret<To>():Ptr<To>
-			{
-				${getExprMap([
-					'cpp' => macro return cast ( this.reinterpret() ),
-					'default' => macro return cast this
-				])};
-			}
-
-			/**
 				Gets the concrete `T` reference. If the underlying type is a struct, and
 				the underlying platform doesn't support structs, this field won't be available
 			**/
 			@:arrayAccess @:extern inline public function get(idx:Int) : $deref
 			{
-				return ${getExprMap([
+				return ${getExpr([
 					'cs' => macro this[idx],
 					'cpp' => macro this.at(idx),
-					'default' => macro this.$get(idx << $v{Std.int(Math.sqrt(size))} )
+					'default' => macro this.$get(idx << $v{log2(size)} )
 				])};
 			}
 
@@ -230,10 +223,10 @@ class PtrBuild
 			**/
 			@:arrayAccess @:extern inline public function set(idx:Int, value : $deref) : $deref
 			{
-				return ${getExprMap([
+				return ${getExpr([
 					'cs' => macro this[idx] = value,
-					'cpp' => macro this.add(idx).ref = value,
-					'default' => macro { this.$set(idx << $v{Std.int(Math.sqrt(size))},value); return value; }
+					'cpp' => macro { var ret:cpp.ConstPointer<$deref> = cast this.add(idx); untyped __cpp__('{0}[0] = {1}',ret,value); },
+					'default' => macro { this.$set(idx << $v{log2(size)},value); return value; }
 				])};
 			}
 
@@ -244,8 +237,16 @@ class PtrBuild
 		cls.pack = ['indian','pointers'];
 		cls.name = buildName;
 		cls.kind = TDAbstract(underlying);
+		cls.meta = [ for (name in [':dce',':pointer']) { name:name, params:[], pos:pos } ];
 		defineType(cls);
 
 		return getType(typeName);
+	}
+
+	private static function log2(index:Int):Int
+	{
+		var targetlevel = 0;
+		while ((index >>>= 1) > 0) ++targetlevel;
+		return targetlevel;
 	}
 }

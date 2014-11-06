@@ -8,6 +8,22 @@ import indian._impl.*;
 **/
 @:dce abstract Buffer(BufferType)
 {
+	@:isVar public static var littleEndian(get,null):Bool;
+	private static var initialized = false;
+
+	@:unsafe private static function get_littleEndian():Bool
+	{
+		if (initialized) return littleEndian;
+
+		var tmp:Buffer = Indian.alloc(2);
+		tmp.setUInt16(0,0xFF);
+		var ret = tmp.getUInt8(0) == 0xFF;
+		Indian.free(tmp);
+		littleEndian = ret;
+		initialized = true;
+		return littleEndian = ret;
+	}
+
 	@:extern inline private function new(pointer:BufferType)
 	{
 		this = cast pointer;
@@ -448,35 +464,37 @@ import indian._impl.*;
 #end
 	}
 
-	@:extern inline public function getPointer<T>(offset:Int):PointerType<T>
+	@:extern inline public function getPointer<T>(offset:Int):AnyPtr
 	{
 #if cs
-		return ( cast this.add(offset) : PointerType<PointerType<T>> )[0];
+		return ( cast this.add(offset) : PointerType<AnyPtr> )[0];
 #elseif (neko && !macro && !interp)
 		return indian._impl.neko.PointerHelper.getPointer(this,offset);
 #elseif cpp
 		return this.add(offset).reinterpret()[0];
 #elseif java
-		return cast this.getFloat64(offset);
+		return cast indian._impl.java.Pointer.PointerHelper.current.getPointer(this,offset);
 #else
+		throw "not available";
 		// return this.getFloat64(offset);
 		//TODO
 		return null;
 #end
 	}
 
-	@:extern inline public function setPointer<T>(offset:Int, pointer:PointerType<T>):Void
+	@:extern inline public function setPointer<T>(offset:Int, pointer:AnyPtr):Void
 	{
 #if cs
-		( cast this.add(offset) : PointerType<PointerType<T>> )[0] = pointer;
+		( cast this.add(offset) : PointerType<AnyPtr> )[0] = pointer;
 #elseif (neko && !macro && !interp)
 		indian._impl.neko.PointerHelper.setPointer(this, offset, pointer);
 #elseif cpp
-		var p:PointerType<PointerType<T>> = this.add(offset).reinterpret();
+		var p:PointerType<AnyPtr> = this.add(offset).reinterpret();
 		p[0] = pointer;
 #elseif java
-		this.setFloat64(offset, cast pointer);
+		indian._impl.java.Pointer.PointerHelper.current.setPointer(this,offset,cast pointer);
 #else
+		throw "not available";
 		// this.setFloat64(offset,val);
 		//TODO
 #end

@@ -116,3 +116,61 @@ import indian._impl.java.Unsafe.*;
 	}
 
 }
+
+@:keep @:abstract @:nativeGen class PointerHelper
+{
+	@:final public static var current(default,null):PointerHelper = getCurrent();
+
+	public static function getCurrent():PointerHelper
+	{
+		if (indian.AnyPtr.size == 4)
+			return new PointerHelper32();
+		else
+			return new PointerHelper64();
+	}
+
+	public function getPointer(ptr:Pointer,offset:Int):Pointer
+	{
+		return ptr;
+	}
+
+	public function setPointer(ptr:Pointer,offset:Int,val:Pointer):Void
+	{
+	}
+}
+
+@:final @:nativeGen class PointerHelper32 extends PointerHelper
+{
+	public function new()
+	{
+	}
+
+	override public function getPointer(ptr:Pointer, offset:Int):Pointer
+	{
+		return new Pointer(cast ptr.getInt32(offset));
+	}
+
+	override public function setPointer(ptr:Pointer,offset:Int,val:Pointer):Void
+	{
+		ptr.setInt32(offset,cast val.addr());
+	}
+}
+
+@:final @:nativeGen class PointerHelper64 extends PointerHelper
+{
+	public function new()
+	{
+	}
+
+	override public function getPointer(ptr:Pointer, offset:Int):Pointer
+	{
+		return new Pointer(ptr.getInt64(offset));
+	}
+
+	override public function setPointer(ptr:Pointer,offset:Int,val:Pointer):Void
+	{
+		ptr.setInt64(offset,val.addr());
+	}
+}
+
+

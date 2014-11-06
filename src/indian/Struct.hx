@@ -12,7 +12,9 @@ extern class Struct<T>
 {
 	public static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
 	public static function stackalloc<T>(size:Int):Ptr<Struct<T>>;
-	public static function array<T>(size:Int):Ptr<Struct<T>>;
+
+	public static function array<T>(?tdef:{}):Ptr<Struct<T>>;
+	public static function stackarray<T>(size:Int):Ptr<Struct<T>>;
 
 	function copy():Struct<T>;
 	/*macro*/ function with(tdef:{}):Struct<T>;

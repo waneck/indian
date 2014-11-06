@@ -1,15 +1,24 @@
 package indian;
 
 /**
-	A Pointer cannot be stored in any heap field or captured by an anoymous function. It should only live in the stack.
+	The `indian.Ptr<>` class is a special class that works like a template - building a different pointer object for each different type used.
+	Each `indian.Ptr<>` type can be cast to and from `indian.AnyPtr`, which can be seen as a `super type` of all the Pointer types.
 
-	The pointer has the same methods as its underlying HeapPtr<> type, and all HeapPtr<>s can
-	be cast into a Ptr<>, but no Ptr<> should be cast into a HeapPtr<>.
-	It is good practise to only annotate types as HeapPtr<> if it is really necessary
+	Pointers to type parameters are not supported and will be compiled as `indian.AnyPtr`
 **/
 @:genericBuild(indian._macro.PtrBuild.build())
 extern class Ptr<T> implements ArrayAccess<T>
 {
+	/**
+		The size in bytes of each element
+	**/
+	public static var byteSize:Int;
+
+	/**
+		The power of two of the element size
+	**/
+	public static var power:Int;
+
 	/**
 		Returns the pointer to the n-th element
 	**/
@@ -21,10 +30,27 @@ extern class Ptr<T> implements ArrayAccess<T>
 	@:op(A--) public function postDecr():Ptr<T>;
 
 	/**
+		Creates a `Ptr<T>` type from an `indian.Buffer` type
+	**/
+	@:from public static function fromBuffer<T>(buf : indian.Buffer) : Ptr<T>;
+
+	@:from public static function fromAny<T>(any : indian.AnyPtr) : Ptr<T>;
+
+	/**
 		Reinterprets the pointer as an `indian.Buffer`
 	**/
 	@:to public function asBuffer():Buffer;
 
+	/**
+		Reinterprets the pointer as `indian.AnyPtr`.
+		Use this to safely cast between different `Ptr<>` types
+
+		Example:
+		```haxe
+			var ptr:Ptr<Int> = getSomePtr();
+			var ptrFloat:Ptr<Float> = ptr.asAny(); //will be correctly cast to `Ptr<Float>` on all targets
+		```
+	**/
 	@:to public function asAny():AnyPtr;
 
 	/**
@@ -32,12 +58,6 @@ extern class Ptr<T> implements ArrayAccess<T>
 		the underlying platform doesn't support naked structs, this field won't be available.
 	**/
 	public function dereference():T;
-
-	/**
-		Reinterprets the current pointer as a pointer to another value type.
-		The use of this function instead of performing an unsafe cast is needed in order for the code to work on all targets.
-	**/
-	public function reinterpret<To>():Ptr<To>;
 
 	/**
 		Gets the concrete `T` reference. If the underlying type is a struct, and

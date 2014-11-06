@@ -14,7 +14,7 @@ abstract UInt16(UInt16_t)
 #end
 	}
 
-	public static inline function fromInt(i:Int):UInt16
+	@:from public static inline function fromInt(i:Int):UInt16
 	{
 #if !(java || cs || cpp)
 		return cast i & 0xFFFF;

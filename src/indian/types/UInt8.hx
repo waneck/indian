@@ -14,7 +14,7 @@ abstract UInt8(UInt8_t)
 #end
 	}
 
-	public static inline function fromInt(i:Int):UInt8
+	@:from public static inline function fromInt(i:Int):UInt8
 	{
 #if !(java || cs || cpp)
 		return cast i & 0xFF;
