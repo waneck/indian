@@ -3,13 +3,15 @@ import indian.types.*;
 import indian._impl.*;
 
 /**
-	This is equivalent to a `void *` pointer in C. It's a pointer, but its value is not known.
-	All `indian.Ptr` types can be interpreted as `AnyPtr`, and it can be used outside an unsafe context
+	This is equivalent to a `void *` pointer in C. It's a pointer, but what it points to is not known,
+	and its underlying value is unaccessible while it remains so.
+
+	All `indian.Ptr` types can be interpreted as `AnyPtr`, and it can be used outside an unsafe context.
  **/
 abstract AnyPtr(AnyPtrType)
 {
 	/**
-		Contains the size - in bytes - of a pointer. Returns 4 on a 32-bit machine, and 8 in a 64-bit
+		Contains the size - in bytes - of a pointer. Returns 4 if on 32-bit, and 8 if on 64-bit
 	**/
 	public static var size(default,null):Int = {
 #if java
@@ -25,7 +27,12 @@ abstract AnyPtr(AnyPtrType)
 #end
 	};
 
-	@:extern inline public static function fromPointer<T>(ptr:indian._impl.PointerType<T>):AnyPtr
+	@:extern inline public function new(v)
+	{
+		this = v;
+	}
+
+	@:extern inline public static function fromInternalPointer<T>(ptr:indian._impl.PointerType<T>):AnyPtr
 	{
 #if cs
 		return cast new cs.system.IntPtr( ( cast ptr : cs.Pointer<Void> ) );
@@ -33,6 +40,17 @@ abstract AnyPtr(AnyPtrType)
 		return untyped (ptr.reinterpret() : AnyPtrType);
 #else
 		return cast ptr;
+#end
+	}
+
+	@:extern @:to inline public function toBuffer():Buffer
+	{
+#if cs
+		return ( cast this.ToPointer() : indian.Buffer );
+#elseif cpp
+		return untyped ( this.reinterpret() : indian._impl.BufferType );
+#else
+		return cast this;
 #end
 	}
 

@@ -10,15 +10,8 @@ import indian.*;
 class Test
 {
 
-	@:unsafe static function main()
+	static function main()
 	{
-		var ptr:Ptr<Int> = Indian.alloc(255);
-		for (i in 0...10)
-			ptr[i] = i;
-		for (i in 0...10)
-			trace(ptr[i]);
-		// var any = AnyPtr.fromPointer(cast ptr);
-		// trace(any);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.PointerTests());

@@ -102,7 +102,7 @@ class PtrBuild
 		else
 			macro : indian.Buffer;
 
-		inline function getExpr(nekoFn:String, nekoargs:Array<Expr>, usesBuffer:Expr, nativePtr:Expr)
+		function getExpr(nekoFn:String, nekoargs:Array<Expr>, usesBuffer:Expr, nativePtr:Expr)
 		{
 			if (defined('neko'))
 			{
@@ -116,7 +116,7 @@ class PtrBuild
 			}
 		}
 
-		inline function getExprMap(map:Map<String,Expr>)
+		function getExprMap(map:Map<String,Expr>)
 		{
 			if (defined('neko'))
 				return map.exists('neko') ? map['neko'] : map['default'];
@@ -131,11 +131,18 @@ class PtrBuild
 
 		//build here
 		var cls = macro class { //abstract Ptr(indian._impl.PointerType<$T>)
+			public static inline var byteSize:Int = $v{size};
+
+			public static inline var power:Int = $v{Std.int(Math.sqrt(size))};
+
 			/**
 				Returns the pointer to the n-th element
 			**/
 			@:op(A+B) @:extern inline public function advance(nth:Int) : $thisType
-				return ${getExpr('add',[macro nth], macro cast this.add(nth), macro cast this.add(nth) )};
+				return ${getExprMap([
+					'neko' => macro indian._impl.neko.PointerHelper.add(this,nth),
+					'default' => macro cast this.add(nth)
+				])};
 
 			@:op(++A) @:extern inline public function incr() : $thisType
 				return cast this = advance(1).t();
@@ -171,14 +178,14 @@ class PtrBuild
 			@:to @:extern inline public function asBuffer():Buffer
 			{
 				${getExprMap([
-					'cpp' => macro return untyped ( cast this.reinterpret() : indian._impl.BufferType ),
+					'cpp' => macro return untyped ( this.reinterpret() : indian._impl.BufferType ),
 					'default' => macro return cast this,
 				])};
 			}
 
 			@:to @:extern inline public function asAny():AnyPtr
 			{
-				return indian.AnyPtr.fromPointer(${getExprMap([
+				return indian.AnyPtr.fromInternalPointer(${getExprMap([
 					'cpp' => macro this,
 					'cs' => macro this,
 					'default' => macro @:privateAccess this.t()
@@ -225,7 +232,7 @@ class PtrBuild
 			{
 				return ${getExprMap([
 					'cs' => macro this[idx] = value,
-					'cpp' => macro this.add(idx).ref = idx,
+					'cpp' => macro this.add(idx).ref = value,
 					'default' => macro { this.$set(idx << $v{Std.int(Math.sqrt(size))},value); return value; }
 				])};
 			}

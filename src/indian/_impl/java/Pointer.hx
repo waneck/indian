@@ -19,6 +19,7 @@ import indian._impl.java.Unsafe.*;
 		this = ptr;
 	}
 
+	//FIXME maybe change this to JNI global refs, so memory pressure is realistic
 	@:extern inline public static function alloc(nbytes:Int):Pointer
 	{
 		return new Pointer(unsafe.allocateMemory(cast nbytes));
