@@ -82,14 +82,20 @@ import indian.types.*;
 		checkCanary(ptr,10);
 		Indian.free(ptr);
 
+		var ptr:Ptr<Int64> = alloc(10*8);
+		for (i in 0...10)
+			ptr[i] = Int64.make(0xFF00FF,0x00FF00 + i);
+		for (i in 0...10)
+			Assert.isTrue(Int64.make(0xFF00FF,0x00FF00 + i).eq(ptr[i]));
+		checkCanary(ptr,10*8);
+		Indian.free(ptr);
+
 		Assert.notEquals(0, ptr.asAny().toInt());
 		Assert.isTrue(0 != ptr.asAny().toInt64());
 	}
 
 	public function test_ptr_ptr()
 	{
-		trace(PtrPtr.byteSize);
-		trace(PtrPtr.power);
 		var ptr:Ptr<Int> = alloc(32 * 4);
 		for (i in 0...32)
 			ptr[i] = i;
@@ -154,4 +160,3 @@ import indian.types.*;
 typedef IntPtr = Ptr<Int>;
 typedef FloatPtr = Ptr<Float>;
 typedef PtrPtr = Ptr<IntPtr>;
-

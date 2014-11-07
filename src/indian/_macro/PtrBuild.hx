@@ -134,8 +134,8 @@ class PtrBuild
 			**/
 			@:op(A+B) @:extern inline public function advance(nth:Int) : $thisType
 				return ${getExpr([
-					'neko' => macro indian._impl.neko.PointerHelper.add(this,nth << $v{log2(size)}),
-					'java' => macro cast this.add(nth << $v{log2(size)}),
+					'neko' => macro indian._impl.neko.PointerHelper.add(this,nth << power),
+					'java' => macro cast this.add(nth << power),
 					'default' => macro cast this.add(nth)
 				])};
 
@@ -201,19 +201,19 @@ class PtrBuild
 				Dereferences the pointer to the actual `T` object. If the actual `T` object is a Struct, and
 				the underlying platform doesn't support naked structs, this field won't be available.
 			**/
-			@:extern inline public function dereference() : $deref
+			@:deref @:extern inline public function dereference() : $deref
 				return get(0);
 
 			/**
 				Gets the concrete `T` reference. If the underlying type is a struct, and
 				the underlying platform doesn't support structs, this field won't be available
 			**/
-			@:arrayAccess @:extern inline public function get(idx:Int) : $deref
+			@:deref @:arrayAccess @:extern inline public function get(idx:Int) : $deref
 			{
 				return ${getExpr([
 					'cs' => macro this[idx],
 					'cpp' => macro this.at(idx),
-					'default' => macro this.$get(idx << $v{log2(size)} )
+					'default' => macro this.$get(idx << power )
 				])};
 			}
 
@@ -221,12 +221,12 @@ class PtrBuild
 				Sets the concrete `T` reference. If the underlying type is a struct, and
 				the underlying platform doesn't support structs, this field won't be available
 			**/
-			@:arrayAccess @:extern inline public function set(idx:Int, value : $deref) : $deref
+			@:deref @:arrayAccess @:extern inline public function set(idx:Int, value : $deref) : $deref
 			{
 				return ${getExpr([
 					'cs' => macro this[idx] = value,
 					'cpp' => macro { var ret:cpp.ConstPointer<$deref> = cast this.add(idx); untyped __cpp__('{0}[0] = {1}',ret,value); },
-					'default' => macro { this.$set(idx << $v{log2(size)},value); return value; }
+					'default' => macro { this.$set(idx << power,value); return value; }
 				])};
 			}
 

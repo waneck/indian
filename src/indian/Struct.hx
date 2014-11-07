@@ -10,11 +10,15 @@ package indian;
 @:genericBuild(indian._internal.PtrBuild.build())
 extern class Struct<T>
 {
-	public static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
-	public static function stackalloc<T>(size:Int):Ptr<Struct<T>>;
+	static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
+	static function stackalloc<T>(size:Int):Ptr<Struct<T>>;
 
-	public static function array<T>(?tdef:{}):Ptr<Struct<T>>;
-	public static function stackarray<T>(size:Int):Ptr<Struct<T>>;
+	static function array<T>(?tdef:{}):Ptr<Struct<T>>;
+	static function stackarray<T>(size:Int):Ptr<Struct<T>>;
+
+	static var bytesize:Int;
+
+	/*macro*/ function offset(name:String):Int;
 
 	function copy():Struct<T>;
 	/*macro*/ function with(tdef:{}):Struct<T>;

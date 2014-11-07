@@ -25,6 +25,8 @@ import indian._macro.IndianHelper;
 		Memory.free(ptr);
 	}
 
+	//TODO block alloc
+
 	inline public static function supportsStackAlloc():Bool
 	{
 #if (cpp || cs)
