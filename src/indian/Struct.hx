@@ -7,21 +7,19 @@ package indian;
 	Otherwise, they are only accessible when used through a pointer -
 	even if that pointer is a pointer to another struct that contains the struct
 **/
-@:genericBuild(indian._internal.PtrBuild.build())
-extern class Struct<T>
+@:autoBuild(indian._macro.StructBuild.build())
+interface Struct
 {
-	static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
-	static function stackalloc<T>(size:Int):Ptr<Struct<T>>;
+	// /*macro*/ static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
+	// /*macro*/ static function stackalloc<T>(?tdef:{}):Ptr<Struct<T>>;
 
-	static function array<T>(?tdef:{}):Ptr<Struct<T>>;
-	static function stackarray<T>(size:Int):Ptr<Struct<T>>;
+	// static function array<T>(size:Int):Ptr<Struct<T>>;
+	// static function stackarray<T>(size:Int):Ptr<Struct<T>>;
 
-	static var bytesize:Int;
+	// static var bytesize:Int;
 
-	/*macro*/ function offset(name:String):Int;
-
-	function copy():Struct<T>;
-	/*macro*/ function with(tdef:{}):Struct<T>;
-	function address():Ptr<Struct<T>>;
-	function equals(to:Struct<T>):Bool;
+	// function copy():Struct<T>;
+	// /*macro*/ function with(tdef:{}):Struct<T>;
+	// function address():Ptr<Struct<T>>;
+	// function equals(to:Struct<T>):Bool;
 }

@@ -14,6 +14,7 @@ class Test
 	{
 		var runner = new Runner();
 
+		runner.addCase(new indian.test.MiscTests());
 		runner.addCase(new indian.test.PointerTests());
 		runner.addCase(new indian.test.Int64Tests());
 		runner.addCase(new indian.test.BufferTests());
@@ -30,4 +31,7 @@ class Test
 
 }
 
-typedef A = Ptr<Int>;
+class S1 implements Struct
+{
+	public var i:Int;
+}

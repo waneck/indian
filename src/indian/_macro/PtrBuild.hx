@@ -4,6 +4,8 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 import haxe.macro.Context.*;
 
+import indian._macro.BuildHelper.*;
+
 using haxe.macro.Tools;
 
 class PtrBuild
@@ -14,8 +16,6 @@ class PtrBuild
 			case TInst(_.get() => cl, [t]):
 				switch [ cl.pack, cl.name ] {
 					case [ ["indian"], "Ptr" ]:
-					// case [ ["indian"], "HeapPtr" ]:
-						// '_Heap';
 					case _:
 						throw new Error('Invalid local build type: ${cl.pack.join(".")}.${cl.name}',currentPos());
 				}
@@ -57,7 +57,7 @@ class PtrBuild
 						case [ ['indian','types'], 'Int64', false ]:
 							return getOrBuild('Int64',[],a.name,8,t,pos);
 						case [ _, _, false ] if (a.meta.has(':pointer')):
-							return getOrBuild('Pointer',[],a.name,-1,t,pos);
+							return getOrBuild('Pointer',a.pack,a.name,-1,t,pos);
 						case [ _, _, false ]:
 							recurse(a.type);
 					}
@@ -83,7 +83,8 @@ class PtrBuild
 
 	private static function getOrBuild(fnName:String, pack:Array<String>, name:String, size:Int, derefType:Type, pos:Position):Type
 	{
-		var buildName = "Ptr_" +pack.join("_") + (pack.length == 0 ? '' : '_') + name;
+		var t = pack.length == 0 ? name : shortType(pack,name);
+		var buildName = 'P' + t;
 		var typeName = 'indian.pointers.' + buildName;
 		var type = try getType(typeName) catch(e:String) { if (e.indexOf('Type not found') >= 0) null; else throw e; };
 		if (type != null)
@@ -92,11 +93,7 @@ class PtrBuild
 		var get = 'get$fnName',
 				set = 'set$fnName';
 
-		var thisType = switch (parse('(_ : $typeName)',pos)) {
-			case macro (_ : $type):
-				type;
-			case _: throw 'assert';
-		};
+		var thisType = TPath({ pack:['indian','pointers'], name:buildName });
 		var deref = derefType.toComplexType();
 
 		var underlying = if (defined('cpp') || defined('cs'))
@@ -238,6 +235,7 @@ class PtrBuild
 		cls.name = buildName;
 		cls.kind = TDAbstract(underlying);
 		cls.meta = [ for (name in [':dce',':pointer']) { name:name, params:[], pos:pos } ];
+
 		defineType(cls);
 
 		return getType(typeName);
