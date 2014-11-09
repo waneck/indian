@@ -89,20 +89,11 @@ class StructBuild
 
 		var thisType = TPath({ pack:['indian','structs'], name:buildname }),
 				thisPtr = macro : indian.Ptr<$thisType>;
-		var offset32 = 0,
-				offset64 = 0;
+		var agg = new LayoutAgg();
 		for (i in infos)
 		{
-			if (union) { offset32 = 0; offset64 = 0; } //always zero the offset on unions
-			// first align the offset
-			if (i.nbytes < 0) // pointer
-			{
-				offset32 = align(4,4,offset32);
-				offset64 = align(8,8,offset64);
-			} else {
-				offset32 = align(i.nbytes,i.alignment,offset32);
-				offset64 = align(i.nbytes,i.alignment,offset64);
-			}
+			if (union) agg.reset();
+			agg.align(i.layout);
 
 			var name = i.field.name;
 			if (supports)
@@ -117,45 +108,41 @@ class StructBuild
 						return this.$name = v;
 				});
 			}
+			var fun = i.layout.type;
+			var getOffset = agg.expand('ptr_$name', build);
+
 			var off = 'offset_${name}', offget = 'get_$off';
-			var expr = offset32 == offset64 ? macro $v{offset32} : macro (indian.Infos.is64) ? $v{offset64} : $v{offset32};
 			var type = i.field.type.toComplexType(),
 					ptrget = 'ptr_get_${name}', ptrset = 'ptr_set_$name';
-			var get = 'get${i.fun}', set = 'set${i.fun}';
+			var get = 'get${i.layout.type}', set = 'set${i.layout.type}';
 			add(macro class {
 				public static var $off(get,never):Int;
 				@:extern inline private static function $offget():Int
-					return $expr;
+					return ${getOffset(macro 1)};
 
 				@:extern inline public static function $ptrget(ptr:$thisPtr):$type
 					return ${getExpr([
 						'cs' => macro ptr.acc.$name,
 						'cpp' => macro ptr.ref.$name,
-						'default' => macro @:privateAccess ptr.t().$get($i{off})
+						'default' => macro @:privateAccess ptr.t().$get(${getOffset(macro 1)})
 					])};
 
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
 						'cs' => macro ptr.acc.$name = val,
 						'cpp' => macro ptr.ref.$name = val,
-						'default' => macro @:privateAccess ptr.t().$set($i{off},val)
+						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
 					])};
 			});
 
-			if (i.nbytes < 0)
-			{
-				offset32 += 4;
-				offset64 += 4;
-			} else {
-				offset32 += i.nbytes;
-				offset64 += i.nbytes;
-			}
+			agg.add(i.layout);
 		}
-		var size = (offset32 == offset64) ? macro $v{offset32} : macro indian.Infos.is64 ? $v{offset64} : $v{offset32};
+
+		var size = agg.expand('ptr',build);
 		add(macro class {
 			public static var bytesize(get,never):Int;
 			@:extern inline private static function get_bytesize():Int
-				return $size;
+				return ${size(macro 1)};
 		});
 
 		cls.pack = ['indian','structs'];
@@ -163,6 +150,16 @@ class StructBuild
 		cls.kind = TDAbstract(getUnderlying(fields,buildname));
 		cls.meta = [ for (name in [':dce',':structimpl',':extern']) { name:name, params:[], pos:currentPos() } ];
 
+		for (f in cls.fields)
+		{
+			switch(f.kind)
+			{
+				case FFun(fn):
+					trace({ expr:EFunction(f.name,fn), pos:currentPos() }.toString(),f.access);
+				case _:
+					trace(f.name,f.access);
+			}
+		}
 		defineType(cls);
 
 		return getType(typeName);
@@ -180,83 +177,13 @@ class StructBuild
 		}
 	}
 
-	private static function fieldInfo(field:ClassField):{ mangled:String, fun:String, nbytes:Int, alignment:Int, field:ClassField }
+	private static function fieldInfo(field:ClassField):{ mangled:String, field:ClassField, layout:Layout }
 	{
-		inline function retval(pack,name,fun,nbytes,alignment) return { mangled:field.name + BuildHelper.shortType(pack,name), fun:fun, nbytes:nbytes, alignment:alignment, field:field };
-		var pos = field.pos;
-		var t = field.type;
-		while(true)
-		{
-			inline function recurse(withType:Type) { t = withType; continue; }
-
-			switch(t) {
-				case TMono(tmono) if (tmono != null):
-					recurse(tmono.get());
-				case TMono(_):
-					throw new Error('Cannot create Struct with field with unknown type',pos);
-				case TAbstract(abs,tl):
-					var a = abs.get();
-					switch [a.pack, a.name, a.meta.has(':coreType')] {
-						case [ [], 'Int', true ]:
-							return retval([],a.name,'Int32',4,4);
-						case [ [], 'Float', true ]:
-							return retval([],a.name,'Float64',8,8);
-						case [ [], 'Single', true ]:
-							return retval([],a.name,'Float32',4,4);
-						case [ [], 'Bool', true ]:
-							return retval([],a.name,'Bool',1,1);
-						case [ [], 'Dynamic', true ]:
-							return null;
-							//TODO
-							// return getType('indian.AnyPtr');
-						case [ _, _, true ]:
-							throw new Error('Unrecognized native type ${a.pack.join('.')}.${a.name}. Please use the `indian.types` package for using standardized basic types',pos);
-						case [ ['indian','types'], 'UInt8', false ]:
-							return retval([],a.name,'UInt8',1,1);
-						case [ ['indian','types'], 'UInt16', false ]:
-							return retval([],a.name,'UInt16',2,2);
-						case [ ['indian','types'], 'Int64', false ]:
-							return retval([],a.name,'Int64',8,8);
-						case [ _, _, false ] if (a.meta.has(':pointer')):
-							return retval(a.pack,a.name,'Pointer',-1,-1);
-						case [ _, _, false ]:
-							recurse(a.type);
-					}
-				case TType(_.get() => tdef,tl):
-					switch [tdef.pack, tdef.name ] {
-						case [ ['indian','types'], 'Single' ]:
-							return retval([],tdef.name,'Float32',4,4);
-						case _:
-							recurse(follow(t,true));
-					}
-				case TDynamic(_):
-					//TODO
-					// return getType('indian.AnyPtr');
-					return null;
-				// case TInst(_.get() => { kind : KTypeParameter(_) }, _):
-					// return getType('Dynamic');
-				case TAnonymous(_):
-					throw new Error('A managed (anonymous) type cannot have its address used. Are you missing another `Struct` definition?', pos);
-				case _:
-					throw new Error('Still unsupported type : $t',pos);
-			}
-			// return t;
-			throw 'assert';
-		}
-	}
-
-	private static function align(nbytes:Int, alignment:Int, currentOffset:Int)
-	{
-		// alignment rules taken from
-		// http://en.wikipedia.org/wiki/Data_structure_alignment
-		// and http://msdn.microsoft.com/en-us/library/ms253949(v=vs.80).aspx
-		var current = currentOffset % alignment;
-		if (current != 0)
-		{
-			currentOffset += (alignment - current);
-		}
-
-		return currentOffset;
+		var original = field.type;
+		var layout = Layout.fromType(original,field.pos);
+		if (layout == null)
+			return null;
+		return { mangled:field.name + BuildHelper.shortType(layout.pack,layout.name), field:field, layout:layout };
 	}
 }
 

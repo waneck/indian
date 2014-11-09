@@ -33,59 +33,6 @@ class PtrBuild
 		if (layout == null)
 			return getType('indian.AnyPtr');
 		return getOrBuild(layout, t,pos);
-		// while(true)
-		// {
-		// 	inline function recurse(withType:Type) { t = withType; continue; }
-
-		// 	switch(t) {
-		// 		case TMono(tmono) if (tmono != null):
-		// 			recurse(tmono.get());
-		// 		case TMono(_):
-		// 			throw new Error('Cannot create pointer of unknown type',pos);
-		// 		case TAbstract(abs,tl):
-		// 			var a = abs.get();
-		// 			switch [a.pack, a.name, a.meta.has(':coreType')] {
-		// 				case [ [], 'Int', true ]:
-		// 					return getOrBuild('Int32',[],a.name,4,original,pos);
-		// 				case [ [], 'Float', true ]:
-		// 					return getOrBuild('Float64',[],a.name,8,original,pos);
-		// 				case [ [], 'Single', true ]:
-		// 					return getOrBuild('Float32',[],a.name,4,original,pos);
-		// 				case [ [], 'Bool', true ]:
-		// 					return getOrBuild('Bool',[],a.name,1,original,pos);
-		// 				case [ [], 'Dynamic', true ]:
-		// 					return getType('indian.AnyPtr');
-		// 				case [ _, _, true ]:
-		// 					throw new Error('Unrecognized native type ${a.pack.join('.')}.${a.name}. Please use the `indian.types` package for using standardized basic types',pos);
-		// 				case [ ['indian','types'], 'UInt8', false ]:
-		// 					return getOrBuild('UInt8',[],a.name,1,original,pos);
-		// 				case [ ['indian','types'], 'UInt16', false ]:
-		// 					return getOrBuild('UInt16',[],a.name,2,original,pos);
-		// 				case [ ['indian','types'], 'Int64', false ]:
-		// 					return getOrBuild('Int64',[],a.name,8,original,pos);
-		// 				case [ _, _, false ] if (a.meta.has(':pointer')):
-		// 					return getOrBuild('Pointer',a.pack,a.name,-1,original,pos);
-		// 				case [ _, _, false ]:
-		// 					recurse(a.type);
-		// 			}
-		// 		case TType(_.get() => tdef,tl):
-		// 			switch [tdef.pack, tdef.name ] {
-		// 				case [ ['indian','types'], 'Single' ]:
-		// 					return getOrBuild('Float32', [],'Single',4,original,pos);
-		// 				case _:
-		// 					recurse(follow(original,true));
-		// 			}
-		// 		case TDynamic(_):
-		// 			return getType('indian.AnyPtr');
-		// 		case TInst(_.get() => { kind : KTypeParameter(_) }, _):
-		// 			return getType('indian.AnyPtr');
-		// 		case TAnonymous(_):
-		// 			throw new Error('A managed (anonymous) type cannot have its address used. Are you missing a `Struct` definition?', pos);
-		// 		case _:
-		// 			throw new Error('Still unsupported type : $t',pos);
-		// 	}
-		// 	throw "assert";
-		// }
 	}
 
 	private static function getOrBuild(layout:Layout, derefType:Type,pos:Position)

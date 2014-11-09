@@ -22,6 +22,11 @@ class LayoutAgg
 		}
 	}
 
+	public function reset()
+	{
+		for (p in platfs) p.offset = 0;
+	}
+
 	public function add(layout:Layout)
 	{
 		for (v in layout.layouts)
@@ -29,6 +34,16 @@ class LayoutAgg
 			var off = this.platfs[v.name];
 			if (off == null) throw 'assert ${v.name}';
 			off.offset += v.nbytes;
+		}
+	}
+
+	private static function isOne(e:Expr)
+	{
+		return switch (e) {
+			case macro 1:
+				true;
+			case _:
+				false;
 		}
 	}
 
@@ -52,7 +67,7 @@ class LayoutAgg
 			{
 				return function(e:Expr) return macro $e << $v{lg};
 			} else {
-				return function(e:Expr) return macro $e * $v{val.value};
+				return function(e:Expr) return isOne(e) ? macro $v{val.value} : macro $e * $v{val.value};
 			}
 		} else {
 			var power = true;
@@ -107,7 +122,7 @@ class LayoutAgg
 			{
 				return function(e:Expr) return macro $e << $i{get}();
 			} else {
-				return function(e:Expr) return macro $e * $i{get}();
+				return function(e:Expr) return isOne(e) ? macro $i{get}() : macro $e * $i{get}();
 			}
 		}
 	}

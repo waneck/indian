@@ -31,10 +31,10 @@ class Test
 
 }
 
-// typedef S = Struct<{
-// 	var x:Int;
-// 	var a:Float;
-// }>;
+typedef S = Struct<{
+	var x:Int;
+	var a:Float;
+}>;
 
 // class S1 implements Struct
 // {
