@@ -29,67 +29,75 @@ class PtrBuild
 	private static function checkOrCreate(t:Type, pos:Position):Type
 	{
 		var original = t;
-		// var layout = Layout.fromType(t,pos);
-		// if (layout == null)
-		// 	return getType('indian.AnyPtr');
-		// return getOrBuild(layout);
-		while(true)
-		{
-			inline function recurse(withType:Type) { t = withType; continue; }
+		var layout = Layout.fromType(t,pos);
+		if (layout == null)
+			return getType('indian.AnyPtr');
+		return getOrBuild(layout, t,pos);
+		// while(true)
+		// {
+		// 	inline function recurse(withType:Type) { t = withType; continue; }
 
-			switch(t) {
-				case TMono(tmono) if (tmono != null):
-					recurse(tmono.get());
-				case TMono(_):
-					throw new Error('Cannot create pointer of unknown type',pos);
-				case TAbstract(abs,tl):
-					var a = abs.get();
-					switch [a.pack, a.name, a.meta.has(':coreType')] {
-						case [ [], 'Int', true ]:
-							return getOrBuild('Int32',[],a.name,4,original,pos);
-						case [ [], 'Float', true ]:
-							return getOrBuild('Float64',[],a.name,8,original,pos);
-						case [ [], 'Single', true ]:
-							return getOrBuild('Float32',[],a.name,4,original,pos);
-						case [ [], 'Bool', true ]:
-							return getOrBuild('Bool',[],a.name,1,original,pos);
-						case [ [], 'Dynamic', true ]:
-							return getType('indian.AnyPtr');
-						case [ _, _, true ]:
-							throw new Error('Unrecognized native type ${a.pack.join('.')}.${a.name}. Please use the `indian.types` package for using standardized basic types',pos);
-						case [ ['indian','types'], 'UInt8', false ]:
-							return getOrBuild('UInt8',[],a.name,1,original,pos);
-						case [ ['indian','types'], 'UInt16', false ]:
-							return getOrBuild('UInt16',[],a.name,2,original,pos);
-						case [ ['indian','types'], 'Int64', false ]:
-							return getOrBuild('Int64',[],a.name,8,original,pos);
-						case [ _, _, false ] if (a.meta.has(':pointer')):
-							return getOrBuild('Pointer',a.pack,a.name,-1,original,pos);
-						case [ _, _, false ]:
-							recurse(a.type);
-					}
-				case TType(_.get() => tdef,tl):
-					switch [tdef.pack, tdef.name ] {
-						case [ ['indian','types'], 'Single' ]:
-							return getOrBuild('Float32', [],'Single',4,original,pos);
-						case _:
-							recurse(follow(original,true));
-					}
-				case TDynamic(_):
-					return getType('indian.AnyPtr');
-				case TInst(_.get() => { kind : KTypeParameter(_) }, _):
-					return getType('indian.AnyPtr');
-				case TAnonymous(_):
-					throw new Error('A managed (anonymous) type cannot have its address used. Are you missing a `Struct` definition?', pos);
-				case _:
-					throw new Error('Still unsupported type : $t',pos);
-			}
-			throw "assert";
-		}
+		// 	switch(t) {
+		// 		case TMono(tmono) if (tmono != null):
+		// 			recurse(tmono.get());
+		// 		case TMono(_):
+		// 			throw new Error('Cannot create pointer of unknown type',pos);
+		// 		case TAbstract(abs,tl):
+		// 			var a = abs.get();
+		// 			switch [a.pack, a.name, a.meta.has(':coreType')] {
+		// 				case [ [], 'Int', true ]:
+		// 					return getOrBuild('Int32',[],a.name,4,original,pos);
+		// 				case [ [], 'Float', true ]:
+		// 					return getOrBuild('Float64',[],a.name,8,original,pos);
+		// 				case [ [], 'Single', true ]:
+		// 					return getOrBuild('Float32',[],a.name,4,original,pos);
+		// 				case [ [], 'Bool', true ]:
+		// 					return getOrBuild('Bool',[],a.name,1,original,pos);
+		// 				case [ [], 'Dynamic', true ]:
+		// 					return getType('indian.AnyPtr');
+		// 				case [ _, _, true ]:
+		// 					throw new Error('Unrecognized native type ${a.pack.join('.')}.${a.name}. Please use the `indian.types` package for using standardized basic types',pos);
+		// 				case [ ['indian','types'], 'UInt8', false ]:
+		// 					return getOrBuild('UInt8',[],a.name,1,original,pos);
+		// 				case [ ['indian','types'], 'UInt16', false ]:
+		// 					return getOrBuild('UInt16',[],a.name,2,original,pos);
+		// 				case [ ['indian','types'], 'Int64', false ]:
+		// 					return getOrBuild('Int64',[],a.name,8,original,pos);
+		// 				case [ _, _, false ] if (a.meta.has(':pointer')):
+		// 					return getOrBuild('Pointer',a.pack,a.name,-1,original,pos);
+		// 				case [ _, _, false ]:
+		// 					recurse(a.type);
+		// 			}
+		// 		case TType(_.get() => tdef,tl):
+		// 			switch [tdef.pack, tdef.name ] {
+		// 				case [ ['indian','types'], 'Single' ]:
+		// 					return getOrBuild('Float32', [],'Single',4,original,pos);
+		// 				case _:
+		// 					recurse(follow(original,true));
+		// 			}
+		// 		case TDynamic(_):
+		// 			return getType('indian.AnyPtr');
+		// 		case TInst(_.get() => { kind : KTypeParameter(_) }, _):
+		// 			return getType('indian.AnyPtr');
+		// 		case TAnonymous(_):
+		// 			throw new Error('A managed (anonymous) type cannot have its address used. Are you missing a `Struct` definition?', pos);
+		// 		case _:
+		// 			throw new Error('Still unsupported type : $t',pos);
+		// 	}
+		// 	throw "assert";
+		// }
 	}
 
-	private static function getOrBuild(fnName:String, pack:Array<String>, name:String, size:Int, derefType:Type, pos:Position):Type
+	private static function getOrBuild(layout:Layout, derefType:Type,pos:Position)
 	{
+		var pack = layout.pack,
+				name = layout.name;
+		var fnName = layout.type;
+		var agg = new LayoutAgg();
+		agg.add(layout);
+		var build = [];
+		var align = agg.expand('ptr',build);
+
 		var t = pack.length == 0 ? name : shortType(pack,name);
 		var buildName = 'P' + t;
 		var typeName = 'indian.pointers.' + buildName;
@@ -126,21 +134,17 @@ class PtrBuild
 			public static var bytesize(get,never):Int;
 
 			@:extern inline private static function get_bytesize():Int
-				return ${if(size > 0) macro $v{size} else macro indian.AnyPtr.size};
-
-			private static var power(get,never):Int;
-
-			@:extern inline private static function get_power():Int
-				return ${if(size > 0) macro $v{log2(size)} else macro indian.AnyPtr.power};
+				return ${align(macro $v{1})};
 
 			/**
 				Returns the pointer to the n-th element
 			**/
 			@:op(A+B) @:extern inline public function advance(nth:Int) : $thisType
 				return ${getExpr([
-					'neko' => macro indian._impl.neko.PointerHelper.add(this,nth << power),
-					'java' => macro cast this.add(nth << power),
-					'default' => macro cast this.add(nth)
+					'neko' => macro indian._impl.neko.PointerHelper.add(this,${align(macro nth)}),
+					'cs' => macro cast this.add(nth),
+					'cpp' => macro cast this.add(nth),
+					'default' => macro cast this.add(${align(macro nth)}),
 				])};
 
 			@:op(++A) @:extern inline public function incr() : $thisType
@@ -217,7 +221,7 @@ class PtrBuild
 				return ${getExpr([
 					'cs' => macro this[idx],
 					'cpp' => macro this.at(idx),
-					'default' => macro this.$get(idx << power )
+					'default' => macro this.$get( ${align(macro idx)} )
 				])};
 			}
 
@@ -230,7 +234,7 @@ class PtrBuild
 				return ${getExpr([
 					'cs' => macro this[idx] = value,
 					'cpp' => macro { var ret:cpp.ConstPointer<$deref> = cast this.add(idx); untyped __cpp__('{0}[0] = {1}',ret,value); },
-					'default' => macro { this.$set(idx << power,value); return value; }
+					'default' => macro { this.$set(${align(macro idx)},value); return value; }
 				])};
 			}
 
@@ -242,7 +246,19 @@ class PtrBuild
 		cls.name = buildName;
 		cls.kind = TDAbstract(underlying);
 		cls.meta = [ for (name in [':dce',':pointer',':extern']) { name:name, params:[], pos:pos } ];
+		for (field in build)
+			cls.fields.push(field);
 
+		// for (f in cls.fields)
+		// {
+		// 	switch(f.kind)
+		// 	{
+		// 		case FFun(fn):
+		// 			trace({ expr:EFunction(f.name,fn), pos:pos }.toString(),f.access);
+		// 		case _:
+		// 			trace(f.name,f.access);
+		// 	}
+		// }
 		defineType(cls);
 
 		return getType(typeName);

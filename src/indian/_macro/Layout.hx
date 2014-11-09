@@ -7,7 +7,7 @@ import haxe.macro.Context.*;
 @:forward abstract Layout(LayoutData) from LayoutData
 {
 	public static var platforms(default,null) = ['win32','win64','nix32','nix64'];
-	private static function layouts(map:Map<String,{ nbytes:Int, align:Int }>)
+	private static function mklayouts(map:Map<String,{ nbytes:Int, align:Int }>)
 	{
 		var ret = [];
 		for (p in platforms)
@@ -48,7 +48,7 @@ import haxe.macro.Context.*;
 						case [ [], 'Int', true ]:
 							return { type:'Int32', pack:[], name:a.name, layouts:layout(4,4) };
 						case [ [], 'Float', true ]:
-							return { type:'Float64', pack:[], name:a.name, layouts:layouts(['default'=>{nbytes:8,align:8}, 'nix32'=>{nbytes:8,align:4}]) };
+							return { type:'Float64', pack:[], name:a.name, layouts:mklayouts(['default'=>{nbytes:8,align:8}, 'nix32'=>{nbytes:8,align:4}]) };
 						case [ [], 'Single', true ]:
 							return { type:'Float32', pack:[], name:a.name, layouts:layout(4,4) };
 						case [ [], 'Bool', true ]:
@@ -64,7 +64,7 @@ import haxe.macro.Context.*;
 						case [ ['indian','types'], 'Int64', false ]:
 							return { type:'Int64', pack:[], name:a.name, layouts:layout(8,8) };
 						case [ _, _, false ] if (a.meta.has(':pointer')):
-							return { type:'Pointer', pack:a.pack, name:a.name, layouts:layouts([
+							return { type:'Pointer', pack:a.pack, name:a.name, layouts:mklayouts([
 								'nix32'=>{nbytes:4,align:4},
 								'nix64'=>{nbytes:8,align:8},
 								'win32'=>{nbytes:4,align:4},
