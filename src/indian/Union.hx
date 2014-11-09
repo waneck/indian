@@ -1,16 +1,15 @@
 package indian;
 
 /**
-	This is a special type which will generate struct type definitions.
-	In platforms that support it, structs are stack-allocated.
+	This is a special type which will generate union type definitions.
+	In platforms that support it, unions are stack-allocated.
 
 	Otherwise, they are only accessible when used through a pointer -
-	even if that pointer is a pointer to another struct that contains the struct
+	even if that pointer is a pointer to another struct or union that contains the union
 **/
 @:genericBuild(indian._macro.StructBuild.build())
-extern class Struct<T>
+extern class Union<T>
 {
-	/*macro*/ static function create<T>(?tdef:{}):Struct<T>;
 	/*macro*/ static function alloc<T>(?tdef:{}):Ptr<Struct<T>>;
 	/*macro*/ static function stackalloc<T>(?tdef:{}):Ptr<Struct<T>>;
 
@@ -24,3 +23,4 @@ extern class Struct<T>
 	function address():Ptr<Struct<T>>;
 	function equals(to:Struct<T>):Bool;
 }
+

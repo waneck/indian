@@ -12,7 +12,7 @@ extern class Ptr<T> implements ArrayAccess<T>
 	/**
 		The size in bytes of each element
 	**/
-	public static var byteSize:Int;
+	public static var bytesize:Int;
 
 	/**
 		The power of two of the element size

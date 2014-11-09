@@ -28,6 +28,7 @@ class PtrBuild
 
 	private static function checkOrCreate(t:Type, pos:Position):Type
 	{
+		var original = t;
 		while(true)
 		{
 			inline function recurse(withType:Type) { t = withType; continue; }
@@ -41,32 +42,34 @@ class PtrBuild
 					var a = abs.get();
 					switch [a.pack, a.name, a.meta.has(':coreType')] {
 						case [ [], 'Int', true ]:
-							return getOrBuild('Int32',[],a.name,4,t,pos);
+							return getOrBuild('Int32',[],a.name,4,original,pos);
 						case [ [], 'Float', true ]:
-							return getOrBuild('Float64',[],a.name,8,t,pos);
+							return getOrBuild('Float64',[],a.name,8,original,pos);
 						case [ [], 'Single', true ]:
-							return getOrBuild('Float32',[],a.name,4,t,pos);
+							return getOrBuild('Float32',[],a.name,4,original,pos);
 						case [ [], 'Bool', true ]:
-							return getOrBuild('Bool',[],a.name,1,t,pos);
+							return getOrBuild('Bool',[],a.name,1,original,pos);
+						case [ [], 'Dynamic', true ]:
+							return getType('indian.AnyPtr');
 						case [ _, _, true ]:
 							throw new Error('Unrecognized native type ${a.pack.join('.')}.${a.name}. Please use the `indian.types` package for using standardized basic types',pos);
 						case [ ['indian','types'], 'UInt8', false ]:
-							return getOrBuild('UInt8',[],a.name,1,t,pos);
+							return getOrBuild('UInt8',[],a.name,1,original,pos);
 						case [ ['indian','types'], 'UInt16', false ]:
-							return getOrBuild('UInt16',[],a.name,2,t,pos);
+							return getOrBuild('UInt16',[],a.name,2,original,pos);
 						case [ ['indian','types'], 'Int64', false ]:
-							return getOrBuild('Int64',[],a.name,8,t,pos);
+							return getOrBuild('Int64',[],a.name,8,original,pos);
 						case [ _, _, false ] if (a.meta.has(':pointer')):
-							return getOrBuild('Pointer',a.pack,a.name,-1,t,pos);
+							return getOrBuild('Pointer',a.pack,a.name,-1,original,pos);
 						case [ _, _, false ]:
 							recurse(a.type);
 					}
 				case TType(_.get() => tdef,tl):
 					switch [tdef.pack, tdef.name ] {
 						case [ ['indian','types'], 'Single' ]:
-							return getOrBuild('Float32', [],'Single',4,t,pos);
+							return getOrBuild('Float32', [],'Single',4,original,pos);
 						case _:
-							recurse(follow(t,true));
+							recurse(follow(original,true));
 					}
 				case TDynamic(_):
 					return getType('indian.AnyPtr');
@@ -77,7 +80,7 @@ class PtrBuild
 				case _:
 					throw new Error('Still unsupported type : $t',pos);
 			}
-			return t;
+			throw "assert";
 		}
 	}
 
@@ -116,9 +119,9 @@ class PtrBuild
 
 		//build here
 		var cls = macro class { //abstract Ptr(indian._impl.PointerType<$T>)
-			public static var byteSize(get,never):Int;
+			public static var bytesize(get,never):Int;
 
-			@:extern inline private static function get_byteSize():Int
+			@:extern inline private static function get_bytesize():Int
 				return ${if(size > 0) macro $v{size} else macro indian.AnyPtr.size};
 
 			public static var power(get,never):Int;
@@ -234,7 +237,7 @@ class PtrBuild
 		cls.pack = ['indian','pointers'];
 		cls.name = buildName;
 		cls.kind = TDAbstract(underlying);
-		cls.meta = [ for (name in [':dce',':pointer']) { name:name, params:[], pos:pos } ];
+		cls.meta = [ for (name in [':dce',':pointer',':extern']) { name:name, params:[], pos:pos } ];
 
 		defineType(cls);
 

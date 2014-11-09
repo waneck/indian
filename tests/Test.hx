@@ -31,7 +31,12 @@ class Test
 
 }
 
-class S1 implements Struct
-{
-	public var i:Int;
-}
+typedef S = Struct<{
+	var x:Int;
+	var a:Float;
+}>;
+
+// class S1 implements Struct
+// {
+// 	public var i:Int;
+// }
