@@ -28,7 +28,9 @@ class StructBuilder
 		{
 			var name = f.name;
 			newArgs.push({ name:f.name, type:null, opt:false, value:null });
-			newExpr.push(macro this.$name = $i{name});
+			var expr = macro this.$name = $i{name};
+			expr.pos = f.pos;
+			newExpr.push(expr);
 
 			def.fields.push({
 				name:name,
@@ -39,9 +41,10 @@ class StructBuilder
 		}
 		var block = { expr:EBlock(newExpr), pos:pos };
 		def.fields.push({ name:'new', kind:FFun({ args:newArgs, ret:null, expr:block }), access:[APublic], pos:pos });
-		def.meta = [ for (name in [':keep',':struct']) { name:name, params:[], pos:pos } ];
+		def.meta = [ for (name in [':keep',':struct',':nativeGen']) { name:name, params:[], pos:pos } ];
 		def.pack = ['indian','structs'];
 		def.name = "D" + name;
+		def.pos = pos;
 
 		return def;
 	}

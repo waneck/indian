@@ -65,6 +65,7 @@ class StructBuild
 		var buildname = prefix + buf.toString();
 		trace(buildname);
 		var typeName = 'indian.structs.' + buildname;
+		trace('building',typeName);
 		var type = try getType(typeName) catch(e:String) { if (e.indexOf('Type not found') >= 0) null; else throw e; };
 		if (type != null)
 			return type;
@@ -122,14 +123,14 @@ class StructBuild
 
 				@:extern inline public static function $ptrget(ptr:$thisPtr):$type
 					return ${getExpr([
-						'cs' => macro ptr.acc.$name,
+						'cs' => macro { var t = @:privateAccess ptr.t(); t.acc.$name; },
 						'cpp' => macro ptr.ref.$name,
 						'default' => macro @:privateAccess ptr.t().$get(${getOffset(macro 1)})
 					])};
 
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
-						'cs' => macro ptr.acc.$name = val,
+						'cs' => macro { var t= @:privateAccess ptr.t(); t.acc.$name = val; },
 						'cpp' => macro ptr.ref.$name = val,
 						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
 					])};
@@ -145,21 +146,29 @@ class StructBuild
 				return ${size(macro 1)};
 		});
 
+		var offsets = agg.offsets();
+		agg.end();
+		var sizes = agg.offsets(),
+				aligns = agg.getAligns();
+
 		cls.pack = ['indian','structs'];
 		cls.name = buildname;
 		cls.kind = TDAbstract(getUnderlying(fields,buildname));
 		cls.meta = [ for (name in [':dce',':structimpl',':extern']) { name:name, params:[], pos:currentPos() } ];
+		cls.meta.push({ name:':structsize',  params:[for (s in sizes) macro $v{s}],  pos:currentPos() });
+		cls.meta.push({ name:':structalign', params:[for (a in aligns) macro $v{a}], pos:currentPos() });
+		cls.meta.push({ name:':structfields',params:[for (a in fields) { var t = a.type.toComplexType(); macro ($v{a.name} : $t); }], pos:currentPos() });
 
-		for (f in cls.fields)
-		{
-			switch(f.kind)
-			{
-				case FFun(fn):
-					trace({ expr:EFunction(f.name,fn), pos:currentPos() }.toString(),f.access);
-				case _:
-					trace(f.name,f.access);
-			}
-		}
+		// for (f in cls.fields)
+		// {
+		// 	switch(f.kind)
+		// 	{
+		// 		case FFun(fn):
+		// 			trace({ expr:EFunction(f.name,fn), pos:currentPos() }.toString(),f.access);
+		// 		case _:
+		// 			trace(f.name,f.access);
+		// 	}
+		// }
 		defineType(cls);
 
 		return getType(typeName);

@@ -290,12 +290,12 @@ class IndianHelper
 		var tx = typeExpr(e);
 		switch(tx.expr)
 		{
-			case TLocal(_) if (isBasic(tx.t)):
+			case TLocal(_):
 				if (defined('cs'))
 				{
 					var type = tx.t.toComplexType();
-					type = macro : cs.Pointer<$type>;
-					return macro @:pos(e.pos) ( (cast ((untyped __addressOf__($e) : $type)) ) : indian.Buffer );
+					type = macro : indian.Ptr<$type>;
+					return macro @:pos(e.pos) ( (cast ((untyped __addressOf__($e) : $type)) ) : $type );
 				} else if (defined('cpp')) {
 					return macro @:pos(e.pos) (untyped __cpp__('(unsigned char *) &{0}',$e) : indian.Buffer);
 				} else {

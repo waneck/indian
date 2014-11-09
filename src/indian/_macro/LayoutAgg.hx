@@ -6,19 +6,41 @@ using haxe.macro.Tools;
 class LayoutAgg
 {
 	private var platfs:LayoutAggData;
+	private var maxAligns:Map<String,Int>;
 
 	public function new()
 	{
 		this.platfs = [for (name in Layout.platforms) name => { name:name, offset:0 }];
+		this.maxAligns = [for(name in Layout.platforms) name => 0];
 	}
 
 	public function align(layout:Layout)
 	{
 		for (v in layout.layouts)
 		{
+			var a = v.align;
+			var ma = maxAligns[v.name];
+			if (a > ma)
+				maxAligns[v.name] = a;
+
 			var off = this.platfs[v.name];
 			if (off == null) throw 'assert ${v.name}';
-			off.offset = _align(v.nbytes,v.align,off.offset);
+			off.offset = _align(v.align,off.offset);
+		}
+	}
+
+	public function getAligns()
+	{
+		return [ for (k in maxAligns.keys()) { name:k, value:maxAligns[k] } ];
+	}
+
+	public function end()
+	{
+		for (k in maxAligns.keys())
+		{
+			var v = maxAligns[k];
+			var off = this.platfs[k];
+			off.offset = _align(v,off.offset);
 		}
 	}
 
@@ -45,6 +67,11 @@ class LayoutAgg
 			case _:
 				false;
 		}
+	}
+
+	public function offsets()
+	{
+		return [ for (p in platfs) { name:p.name, value:p.offset } ];
 	}
 
 	public function expand(uniqueName:String, build:Array<Field>):Expr->Expr
@@ -183,7 +210,7 @@ class LayoutAgg
 			return -1;
 	}
 
-	private static function _align(nbytes:Int, alignment:Int, currentOffset:Int)
+	private static function _align(alignment:Int, currentOffset:Int)
 	{
 		// alignment rules taken from
 		// http://en.wikipedia.org/wiki/Data_structure_alignment

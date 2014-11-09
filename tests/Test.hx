@@ -10,8 +10,14 @@ import indian.*;
 class Test
 {
 
-	static function main()
+	@:unsafe static function main()
 	{
+		var s:S = null;
+		trace(s.x);
+		trace(s.a);
+		var ptr = Indian.addr(s);
+		trace(ptr.x);
+		trace(ptr.a);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());

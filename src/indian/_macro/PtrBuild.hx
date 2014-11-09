@@ -28,7 +28,6 @@ class PtrBuild
 
 	private static function checkOrCreate(t:Type, pos:Position):Type
 	{
-		var original = t;
 		var layout = Layout.fromType(t,pos);
 		if (layout == null)
 			return getType('indian.AnyPtr');
@@ -195,17 +194,40 @@ class PtrBuild
 		cls.meta = [ for (name in [':dce',':pointer',':extern']) { name:name, params:[], pos:pos } ];
 		for (field in build)
 			cls.fields.push(field);
+		if (layout.structFields != null) for (nt in layout.structFields) {
+			var name = nt.field, type = nt.type;
+			var get = 'get_$name', set = 'set_$name';
+			var ptrget = 'ptr_get_${name}', ptrset = 'ptr_set_$name';
+			var structExpr = switch(layout.followedType) {
+				case TAbstract(_.get() => a,_):
+					var tname = a.pack.join('.') + '.' + a.name;
+					parse(tname, pos);
+				case _:
+					throw 'assert';
+			};
+			for (f in (macro class {
+				public var $name(get,set):$type;
+				@:extern inline public function $get():$type
+					return $structExpr.$ptrget(cast this);
+				@:extern inline public function $set(v:$type)
+				{
+					$structExpr.$ptrset(cast this,v);
+					return v;
+				}
+			}).fields)
+				cls.fields.push(f);
+		}
 
-		// for (f in cls.fields)
-		// {
-		// 	switch(f.kind)
-		// 	{
-		// 		case FFun(fn):
-		// 			trace({ expr:EFunction(f.name,fn), pos:pos }.toString(),f.access);
-		// 		case _:
-		// 			trace(f.name,f.access);
-		// 	}
-		// }
+		for (f in cls.fields)
+		{
+			switch(f.kind)
+			{
+				case FFun(fn):
+					trace({ expr:EFunction(f.name,fn), pos:pos }.toString(),f.access);
+				case _:
+					trace(f.name,f.access);
+			}
+		}
 		defineType(cls);
 
 		return getType(typeName);
