@@ -15,11 +15,6 @@ extern class Ptr<T> implements ArrayAccess<T>
 	public static var bytesize:Int;
 
 	/**
-		The power of two of the element size
-	**/
-	public static var power:Int;
-
-	/**
 		Returns the pointer to the n-th element
 	**/
 	@:op(A+B) public function advance(nth:Int):Ptr<T>;

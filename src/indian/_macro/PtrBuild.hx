@@ -29,6 +29,10 @@ class PtrBuild
 	private static function checkOrCreate(t:Type, pos:Position):Type
 	{
 		var original = t;
+		// var layout = Layout.fromType(t,pos);
+		// if (layout == null)
+		// 	return getType('indian.AnyPtr');
+		// return getOrBuild(layout);
 		while(true)
 		{
 			inline function recurse(withType:Type) { t = withType; continue; }
@@ -124,7 +128,7 @@ class PtrBuild
 			@:extern inline private static function get_bytesize():Int
 				return ${if(size > 0) macro $v{size} else macro indian.AnyPtr.size};
 
-			public static var power(get,never):Int;
+			private static var power(get,never):Int;
 
 			@:extern inline private static function get_power():Int
 				return ${if(size > 0) macro $v{log2(size)} else macro indian.AnyPtr.power};

@@ -19,8 +19,8 @@ extern class Struct<T>
 
 	static var bytesize:Int;
 
-	function copy():Struct<T>;
+	// function copy():Struct<T>;
 	/*macro*/ function with(tdef:{}):Struct<T>;
-	function address():Ptr<Struct<T>>;
-	function equals(to:Struct<T>):Bool;
+	// function address():Ptr<Struct<T>>;
+	// function equals(to:Struct<T>):Bool;
 }

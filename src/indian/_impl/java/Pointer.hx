@@ -116,12 +116,11 @@ import indian._impl.java.Unsafe.*;
 	}
 }
 
-@:classCode('public static final PointerSize current = getCurrent();\n')
 @:final @:nativeGen class PointerHelper
 {
-	@:extern public static var current(default,null):PointerSize;
+	@:readOnly public static var current(default,never):PointerSize = getCurrent();
 
-	@:keep public static function getCurrent():PointerSize
+	public static function getCurrent():PointerSize
 	{
 		if (indian.AnyPtr.size == 4)
 			return new PointerSize32();

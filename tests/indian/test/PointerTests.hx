@@ -12,10 +12,8 @@ import indian.types.*;
 
 	public function test_basic_types()
 	{
-		Assert.equals(4,IntPtr.byteSize);
-		Assert.equals(2,IntPtr.power);
-		Assert.equals(8,FloatPtr.byteSize);
-		Assert.equals(3,FloatPtr.power);
+		Assert.equals(4,IntPtr.bytesize);
+		Assert.equals(8,FloatPtr.bytesize);
 
 		var ptr:Ptr<Int> = alloc(10*4);
 		for (i in 0...10)
