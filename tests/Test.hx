@@ -17,6 +17,12 @@ class Test
 		s.x = 10;
 		s.a = 22.2;
 		trace(s.x,s.a);
+		s = s.advance(1);
+		s.x = 12;
+		s.a = 32;
+		trace(s.x,s.a);
+		s = s.advance(-1);
+		trace(s.x,s.a);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());

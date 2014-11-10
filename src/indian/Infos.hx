@@ -22,6 +22,6 @@ class Infos
 #if (cpp && !HXCPP_CROSS)
 		return indian._macro.InfoHelper.isWindows();
 #else
-		return _is64;
+		return _isWindows;
 #end
 }
