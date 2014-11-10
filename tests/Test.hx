@@ -12,6 +12,11 @@ class Test
 
 	@:unsafe static function main()
 	{
+		var s:Ptr<S> = Indian.alloc(256);
+		trace(s.x);
+		s.x = 10;
+		s.a = 22.2;
+		trace(s.x,s.a);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());
