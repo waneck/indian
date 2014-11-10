@@ -208,10 +208,10 @@ class PtrBuild
 			for (f in (macro class {
 				public var $name(get,set):$type;
 				@:extern inline public function $get():$type
-					return $structExpr.$ptrget(cast this);
+					return $structExpr.$ptrget(untyped this);
 				@:extern inline public function $set(v:$type)
 				{
-					$structExpr.$ptrset(cast this,v);
+					$structExpr.$ptrset(untyped this,v);
 					return v;
 				}
 			}).fields)

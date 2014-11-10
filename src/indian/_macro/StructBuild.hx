@@ -123,14 +123,14 @@ class StructBuild
 
 				@:extern inline public static function $ptrget(ptr:$thisPtr):$type
 					return ${getExpr([
-						'cs' => macro { var t = @:privateAccess ptr.t(); t.acc.$name; },
+						'cs' => macro @:privateAccess ptr.t().acc.$name,
 						'cpp' => macro ptr.ref.$name,
 						'default' => macro @:privateAccess ptr.t().$get(${getOffset(macro 1)})
 					])};
 
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
-						'cs' => macro { var t= @:privateAccess ptr.t(); t.acc.$name = val; },
+						'cs' => macro @:privateAccess ptr.t().acc.$name = val,
 						'cpp' => macro ptr.ref.$name = val,
 						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
 					])};
