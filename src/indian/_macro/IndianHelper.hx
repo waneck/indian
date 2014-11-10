@@ -297,7 +297,9 @@ class IndianHelper
 					type = macro : indian.Ptr<$type>;
 					return macro @:pos(e.pos) ( (cast ((untyped __addressOf__($e) : $type)) ) : $type );
 				} else if (defined('cpp')) {
-					return macro @:pos(e.pos) (untyped __cpp__('(unsigned char *) &{0}',$e) : indian.Buffer);
+					// type = macro : indian.Ptr<$type>;
+					var type = tx.t.toComplexType();
+					return macro @:pos(e.pos) (untyped __cpp__('&{0}',$e) : indian.Ptr<$type>);
 				} else {
 					return macro @:pos(e.pos) (null : indian.Buffer);
 				}

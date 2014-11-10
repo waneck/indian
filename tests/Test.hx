@@ -16,11 +16,11 @@ class Test
 		trace(s.x);
 		trace(s.a);
 		$type(s);
-		// var ptr = Indian.addr(s);
-		// trace(ptr.x);
-		// trace(ptr.a);
-		// ptr.x = 11;
-		// trace(ptr.x,s.x);
+		var ptr = Indian.addr(s);
+		trace(ptr.x);
+		trace(ptr.a);
+		ptr.x = 11;
+		trace(ptr.x,s.x);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());

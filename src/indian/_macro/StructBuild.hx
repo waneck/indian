@@ -131,7 +131,7 @@ class StructBuild
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
 						'cs' => macro @:privateAccess ptr.t().acc.$name = val,
-						'cpp' => macro untyped ptr.t().ref.$name = val,
+						'cpp' => macro untyped __cpp__($v{'{0}->get_ref().$name = {1}'},ptr,val),
 						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
 					])};
 			});
