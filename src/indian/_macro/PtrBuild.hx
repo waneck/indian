@@ -7,6 +7,7 @@ import haxe.macro.Context.*;
 import indian._macro.BuildHelper.*;
 
 using haxe.macro.Tools;
+using Lambda;
 
 class PtrBuild
 {
@@ -194,28 +195,37 @@ class PtrBuild
 		cls.meta = [ for (name in [':dce',':pointer',':extern']) { name:name, params:[], pos:pos } ];
 		for (field in build)
 			cls.fields.push(field);
-		if (layout.structFields != null) for (nt in layout.structFields) {
-			var name = nt.field, type = nt.type;
-			var get = 'get_$name', set = 'set_$name';
-			var ptrget = 'ptr_get_${name}', ptrset = 'ptr_set_$name';
-			var structExpr = switch(layout.followedType) {
-				case TAbstract(_.get() => a,_):
-					var tname = a.pack.join('.') + '.' + a.name;
-					parse(tname, pos);
-				case _:
-					throw 'assert';
-			};
-			for (f in (macro class {
-				public var $name(get,set):$type;
-				@:extern inline public function $get():$type
-					return $structExpr.$ptrget(untyped this);
-				@:extern inline public function $set(v:$type)
-				{
-					$structExpr.$ptrset(untyped this,v);
-					return v;
-				}
-			}).fields)
-				cls.fields.push(f);
+		if (layout.structFields != null)
+		{
+			if (!defined('cpp') && !defined('cs'))
+			{
+				cls.fields = cls.fields.filter(function(f) return f.meta == null || !f.meta.exists(function(m) return m.name == ':deref'));
+			}
+
+			for (nt in layout.structFields)
+			{
+				var name = nt.field, type = nt.type;
+				var get = 'get_$name', set = 'set_$name';
+				var ptrget = 'ptr_get_${name}', ptrset = 'ptr_set_$name';
+				var structExpr = switch(layout.followedType) {
+					case TAbstract(_.get() => a,_):
+						var tname = a.pack.join('.') + '.' + a.name;
+						parse(tname, pos);
+					case _:
+						throw 'assert';
+				};
+				for (f in (macro class {
+					public var $name(get,set):$type;
+					@:extern inline public function $get():$type
+						return $structExpr.$ptrget(untyped this);
+					@:extern inline public function $set(v:$type)
+					{
+						$structExpr.$ptrset(untyped this,v);
+						return v;
+					}
+				}).fields)
+					cls.fields.push(f);
+			}
 		}
 
 		// for (f in cls.fields)
