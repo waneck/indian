@@ -12,14 +12,15 @@ class Test
 
 	@:unsafe static function main()
 	{
-		var s:S = null;
+		var s:S = new S();
 		trace(s.x);
 		trace(s.a);
-		var ptr = Indian.addr(s);
-		trace(ptr.x);
-		trace(ptr.a);
-		ptr.x = 11;
-		trace(ptr.x,s.x);
+		$type(s);
+		// var ptr = Indian.addr(s);
+		// trace(ptr.x);
+		// trace(ptr.a);
+		// ptr.x = 11;
+		// trace(ptr.x,s.x);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());

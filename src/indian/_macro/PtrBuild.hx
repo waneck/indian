@@ -218,16 +218,16 @@ class PtrBuild
 				cls.fields.push(f);
 		}
 
-		for (f in cls.fields)
-		{
-			switch(f.kind)
-			{
-				case FFun(fn):
-					trace({ expr:EFunction(f.name,fn), pos:pos }.toString(),f.access);
-				case _:
-					trace(f.name,f.access);
-			}
-		}
+		// for (f in cls.fields)
+		// {
+		// 	switch(f.kind)
+		// 	{
+		// 		case FFun(fn):
+		// 			trace({ expr:EFunction(f.name,fn), pos:pos }.toString(),f.access);
+		// 		case _:
+		// 			trace(f.name,f.access);
+		// 	}
+		// }
 		defineType(cls);
 
 		return getType(typeName);

@@ -131,12 +131,30 @@ class StructBuild
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
 						'cs' => macro @:privateAccess ptr.t().acc.$name = val,
-						'cpp' => macro @:privateAccess ptr.t().ref.$name = val,
+						'cpp' => macro untyped ptr.t().ref.$name = val,
 						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
 					])};
 			});
 
 			agg.add(i.layout);
+		}
+
+
+		var underlying = getUnderlying(fields,buildname);
+		if (supports)
+		{
+			var name = switch (underlying) {
+				case TPath(p):
+					p.name;
+				case _: throw 'assert';
+			};
+			add(macro class {
+				@:extern public inline function new()
+					this = ${getExpr([
+						'cs' => macro null,
+						'cpp' => macro indian.structs.$name.create()
+				])};
+			});
 		}
 
 		var size = agg.expand('ptr',build);
@@ -153,7 +171,7 @@ class StructBuild
 
 		cls.pack = ['indian','structs'];
 		cls.name = buildname;
-		cls.kind = TDAbstract(getUnderlying(fields,buildname));
+		cls.kind = TDAbstract(underlying);
 		cls.meta = [ for (name in [':dce',':structimpl',':extern']) { name:name, params:[], pos:currentPos() } ];
 		cls.meta.push({ name:':structsize',  params:[for (s in sizes) macro $v{s}],  pos:currentPos() });
 		cls.meta.push({ name:':structalign', params:[for (a in aligns) macro $v{a}], pos:currentPos() });
@@ -182,9 +200,10 @@ class StructBuild
 			defineType(def);
 			return TPath({ pack:def.pack, name:def.name });
 		} else if (defined('cpp')) {
-			var def = indian._macro.cpp.StructBuilder.build(name,fields,currentPos());
-			defineType(def);
-			return TPath({ pack:def.pack, name:def.name });
+			var defs = indian._macro.cpp.StructBuilder.build(name,fields,currentPos());
+			for (def in defs)
+				defineType(def);
+			return TPath({ pack:defs[0].pack, name:defs[0].name });
 		} else {
 			return macro : indian.Buffer;
 		}
