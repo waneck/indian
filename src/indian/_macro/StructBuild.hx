@@ -124,14 +124,14 @@ class StructBuild
 				@:extern inline public static function $ptrget(ptr:$thisPtr):$type
 					return ${getExpr([
 						'cs' => macro @:privateAccess ptr.t().acc.$name,
-						'cpp' => macro ptr.ref.$name,
+						'cpp' => macro @:privateAccess ptr.t().ref.$name,
 						'default' => macro @:privateAccess ptr.t().$get(${getOffset(macro 1)})
 					])};
 
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
 						'cs' => macro @:privateAccess ptr.t().acc.$name = val,
-						'cpp' => macro ptr.ref.$name = val,
+						'cpp' => macro @:privateAccess ptr.t().ref.$name = val,
 						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
 					])};
 			});
@@ -179,6 +179,10 @@ class StructBuild
 		if (defined('cs'))
 		{
 			var def = indian._macro.cs.StructBuilder.build(name,fields,currentPos());
+			defineType(def);
+			return TPath({ pack:def.pack, name:def.name });
+		} else if (defined('cpp')) {
+			var def = indian._macro.cpp.StructBuilder.build(name,fields,currentPos());
 			defineType(def);
 			return TPath({ pack:def.pack, name:def.name });
 		} else {

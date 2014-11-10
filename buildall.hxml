@@ -8,7 +8,6 @@
 --each
 --next
 -debug
--D dump
 -cs bin/cs
 -D unsafe
 -cmd echo "=======cs========"
