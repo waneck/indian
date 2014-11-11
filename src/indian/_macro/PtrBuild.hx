@@ -124,7 +124,7 @@ class PtrBuild
 
 			@:from @:extern inline public static function fromAny(any : indian.AnyPtr) : $thisType
 				${getExpr([
-					'cs' => macro return cast @:privateAccess any.t().ToPointer(),
+					'cs' => macro return cast @:privateAccess any.t(),
 					'cpp' => macro return untyped ( any.t().reinterpret() : $underlying ),
 					'default' => macro return cast any
 				])};

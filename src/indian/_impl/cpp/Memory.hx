@@ -5,7 +5,7 @@ package indian._impl.cpp;
 {
 	public static function alloc(nbytes:Int):indian.Buffer
 	{
-		return untyped __cpp__('(unsigned char *) calloc(1,{0})',nbytes);
+		return untyped __cpp__('(unsigned char *) malloc({0})',nbytes);
 	}
 
 	@:extern inline public static function free(ptr:indian._impl.PointerType<Dynamic>)

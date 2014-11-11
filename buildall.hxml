@@ -4,6 +4,7 @@
 -lib utest
 -lib indian
 -D assertations
+-D INDIAN_TEST
 #-debug
 --each
 --next

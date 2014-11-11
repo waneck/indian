@@ -8,7 +8,6 @@ import indian._impl.*;
 
 	All `indian.Ptr` types can be interpreted as `indian.AnyPtr`
  **/
-//TODO evaluate adding a `SafePtr` type to mirror C#'s IntPtr. The converting to and from IntPtr seems silly in the generated code
 abstract AnyPtr(AnyPtrType)
 {
 	/**
@@ -41,62 +40,31 @@ abstract AnyPtr(AnyPtrType)
 	}
 
 	@:extern inline public static function fromInternalPointer<T>(ptr:indian._impl.PointerType<T>):AnyPtr
-#if cs
-		return cast new cs.system.IntPtr( ( cast ptr : cs.Pointer<Void> ) );
-#elseif cpp
+#if cpp
 		return untyped (ptr.reinterpret() : AnyPtrType);
 #else
 		return cast ptr;
 #end
 
 	@:extern @:to inline public function toBuffer():Buffer
-	{
-#if cs
-		return ( cast this.ToPointer() : indian.Buffer );
-#elseif cpp
+#if cpp
 		return untyped ( this.reinterpret() : indian._impl.BufferType );
 #else
 		return cast this;
 #end
-	}
 
 	@:extern inline private function t()
 		return this;
-
-	/**
-		Adds an offset to the value of a pointer
-	**/
-// 	@:op(A+B) @:extern inline public function advance(bytesOffset:Int):AnyPtr
-// 	{
-// #if cs
-// 		return cast this;
-// 		// return cast cs.system.IntPtr.Add(this,bytesOffset);
-// #elseif (cpp || java)
-// 		return cast this.add(bytesOffset);
-// #elseif (neko && !macro && !interp)
-// 		return new AnyPtr(indian._impl.neko.PointerHelper.add(this, bytesOffset));
-// #end
-// 	}
-
-	/**
-		Subtracts an offset to the value of a pointer
-	**/
-	// @:op(A-B) @:extern inline public function subtract(offset:Int):AnyPtr
-	// {
-	// 	return advance(-offset);
-	// }
 
 	/**
 		Converts the pointer to an Int value
 	**/
 	@:extern inline public function toInt():Int
 	{
-#if cs
-		return this.ToInt32();
-#elseif cpp
+#if cpp
 		return untyped __cpp__('((int) (size_t) {0})',this.raw);
-#elseif java
-		return cast this;
+#elseif (cs || java)
+		return cast toInt64();
 #elseif neko
 		return indian.types.Int64.toInt(this);
 #end
@@ -107,14 +75,12 @@ abstract AnyPtr(AnyPtrType)
 	**/
 	@:extern inline public function toInt64():Int64
 	{
-#if cs
-		return this.ToInt64();
-#elseif cpp
+#if cpp
 		return untyped __cpp__('( (cpp::Int64) {0})',this.raw);
-#elseif java
+#elseif cs
 		return cast this;
-#elseif neko
-		return cast this;
+#elseif (neko || java)
+		return untyped this;
 #end
 	}
 }
