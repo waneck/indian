@@ -172,13 +172,13 @@ class LayoutAgg
 				{
 					var e = switch(a) {
 						case 'win32':
-							macro !indian.Infos.is64 && indian.Infos.isWindows;
+							macro indian.Infos.win32;
 						case 'win64':
-							macro indian.Infos.is64 && indian.Infos.isWindows;
+							macro indian.Infos.win64;
 						case 'nix32':
-							macro !indian.Infos.is64 && !indian.Infos.isWindows;
+							macro indian.Infos.nix32;
 						case 'nix64':
-							macro indian.Infos.is64 && !indian.Infos.isWindows;
+							macro indian.Infos.nix64;
 						case _: throw 'assert';
 					};
 					if (expr == null)
