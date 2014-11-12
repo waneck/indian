@@ -20,6 +20,7 @@ class Test
 		runner.addCase(new indian.test.BufferTests());
 		runner.addCase(new indian.test.IndianTests());
 		runner.addCase(new indian.test.UnicodeTests());
+		runner.addCase(new indian.test.StructTests());
 
 		var report = new utest.ui.text.PrintReport(runner);
 		runner.run();
