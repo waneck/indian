@@ -114,7 +114,6 @@ using haxe.macro.Tools;
 							return { type:'UInt16', pack:[], name:a.name, layouts:layout(2,2), followedType:t };
 						case [ ['indian','types'], 'Int64', false ]:
 							return { type:'Int64', pack:[], name:a.name, layouts:mklayouts(['default'=>{nbytes:8,align:8}, 'nix32'=>{nbytes:8,align:4}]), followedType:t };
-							// return { type:'Int64', pack:[], name:a.name, layouts:layout(8,8), followedType:t };
 						case [ _, _, false ] if (a.meta.has(':structimpl')):
 							var fields = [];
 							for (m in a.meta.get()) switch(m.name) {
