@@ -53,6 +53,9 @@ abstract AnyPtr(AnyPtrType)
 		return cast this;
 #end
 
+	@:extern inline public function toIntPtr():IntPtr
+		return IntPtr.fromPointer(untyped this);
+
 	@:extern inline private function t()
 		return this;
 

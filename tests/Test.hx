@@ -12,7 +12,6 @@ class Test
 
 	@:unsafe static function main()
 	{
-		trace(Infos.is64);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());

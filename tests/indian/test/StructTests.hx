@@ -39,65 +39,81 @@ import indian.types.*;
 
 	public function test_struct_offset()
 	{
-		var ptr:POffset1 = Indian.alloc(256);
-		ptr.i8 = cast 1;
-		ptr.i16 = cast 2;
-		ptr.i32 = 3;
-		ptr.i32_2 = 4;
-		ptr.i64 = Int64.make(0,2);
-		ptr.i8_2 = cast 6;
-		ptr.f = 7.7;
-		ptr.i8_3 = cast 8;
-		ptr.s = 9.9;
+		var ptr:POffset1 = Indian.alloc(Offset1.bytesize * 10);
+		var tofree = ptr;
 
-		var buf = ptr.asBuffer();
-		equals(0,Offset1.offset_i8);
-		equals(1,buf.getUInt8(0));
+		for (i in 0...10)
+		{
+			ptr.i8 = cast 1*i;
+			ptr.i16 = cast 2*i;
+			ptr.i32 = 3*i;
+			ptr.i32_2 = 4*i;
+			ptr.i64 = Int64.make(i,5);
+			ptr.i8_2 = cast 6*i;
+			ptr.f = 7.7*i;
+			ptr.i8_3 = cast 8*i;
+			ptr.s = 9.9*i;
+			ptr++;
+		}
+		ptr = tofree;
+		for (i in 0...10)
+		{
+			var buf = ptr.asBuffer();
+			equals(0,Offset1.offset_i8);
+			equals(1*i,buf.getUInt8(0));
 
-		equals(2,Offset1.offset_i16);
-		equals(2,buf.getUInt16(2));
+			equals(2,Offset1.offset_i16);
+			equals(2*i,buf.getUInt16(2));
 
-		equals(4,Offset1.offset_i32);
-		equals(3,buf.getInt32(4));
+			equals(4,Offset1.offset_i32);
+			equals(3*i,buf.getInt32(4));
 
-		equals(8,Offset1.offset_i32_2);
-		equals(4,buf.getInt32(8));
+			equals(8,Offset1.offset_i32_2);
+			equals(4*i,buf.getInt32(8));
 
+			if (Infos.nix32)
+			{
+				equals(12,Offset1.offset_i64);
+				isTrue(buf.getInt64(12).eq(Int64.make(i,5)));
+
+				equals(20,Offset1.offset_i8_2);
+				equals(6*i,buf.getUInt8(20));
+
+				equals(24,Offset1.offset_f);
+				equals(7.7*i,buf.getFloat64(24));
+
+				equals(32,Offset1.offset_i8_3);
+				equals(8*i,buf.getUInt8(32));
+
+				equals(36,Offset1.offset_s);
+				floatEquals(9.9*i,buf.getFloat32(36));
+			} else {
+				equals(16,Offset1.offset_i64);
+				isTrue(buf.getInt64(16).eq(Int64.make(i,5)));
+
+				equals(24,Offset1.offset_i8_2);
+				equals(6*i,buf.getUInt8(24));
+
+				equals(32,Offset1.offset_f);
+				equals(7.7*i,buf.getFloat64(32));
+
+				equals(40,Offset1.offset_i8_3);
+				equals(8*i,buf.getUInt8(40));
+
+				equals(44,Offset1.offset_s);
+				floatEquals(9.9*i,buf.getFloat32(44));
+			}
+			ptr += 1;
+		}
+		var dif = ptr.asAny().toIntPtr() - tofree.asAny().toIntPtr();
 		if (Infos.nix32)
 		{
-			equals(12,Offset1.offset_i64);
-			isTrue(buf.getInt64(12).eq(Int64.make(0,2)));
-
-			equals(20,Offset1.offset_i8_2);
-			equals(6,buf.getUInt8(20));
-
-			equals(24,Offset1.offset_f);
-			equals(7.7,buf.getFloat64(24));
-
-			equals(32,Offset1.offset_i8_3);
-			equals(8,buf.getUInt8(32));
-
-			equals(36,Offset1.offset_s);
-			floatEquals(9.9,buf.getFloat32(36));
+			equals(40 * 10, dif.toInt());
 		} else {
-			equals(16,Offset1.offset_i64);
-			isTrue(buf.getInt64(16).eq(Int64.make(0,2)));
-			trace(buf.getInt64(16).toString());
-
-			equals(24,Offset1.offset_i8_2);
-			equals(6,buf.getUInt8(24));
-
-			equals(32,Offset1.offset_f);
-			equals(7.7,buf.getFloat64(32));
-
-			equals(40,Offset1.offset_i8_3);
-			equals(8,buf.getUInt8(40));
-
-			equals(44,Offset1.offset_s);
-			floatEquals(9.9,buf.getFloat32(44));
+			equals(48 * 10, dif.toInt());
 		}
 
-		Indian.free(ptr);
+		Indian.free(tofree);
 	}
 }
 
@@ -112,5 +128,6 @@ typedef Offset1 = Struct<{
 	i8_3:UInt8,		// off 32 / 40
 	s:Single,			// off 36 / 44
 }>;
+//total structure: 40 / 48
 
 typedef POffset1 = Ptr<Offset1>;

@@ -1,6 +1,6 @@
 package indian._impl;
 
-typedef SafePtrType =
+typedef IntPtrType =
 #if cs
 	cs.system.IntPtr
 #else
