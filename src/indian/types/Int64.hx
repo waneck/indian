@@ -41,8 +41,7 @@ import neko.Lib;
 	@:to @:extern inline public function toInt64():haxe.Int64
 	{
 #if cpp
-		var ret = haxe.Int64.make( (this >>> 32) & 0xFFFFFFFF, this & 0xFFFFFFFF );
-		return ret;
+		return haxe.Int64.make(this.getHigh(), this.getLow());
 #elseif neko
 		return haxe.Int64.make( __toInt(__and( __ushr(this,32), 0xFFFFFFFF )), __toInt(__and(this, 0xFFFFFFFF)) );
 #else
@@ -148,7 +147,7 @@ import neko.Lib;
 	@:extern @:op(A-B) public inline function sub_int64(i:Int64):Int64
 	{
 #if cpp
-		var ret = Int64Helper.add_i64(this,-(i.t()));
+		var ret = new Int64( this.sub_i64(i.t()) );
 		trace(ret.toString());
 		trace(untyped __cpp__('(int) (size_t) (void *)  (void *) (size_t) {0}',ret));
 		return ret;
@@ -162,7 +161,7 @@ import neko.Lib;
 	@:extern @:op(-A) inline public function neg():Int64
 	{
 #if cpp
-		return new Int64(-this);
+		return new Int64(this.neg());
 #elseif neko
 		return __sub(0,this);
 #else
@@ -376,7 +375,7 @@ import neko.Lib;
 	@:extern @:op(A>B) public static inline function gt(a:Int64, i:Int):Bool
 	{
 #if cpp
-		return Int64Helper.compare(a.t(),i) > 0;
+		return Int64Helper.compare(a.t(),cast i) > 0;
 #elseif neko
 		return __compare(a.t(),i) > 0;
 #elseif (java || cs)
@@ -400,7 +399,7 @@ import neko.Lib;
 	@:extern @:op(A>=B) public static inline function gte(a:Int64, i:Int):Bool
 	{
 #if cpp
-		return Int64Helper.compare(a.t(),i) >= 0;
+		return Int64Helper.compare(a.t(),cast i) >= 0;
 #elseif neko
 		return __compare(a.t(),i) >= 0;
 #elseif (java || cs)
@@ -424,7 +423,7 @@ import neko.Lib;
 	@:extern @:op(A<B) public static inline function lt(a:Int64, i:Int):Bool
 	{
 #if cpp
-		return Int64Helper.compare(a.t(),i) < 0;
+		return Int64Helper.compare(a.t(),cast i) < 0;
 #elseif neko
 		return __compare(a.t(),i) < 0;
 #elseif (java || cs)
@@ -448,7 +447,7 @@ import neko.Lib;
 	@:extern @:op(A<=B) public static inline function lte(a:Int64, i:Int):Bool
 	{
 #if cpp
-		return Int64Helper.compare(a.t(),i) <= 0;
+		return Int64Helper.compare(a.t(),cast i) <= 0;
 #elseif neko
 		return __compare(a.t(),i) <= 0;
 #elseif (java || cs)
@@ -548,226 +547,74 @@ import neko.Lib;
 #if neko
 typedef Int64_t = Dynamic;
 #else
-typedef Int64_t = #if cpp cpp.Int64 #else haxe.Int64 #end
+typedef Int64_t = #if cpp indian._impl.cpp.Int64 #else haxe.Int64 #end
 #end
 
 #if cpp
-@:headerClassCode('
-		static ::cpp::Int64 shl( ::cpp::Int64 this1,int i)
-		{
-			return (long long int) ((long long int) this1) << i;
-		}
-
-		static ::cpp::Int64 mul( ::cpp::Int64 this1, int i)
-		{
-			return this1 * i;
-		}
-
-		static ::cpp::Int64 mul_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 * i;
-		}
-
-		static ::cpp::Int64 div ( ::cpp::Int64 this1, int i)
-		{
-			return this1 / i;
-		}
-
-		static ::cpp::Int64 div_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 / i;
-		}
-
-		static ::cpp::Int64 mod ( ::cpp::Int64 this1, int i)
-		{
-			return this1 % i;
-		}
-
-		static ::cpp::Int64 mod_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 % i;
-		}
-
-		static ::cpp::Int64 add( ::cpp::Int64 this1, int i)
-		{
-			return this1 + i;
-		}
-
-		static ::cpp::Int64 add_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 + i;
-		}
-
-		static ::cpp::Int64 shr ( ::cpp::Int64 this1, int i)
-		{
-			return this1 >> i;
-		}
-
-		static ::cpp::Int64 ushr( ::cpp::Int64 this1, int i)
-		{
-			return ((unsigned long long int) this1) >> i;
-		}
-
-		static ::cpp::Int64 iand ( ::cpp::Int64 this1, int i)
-		{
-			return this1 & i;
-		}
-
-		static ::cpp::Int64 and_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 & i;
-		}
-
-		static ::cpp::Int64 ior ( ::cpp::Int64 this1, int i)
-		{
-			return this1 | i;
-		}
-
-		static ::cpp::Int64 or_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 | i;
-		}
-
-		static ::cpp::Int64 ixor ( ::cpp::Int64 this1, int i)
-		{
-			return this1 ^ i;
-		}
-
-		static ::cpp::Int64 xor_i64( ::cpp::Int64 this1, ::cpp::Int64 i)
-		{
-			return this1 ^ i;
-		}
-
-		static int compare( ::cpp::Int64 this1, ::cpp::Int64 i2 )
-		{
-			return this1 > i2 ? 1 : (this1 < i2) ? -1 : 0;
-		}
-
-		static ::cpp::Int64 make( int high, int low )
-		{
-			return (( (::cpp::Int64) high ) << 32) | (low & 0xFFFFFFFF);
-		}
-
-		static ::String toStr( ::cpp::Int64 this1 )
-		{
-			char str[25];
-			sprintf(str, "%lld", (long long int) this1);
-			return ::String(str, strlen(str)).dup();
-		}
-
-		static ::String toHex( ::cpp::Int64 this1 )
-		{
-			char str[19];
-			sprintf(str, "0x%016llx", (long long int) this1);
-			return ::String(str, strlen(str)).dup();
-		}
-')
-@:keep class Int64Helper
+class Int64Helper
 {
-	@:extern public static function ixor(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function ixor(i:Int64_t, i2:Int):Int64
+		return untyped i.ixor(i2);
 
-	@:extern public static function compare(i:Int64_t, i2:Int64_t):Int
-	{
-		return cast 1;
-	}
+	inline public static function compare(i:Int64_t, i2:Int64_t):Int
+		return untyped i.compare(i2);
 
-	@:extern public static function xor_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function xor_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.xor_i64(i2);
 
-	@:extern public static function ior(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function ior(i:Int64_t, i2:Int):Int64
+		return untyped i.ior(i2);
 
-	@:extern public static function or_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function or_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.or_i64(i2);
 
-	@:extern public static function iand(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function iand(i:Int64_t, i2:Int):Int64
+		return untyped i.iand(i2);
 
-	@:extern public static function and_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function and_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.and_i64(i2);
 
-	@:extern public static function shr(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function shr(i:Int64_t, i2:Int):Int64
+		return untyped i.shr(i2);
 
-	@:extern public static function ushr(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function ushr(i:Int64_t, i2:Int):Int64
+		return untyped i.ushr(i2);
 
-	@:extern public static function shl(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function shl(i:Int64_t, i2:Int):Int64
+		return untyped i.shl(i2);
 
-	@:extern public static function mul(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function mul(i:Int64_t, i2:Int):Int64
+		return untyped i.mul(i2);
 
-	@:extern public static function mul_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function mul_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.mul_i64(i2);
 
-	@:extern public static function div(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function div(i:Int64_t, i2:Int):Int64
+		return untyped i.div(i2);
 
-	@:extern public static function div_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function div_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.div_i64(i2);
 
-	@:extern public static function mod(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function mod(i:Int64_t, i2:Int):Int64
+		return untyped i.mod(i2);
 
-	@:extern public static function mod_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function mod_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.mod_i64(i2);
 
-	@:extern public static function add(i:Int64_t, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function add(i:Int64_t, i2:Int):Int64
+		return untyped i.add(i2);
 
-	@:extern public static function add_i64(i:Int64_t, i2:Int64_t):Int64
-	{
-		return cast 1;
-	}
+	inline public static function add_i64(i:Int64_t, i2:Int64_t):Int64
+		return untyped i.add_i64(i2);
 
-	@:extern public static function make(i1:Int, i2:Int):Int64
-	{
-		return cast 1;
-	}
+	inline public static function make(i1:Int, i2:Int):Int64
+		return untyped cast Int64_t.make(i1,i2);
 
-	@:extern public static function toStr(i:Int64_t):String
-	{
-		return null;
-	}
+	inline public static function toStr(i:Int64_t):String
+		return untyped i.toStr();
 
-	@:extern public static function toHex(i:Int64_t):String
-	{
-		return null;
-	}
+	inline public static function toHex(i:Int64_t):String
+		return untyped i.toHex();
 }
 #end
 

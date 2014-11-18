@@ -23,9 +23,17 @@ extern class Int64
 	public function mod_i64(i2:Int64):Int64;
 	public function add(i2:Int):Int64;
 	public function add_i64(i2:Int64):Int64;
-	public function make(i2:Int):Int64;
+	public function sub(i2:Int):Int64;
+	public function sub_i64(i2:Int64):Int64;
+	public function neg():Int64;
 	public function toStr():String;
 	public function toHex():String;
+
+	public function getHigh():Int;
+	public function getLow():Int;
+
+	@:extern inline public static function make(high:Int, low:Int):Int64
+		return untyped __cpp__('::indian::_impl::cpp::Int64({0},{1})',high,low);
 }
 
 @:headerNamespaceCode('
@@ -44,6 +52,7 @@ extern class Int64
 
 			inline Int64(Dynamic val) : i64(indian_i64_of_Dynamic(val).i64) { }
 			inline Int64(int high, int low) : i64((( (long long int) high ) << 32) | (low & 0xFFFFFFFF)) { }
+			//inline Int64(int val) : i64((long long int) val) { }
 			inline Int64(long long int val) : i64(val) { }
 			inline Int64(const null &v) : i64(0L) { }
 			inline Int64() : i64(0L) { }
@@ -59,6 +68,8 @@ extern class Int64
 			inline ::indian::_impl::cpp::Int64 mod_i64( ::indian::_impl::cpp::Int64 i) { return this->i64 % i; }
 			inline ::indian::_impl::cpp::Int64 add( int i) { return this->i64 + i; }
 			inline ::indian::_impl::cpp::Int64 add_i64( ::indian::_impl::cpp::Int64 i) { return this->i64 + i; }
+			inline ::indian::_impl::cpp::Int64 sub( int i) { return this->i64 - i; }
+			inline ::indian::_impl::cpp::Int64 sub_i64( ::indian::_impl::cpp::Int64 i) { return this->i64 - i; }
 			inline ::indian::_impl::cpp::Int64 shr ( int i) { return this->i64 >> i; }
 			inline ::indian::_impl::cpp::Int64 ushr( int i) { return ((unsigned long long int) this->i64) >> i; }
 			inline ::indian::_impl::cpp::Int64 iand ( int i) { return this->i64 & i; }
@@ -67,6 +78,11 @@ extern class Int64
 			inline ::indian::_impl::cpp::Int64 or_i64( ::indian::_impl::cpp::Int64 i) { return this->i64 | i; }
 			inline ::indian::_impl::cpp::Int64 ixor ( int i) { return this->i64 ^ i; }
 			inline ::indian::_impl::cpp::Int64 xor_i64( ::indian::_impl::cpp::Int64 i) { return this->i64 ^ i; }
+
+			inline ::indian::_impl::cpp::Int64 neg () { return -(this->i64); }
+
+			inline int getHigh () { return (( (unsigned long long int) this->i64 ) >> 32) & 0xFFFFFFFF; }
+			inline int getLow () { return ((this->i64) & 0xFFFFFFFF; }
 
 			inline int compare( ::indian::_impl::cpp::Int64 i2 )
 			{
