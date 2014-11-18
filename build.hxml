@@ -1,5 +1,5 @@
 -cp src
--cp tests
+-cp tests/src
 #--interp
 #-cpp bin/cpp
 #-neko bin/neko.n

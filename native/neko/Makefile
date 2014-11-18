@@ -1,6 +1,6 @@
 SOURCES=src/common.cpp src/i64.cpp src/pointer.cpp
 CFLAGS= -fPIC -g
-TARGET=../ndll/Linux64/indian.ndll
+TARGET=../../ndll/Linux64/indian.ndll
 OBJECTS=$(SOURCES:.cpp=.o)
 CXXFLAGS += -fPIC
 CXXFLAGS += -g

@@ -1,5 +1,5 @@
 -cp src
--cp tests
+-cp tests/src
 -main Test
 -lib utest
 -lib indian
