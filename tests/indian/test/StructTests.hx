@@ -131,3 +131,7 @@ typedef Offset1 = Struct<{
 //total structure: 40 / 48
 
 typedef POffset1 = Ptr<Offset1>;
+
+//test structs with pointers
+//test structs with IntPtr
+//test recursive structs
