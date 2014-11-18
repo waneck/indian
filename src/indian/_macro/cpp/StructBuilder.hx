@@ -6,6 +6,7 @@ import haxe.macro.Context.*;
 import indian._macro.BuildHelper.*;
 
 using haxe.macro.Tools;
+using Lambda;
 
 class StructBuilder
 {
@@ -24,24 +25,34 @@ class StructBuilder
 		return [getExtern(), getBoxed()];
 	}
 
-	private static function typeToCpp(t:Type)
+	private static function typeToCpp(t:Type, includes:Array<String>)
 	{
 		return switch(follow(t)) {
 			case TAbstract(_.get() => cl,p):
 				var pack = cl.pack, name = cl.name;
 				var ret = clsString(pack,name, cl.meta.has(':coreType'));
 				if (ret == null)
-					return typeToCpp(cl.type);
+					return typeToCpp(cl.type, includes);
 				ret;
 			case TInst(_.get() => cl,p):
 				var pack = cl.pack, name = cl.name;
+				if (cl.isExtern && cl.meta.has(':include'))
+				{
+					var m = cl.meta.get().find(function(m) return m.name == ':include');
+					switch(m.params[0].expr)
+					{
+						case EConst(CString(s)):
+							includes.push(s);
+						case _:
+					}
+				}
 				var ret = clsString(pack,name,true);
 				switch [pack,name] {
 					case [['cpp'],'Pointer']
 					   | [['cpp'],'ConstPointer']
 					   | [['cpp'],'RawPointer']
 					   | [['cpp'],'RawConstPointer']:
-						 ret + '<' + [ for (p in p) typeToCpp(p) ].join(',') + '>';
+						 ret + '<' + [ for (p in p) typeToCpp(p,includes) ].join(',') + '>';
 					case _:
 							ret;
 				}
@@ -82,7 +93,12 @@ class StructBuilder
 		var thisType = clsString(['indian','structs'],'D' + name,true);
 		var boxType = clsString(['indian','structs'],'B' + name,true);
 		def.meta = [ for (name in [':keep']) { name:name, params:[], pos:pos } ];
+		var includes = [];
+		var fdecl = [ for (field in fields) typeToCpp(field.type,includes) + ' ' + field.name + '; ' ];
 		var metas = [{
+			name: ':headerCode',
+			param: [ for (i in includes) '#include<$i>' ].join('\n')
+		}, {
 			name: ':headerNamespaceCode',
 			param: '
 				class D$name;
@@ -97,7 +113,7 @@ class StructBuilder
 						D$name(Dynamic val) { $thisType t = istruct_${name}_unbox(val); ${ [ for (field in fields) 'this->${field.name} = t.${field.name};' ].join('') } }
 						D$name() {}
 
-						${[ for (field in fields) typeToCpp(field.type) + ' ' + field.name + '; '].join('')}
+						${fdecl.join('')}
 				};
 			',
 		}, {

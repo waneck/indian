@@ -82,7 +82,7 @@ extern class Int64
 			inline ::indian::_impl::cpp::Int64 neg () { return -(this->i64); }
 
 			inline int getHigh () { return (( (unsigned long long int) this->i64 ) >> 32) & 0xFFFFFFFF; }
-			inline int getLow () { return ((this->i64) & 0xFFFFFFFF; }
+			inline int getLow () { return ((this->i64) & 0xFFFFFFFF); }
 
 			inline int compare( ::indian::_impl::cpp::Int64 i2 )
 			{
