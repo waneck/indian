@@ -56,9 +56,9 @@ import neko.Lib;
 
 	@:extern @:from inline public static function ofInt(i:Int):Int64
 	{
-#if (cpp || java || cs)
+#if (java || cs)
 		return cast i;
-#elseif neko
+#elseif (cpp || neko)
 		return make(0,i);
 #else
 		return new Int64(haxe.Int64.ofInt(i));
@@ -147,10 +147,7 @@ import neko.Lib;
 	@:extern @:op(A-B) public inline function sub_int64(i:Int64):Int64
 	{
 #if cpp
-		var ret = new Int64( this.sub_i64(i.t()) );
-		trace(ret.toString());
-		trace(untyped __cpp__('(int) (size_t) (void *)  (void *) (size_t) {0}',ret));
-		return ret;
+		return new Int64( this.sub_i64(i.t()) );
 #elseif neko
 		return __sub(this,i);
 #else
