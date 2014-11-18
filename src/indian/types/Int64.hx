@@ -136,7 +136,7 @@ import neko.Lib;
 	@:extern @:op(A+B) public inline function add_int64(i:Int64):Int64
 	{
 #if cpp
-		var ret =  Int64Helper.add_i64(this,i.neg().t());
+		var ret =  Int64Helper.add_i64(this,i.t());
 		return ret;
 #elseif neko
 		return __add(this,i);
@@ -148,7 +148,9 @@ import neko.Lib;
 	@:extern @:op(A-B) public inline function sub_int64(i:Int64):Int64
 	{
 #if cpp
-		var ret = Int64Helper.add_i64(this,-i.t());
+		var ret = Int64Helper.add_i64(this,-(i.t()));
+		trace(ret.toString());
+		trace(untyped __cpp__('(int) (size_t) (void *)  (void *) (size_t) {0}',ret));
 		return ret;
 #elseif neko
 		return __sub(this,i);

@@ -12,6 +12,10 @@ class Test
 
 	@:unsafe static function main()
 	{
+		var i64:indian._impl.cpp.Int64 = null;
+		trace(i64);
+		var dyn:Dynamic = i64;
+		trace(dyn);
 		var runner = new Runner();
 
 		runner.addCase(new indian.test.MiscTests());
