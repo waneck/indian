@@ -94,7 +94,7 @@ class IndianHelper
 								{
 									case TInst(_.get() => { pack:[], name:'String' }, _):
 										if (defined('cs'))
-											macro (untyped __ptr__($i{allocname}) : indian.Buffer);
+											macro (untyped __ptr__($i{allocname}) : cs.Pointer<cs.StdTypes.Char16>);
 										else if (defined('cpp'))
 											macro (untyped __cpp__("(unsigned char *) ({0}.__CStr())", $i{allocname}) : indian.Buffer);
 										else if (!strict) {
