@@ -358,14 +358,14 @@ import neko.Lib;
 #end
 	}
 
-	@:extern public static inline function compare(a:Int64, b:Int64):Int
+	@:extern public inline function compare(b:Int64):Int
 	{
 #if cpp
-		return Int64Helper.compare(a.t(),b.t());
+		return Int64Helper.compare(this,b.t());
 #elseif neko
-		return __compare(a.t(),b.t());
+		return __compare(this,b.t());
 #else
-		return a.t().compare(b.t());
+		return this.compare(b.t());
 #end
 	}
 
