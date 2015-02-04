@@ -1,0 +1,33 @@
+# example travis.yml haxe configuration
+language: c # change this to objective-c to test on a mac machine
+
+env:
+  global:
+    # - OS=mac # add this too to let the script know that the OS is a mac
+  matrix:
+    - TARGET=neko 
+    - TARGET=cpp
+    - TARGET=cpp ARCH=i686
+    - TARGET=java OPTFLAG="-D unsafe"
+    - TARGET=cs OPTFLAG="-D unsafe"
+
+matrix:
+  fast_finish: true
+
+before_install: # clone travis-hx repo
+  - travis_retry git clone --depth=50 --branch=master git://github.com/waneck/travis-hx.git ~/travis-hx
+
+install: # setup the target
+  - ~/travis-hx/setup.sh
+  - travis_retry haxelib install utest
+  - haxelib dev indian "$TRAVIS_BUILD_DIR"
+
+script:
+  - cd $TRAVIS_BUILD_DIR
+  - if [ "${TARGET}" = "neko" ]; then mkdir -p ndll/Linux64/; cd native/neko && make; cd ../../; fi
+  # build the target. This will call haxe with the HXFLAGS and HXFLAGS_EXTRA environment variables
+  - HXFLAGS="-lib utest -lib indian -cp src -cp tests/src -D assertations -D INDIAN_TEST $OPTFLAG -main Test" ~/travis-hx/build.sh
+  - ~/travis-hx/runtests.sh $FILENAME
+  # debug build
+  - HXFLAGS="-debug -lib utest -lib indian -cp src -cp tests/src -D assertations -D INDIAN_TEST $OPTFLAG -main Test" ~/travis-hx/build.sh
+  - ~/travis-hx/runtests.sh $FILENAME
