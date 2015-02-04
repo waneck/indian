@@ -102,24 +102,21 @@ class StructBuilder
 			name: ':headerNamespaceCode',
 			param: '
 				class D$name;
-				extern "C" {
-					$thisType istruct_${name}_unbox(Dynamic d);
-					Dynamic istruct_${name}_box($thisType t);
-				}
+					D$name istruct_${name}_unbox(Dynamic d);
+					Dynamic istruct_${name}_box(D$name t);
 				class D$name
 				{
 					public:
 						inline operator Dynamic () const { return istruct_${name}_box(*this); }
-						D$name(Dynamic val) { $thisType t = istruct_${name}_unbox(val); ${ [ for (field in fields) 'this->${field.name} = t.${field.name};' ].join('') } }
+						D$name(Dynamic val) { D$name t = istruct_${name}_unbox(val); ${ [ for (field in fields) 'this->${field.name} = t.${field.name};' ].join('') } }
 						D$name() {}
 
 						${fdecl.join('')}
 				};
 			',
 		}, {
-			name: ':cppFileCode',
+			name: ':cppNamespaceCode',
 			param: '
-				extern "C" {
 				$thisType istruct_${name}_unbox(Dynamic d)
 				{
 					$boxType b = d;
@@ -129,7 +126,6 @@ class StructBuilder
 				Dynamic istruct_${name}_box($thisType t)
 				{
 					return ${boxType}_obj::__new(t);
-				}
 				}
 			'
 		}];
