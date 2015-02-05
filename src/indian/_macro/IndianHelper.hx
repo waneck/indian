@@ -17,7 +17,7 @@ class IndianHelper
 			if (!cls.meta.has(':alloca'))
 			{
 				cls.meta.add(':alloca',[],bytesLength.pos);
-				cls.meta.add(':headerCode',[macro "#ifndef HX_ALLOCA\n#include <alloca.h>\n#ifdef _MSC_VER\n#define HX_ALLOCA(v) (unsigned char *) _malloca(v)\n#define HX_FREEA _freea(v)\n#else\n#define HX_ALLOCA(v) (unsigned char *) alloca(v)\n#define HX_FREEA \n#endif\n#endif\n"], bytesLength.pos);
+				cls.meta.add(':headerCode',[macro "#ifdef _MSC_VER\n#include <malloc.h>\n#else\n#include <alloca.h>\n#endif\n#ifndef HX_ALLOCA\n#ifdef _MSC_VER\n#define HX_ALLOCA(v) (unsigned char *) _malloca(v)\n#define HX_FREEA(v) _freea(v)\n#else\n#define HX_ALLOCA(v) (unsigned char *) alloca(v)\n#define HX_FREEA(v) \n#endif\n#endif\n"], bytesLength.pos);
 			}
 			return macro ( (untyped __cpp__('HX_ALLOCA({0})',$bytesLength)) : indian.Buffer );
 		} else if (defined('cs')) {

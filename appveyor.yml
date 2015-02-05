@@ -1,0 +1,36 @@
+os: Unstable
+
+clone_folder: c:\projects\hx-indian
+
+environment:
+  matrix:
+    - TARGET: cs
+      OPTFLAG: -D unsafe
+    - TARGET: java
+      OPTFLAG: -D unsafe
+    - TARGET: cpp
+    - TARGET: java
+      OPTFLAG: -D unsafe
+      ARCH: i686
+    - TARGET: cpp
+      ARCH: x86_64
+    - TARGET: cs
+      OPTFLAG: -D unsafe
+      ARCH: i686
+
+install: # clone travis-hx repo and setup the target
+  - git clone --depth=50 --branch=master git://github.com/waneck/travis-hx.git C:\travis-hx
+  - copy C:\travis-hx\extra\appveyor\AppVeyor.exe C:\travis-hx
+  - C:\travis-hx\AppVeyor.exe setup
+  - C:\travis-hx\AppVeyor.exe run haxelib install utest
+  - C:\travis-hx\AppVeyor.exe run haxelib dev indian C:\projects\hx-indian
+
+build_script:
+  - SET HXFLAGS=-cp src -cp tests/src -main Test -lib utest -lib indian -D assertations -D INDIAN_TEST %OPTFLAG%
+  # build the target. This will call haxe with the HXFLAGS and HXFLAGS_EXTRA environment variables
+  - C:\travis-hx\AppVeyor.exe build
+  # run the tests
+  - C:\travis-hx\AppVeyor.exe test %FILENAME% # this will set the $FILENAME defined on the environment variable to run the tests
+
+skip_commits:
+  message: /(\[skip appveyor\]|\[appveyor skip\])/

@@ -102,8 +102,9 @@ class StructBuilder
 			name: ':headerNamespaceCode',
 			param: '
 				class D$name;
-					D$name istruct_${name}_unbox(Dynamic d);
-					Dynamic istruct_${name}_box(D$name t);
+				D$name istruct_${name}_unbox(Dynamic d);
+				Dynamic istruct_${name}_box(D$name t);
+
 				class D$name
 				{
 					public:

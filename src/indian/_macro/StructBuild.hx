@@ -63,9 +63,7 @@ class StructBuild
 			case _: throw new Error('Invalid genericBuild type name $type',currentPos());
 		};
 		var buildname = prefix + buf.toString();
-		trace(buildname);
 		var typeName = 'indian.structs.' + buildname;
-		trace('building',typeName);
 		var type = try getType(typeName) catch(e:String) { if (e.indexOf('Type not found') >= 0) null; else throw e; };
 		if (type != null)
 			return type;

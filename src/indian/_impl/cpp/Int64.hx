@@ -38,11 +38,8 @@ extern class Int64
 
 @:headerNamespaceCode('
 	class Int64;
-
-	extern "C" {
-		::indian::_impl::cpp::Int64 indian_i64_of_Dynamic(Dynamic d);
-		Dynamic indian_Dynamic_of_i64(::indian::_impl::cpp::Int64 t);
-	}
+	Int64 indian_i64_of_Dynamic(Dynamic d);
+	Dynamic indian_Dynamic_of_i64(Int64 t);
 
 	class Int64
 	{
@@ -105,19 +102,17 @@ extern class Int64
 	};
 
 ')
-@:cppFileCode('
-	extern "C" {
-		::indian::_impl::cpp::Int64 indian_i64_of_Dynamic(Dynamic d)
+@:cppNamespaceCode('
+		Int64 indian_i64_of_Dynamic(Dynamic d)
 		{
-			::indian::_impl::cpp::Int64Boxed b = d;
-			return b == null() ? ::indian::_impl::cpp::Int64() : b->data;
+			Int64Boxed b = d;
+			return b == null() ? Int64() : b->data;
 		}
 
-		Dynamic indian_Dynamic_of_i64(::indian::_impl::cpp::Int64 t)
+		Dynamic indian_Dynamic_of_i64(Int64 t)
 		{
-			return ::indian::_impl::cpp::Int64Boxed_obj::__new(t);
+			return Int64Boxed_obj::__new(t);
 		}
-	}
 ')
 @:keep class Int64Boxed
 {

@@ -48,10 +48,8 @@ extern class IntPtr
 @:headerNamespaceCode('
 	class IntPtr;
 
-	extern "C" {
-		::indian::_impl::cpp::IntPtr indian_iptr_of_Dynamic(Dynamic d);
-		Dynamic indian_Dynamic_of_iptr(::indian::_impl::cpp::IntPtr t);
-	}
+	IntPtr indian_iptr_of_Dynamic(Dynamic d);
+	Dynamic indian_Dynamic_of_iptr(IntPtr t);
 
 	class IntPtr
 	{
@@ -129,19 +127,17 @@ extern class IntPtr
 	};
 
 ')
-@:cppFileCode('
-	extern "C" {
-		::indian::_impl::cpp::IntPtr indian_iptr_of_Dynamic(Dynamic d)
+@:cppNamespaceCode('
+		IntPtr indian_iptr_of_Dynamic(Dynamic d)
 		{
-			::indian::_impl::cpp::IntPtrBoxed b = d;
-			return b == null() ? ::indian::_impl::cpp::IntPtr() : b->data;
+			IntPtrBoxed b = d;
+			return b == null() ? IntPtr() : b->data;
 		}
 
-		Dynamic indian_Dynamic_of_iptr(::indian::_impl::cpp::IntPtr t)
+		Dynamic indian_Dynamic_of_iptr(IntPtr t)
 		{
-			return ::indian::_impl::cpp::IntPtrBoxed_obj::__new(t);
+			return IntPtrBoxed_obj::__new(t);
 		}
-	}
 ')
 @:keep class IntPtrBoxed
 {
