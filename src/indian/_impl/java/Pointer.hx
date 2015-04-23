@@ -4,7 +4,7 @@ import indian._impl.java.Unsafe.*;
 
 @:dce abstract Pointer(Int64) from Int64
 {
-	@:extern inline public static function copy(src:Pointer, dest:Pointer, bytes:Int64)
+	@:extern inline public static function copy(src:Pointer, dest:Pointer, bytes:indian.types.Int64)
 	{
 		unsafe.copyMemory(cast src,cast dest,cast bytes);
 	}
@@ -14,7 +14,7 @@ import indian._impl.java.Unsafe.*;
 		return null;
 	}
 
-	@:extern inline public function new(ptr:Int64)
+	@:extern inline public function new(ptr:indian.types.Int64)
 	{
 		this = ptr;
 	}
@@ -32,87 +32,87 @@ import indian._impl.java.Unsafe.*;
 
 	@:extern inline public function realloc(newBytes:Int):Pointer
 	{
-		return unsafe.reallocateMemory(this, cast newBytes);
+		return cast unsafe.reallocateMemory(this, cast newBytes);
 	}
 
 	@:extern inline public function getUInt8(offset:Int):Int
 	{
-		return cast unsafe.getByte(this.add(cast offset));
+		return cast unsafe.getByte(add(offset).addr());
 	}
 
 	@:extern inline public function setUInt8(offset:Int, val:Int):Void
 	{
-		unsafe.putByte(this.add(cast offset), val);
+		unsafe.putByte(add(offset).addr(), val);
 	}
 
 	@:extern inline public function getUInt16(offset:Int):Int
 	{
-		return cast unsafe.getShort(this.add(cast offset));
+		return cast unsafe.getShort(add(offset).addr());
 	}
 
 	@:extern inline public function setUInt16(offset:Int, val:Int):Void
 	{
-		unsafe.putShort(this.add(cast offset), val);
+		unsafe.putShort(add(offset).addr(), val);
 	}
 
 	@:extern inline public function getInt32(offset:Int):Int
 	{
-		return cast unsafe.getInt(this.add(cast offset));
+		return cast unsafe.getInt(add(offset).addr());
 	}
 
 	@:extern inline public function setInt32(offset:Int, val:Int):Void
 	{
-		unsafe.putInt(this.add(cast offset), val);
+		unsafe.putInt(add(offset).addr(), val);
 	}
 
 	@:extern inline public function getInt64(offset:Int):indian.types.Int64
 	{
-		return unsafe.getLong(this.add(cast offset));
+		return unsafe.getLong(add(offset).addr());
 	}
 
-	@:extern inline public function setInt64(offset:Int, val:Int64):Void
+	@:extern inline public function setInt64(offset:Int, val:indian.types.Int64):Void
 	{
-		unsafe.putLong(this.add(cast offset), val);
+		unsafe.putLong(add(offset).addr(), val);
 	}
 
 	@:extern inline public function getFloat32(offset:Int):Single
 	{
-		return cast unsafe.getFloat(this.add(cast offset));
+		return cast unsafe.getFloat(add(offset).addr());
 	}
 
 	@:extern inline public function setFloat32(offset:Int, val:Single):Void
 	{
-		unsafe.putFloat(this.add(cast offset), val);
+		unsafe.putFloat(add(offset).addr(), val);
 	}
 
 	@:extern inline public function getFloat64(offset:Int):Float
 	{
-		return unsafe.getDouble(this.add(cast offset));
+		return unsafe.getDouble(add(offset).addr());
 	}
 
 	@:extern inline public function setFloat64(offset:Int, val:Float):Void
 	{
-		unsafe.putDouble(this.add(cast offset), val);
+		unsafe.putDouble(add(offset).addr(), val);
 	}
 
 	@:extern inline public function getPointer<T>(offset:Int):Pointer
 	{
-		return cast new Pointer(unsafe.getLong(this.add(cast offset)));
+		return cast new Pointer(unsafe.getLong(add(offset).addr()));
 	}
 
 	@:extern inline public function setPointer<T>(offset:Int, pointer:Pointer):Void
 	{
-		unsafe.putLong(this.add(cast offset), pointer.addr());
+		unsafe.putLong(add(offset).addr(), pointer.addr());
 	}
 
-	@:extern inline public function addr():Int64
+	@:extern inline public function addr():indian.types.Int64
 	{
-		return cast this;
+		return this;
 	}
 
 	@:op(A+B) @:extern inline public function add(byteOffset:Int):Pointer
 	{
-		return new Pointer(this.add(cast byteOffset));
+		return new Pointer(this + byteOffset);
 	}
 }
 
@@ -176,4 +176,43 @@ import indian._impl.java.Unsafe.*;
 	}
 }
 
+// this class is here to allow null values to be passed to Int64 (as a pointer is nullable)
+@:native("java.Int64")
+@:runtimeValue @:coreType private abstract Int64 from Int from Float to indian.types.Int64 from indian.types.Int64 from haxe.Int64 to haxe.Int64
+{
+	@:op(A+B) public static function addI(lhs:Int64, rhs:Int):Int64;
+	@:op(A+B) public static function add(lhs:Int64, rhs:Int64):Int64;
+	@:op(A*B) public static function mulI(lhs:Int64, rhs:Int):Int64;
+	@:op(A*B) public static function mul(lhs:Int64, rhs:Int64):Int64;
+	@:op(A%B) public static function modI(lhs:Int64, rhs:Int):Int64;
+	@:op(A%B) public static function mod(lhs:Int64, rhs:Int64):Int64;
+	@:op(A-B) public static function subI(lhs:Int64, rhs:Int):Int64;
+	@:op(A-B) public static function sub(lhs:Int64, rhs:Int64):Int64;
+	@:op(A/B) public static function divI(lhs:Int64, rhs:Int):Int64;
+	@:op(A/B) public static function div(lhs:Int64, rhs:Int64):Int64;
+	@:op(A|B) public static function orI(lhs:Int64, rhs:Int):Int64;
+	@:op(A|B) public static function or(lhs:Int64, rhs:Int64):Int64;
+	@:op(A^B) public static function xorI(lhs:Int64, rhs:Int):Int64;
+	@:op(A^B) public static function xor(lhs:Int64, rhs:Int64):Int64;
+	@:op(A&B) public static function andI(lhs:Int64, rhs:Int):Int64;
+	@:op(A&B) public static function and(lhs:Int64, rhs:Int64):Int64;
+	@:op(A<<B) public static function shlI(lhs:Int64, rhs:Int):Int64;
+	@:op(A<<B) public static function shl(lhs:Int64, rhs:Int64):Int64;
+	@:op(A>>B) public static function shrI(lhs:Int64, rhs:Int):Int64;
+	@:op(A>>B) public static function shr(lhs:Int64, rhs:Int64):Int64;
+	@:op(A>>>B) public static function ushrI(lhs:Int64, rhs:Int):Int64;
+	@:op(A>>>B) public static function ushr(lhs:Int64, rhs:Int64):Int64;
 
+	@:op(A>B) public static function gt(lhs:Int64, rhs:Int64):Bool;
+	@:op(A>=B) public static function gte(lhs:Int64, rhs:Int64):Bool;
+	@:op(A<B) public static function lt(lhs:Int64, rhs:Int64):Bool;
+	@:op(A<=B) public static function lte(lhs:Int64, rhs:Int64):Bool;
+
+	@:op(~A) public static function bneg(t:Int64):Int64;
+	@:op(-A) public static function neg(t:Int64):Int64;
+
+	@:op(++A) public static function preIncrement(t:Int64):Int64;
+	@:op(A++) public static function postIncrement(t:Int64):Int64;
+	@:op(--A) public static function preDecrement(t:Int64):Int64;
+	@:op(A--) public static function postDecrement(t:Int64):Int64;
+}

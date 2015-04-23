@@ -19,6 +19,8 @@ class Infos
 #if (cpp && !HXCPP_CROSS)
 	#if HXCPP_M64
 		return true;
+	#elseif HXCPP_M32
+		return false;
 	#else
 		return indian._macro.InfoHelper.isM64();
 	#end
