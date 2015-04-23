@@ -20,7 +20,7 @@ class Infos
 	#if HXCPP_M64
 		return true;
 	#else
-		return false;
+		return indian._macro.InfoHelper.isM64();
 	#end
 #else
 		return _is64;
