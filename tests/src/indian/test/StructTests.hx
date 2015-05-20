@@ -37,7 +37,7 @@ import indian.types.*;
 	}
 #end
 
-	public function test_struct_offset()
+	public function test_struct_offset1()
 	{
 		var len = Offset1.bytesize * 10 + 4;
 		var ptr:POffset1 = Indian.alloc(len);
@@ -121,6 +121,82 @@ import indian.types.*;
 			equals(buf.getUInt8(i), 0xff);
 		Indian.free(tofree);
 	}
+
+	public function test_struct_offset2()
+	{
+#if cs
+		trace(untyped __cs__("sizeof(global::indian.structs.DSi8Boff1Si8Bi16Si32Ii32_2Ii64Ji8_2BfDi8_3BsFi8_2B)"));
+		trace(Offset2.bytesize);
+#end
+		var len = Offset2.bytesize * 14 + 4;
+		var ptr:POffset2 = Indian.alloc(len);
+		var tofree = ptr;
+		var buf = ptr.asBuffer();
+		for (i in 0...len)
+			buf.setUInt8(i,0xff);
+
+		for (i in 0...10)
+		{
+			ptr.i8 = cast i - 1;
+
+			ptr.off1.i8 = cast 1*i;
+			ptr.off1.i16 = cast 2*i;
+			ptr.off1.i32 = 3*i;
+			ptr.off1.i32_2 = 4*i;
+			ptr.off1.i64 = Int64.make(i,5);
+			ptr.off1.i8_2 = cast 6*i;
+			ptr.off1.f = 7.7*i;
+			ptr.off1.i8_3 = cast 8*i;
+			ptr.off1.s = 9.9*i;
+
+			ptr.i8_2 = cast i + 2;
+
+			ptr++;
+		}
+		ptr = tofree;
+		for (i in 0...10)
+		{
+			var buf = ptr.asBuffer();
+			equals(0,Offset2.offset_i8);
+			equals((i-1) & 0xFF,buf.getUInt8(0));
+
+
+			equals(ptr.off1.i8, cast 1*i);
+			equals(ptr.off1.i16, cast 2*i);
+			equals(ptr.off1.i32, 3*i);
+			equals(ptr.off1.i32_2, 4*i);
+			equals(ptr.off1.i64, Int64.make(i,5));
+			equals(ptr.off1.i8_2, cast 6*i);
+			floatEquals(ptr.off1.f, 7.7*i);
+			equals(ptr.off1.i8_3, cast 8*i);
+			floatEquals(ptr.off1.s, 9.9*i);
+
+			if (Infos.is64)
+			{
+				equals(8, Offset2.offset_off1);
+				equals(Offset2.offset_i8_2, 56);
+			} else if (Infos.nix32)
+			{
+				equals(4, Offset2.offset_off1);
+				equals(Offset2.offset_i8_2, 44);
+			} else {
+				equals(4, Offset2.offset_off1);
+				equals(Offset2.offset_i8_2, 52);
+			}
+			ptr++;
+		}
+		var dif = ptr.asAny().toIntPtr() - tofree.asAny().toIntPtr();
+		if (Infos.is64)
+			equals(64 * 10, dif.toInt());
+		else if (Infos.nix32)
+			equals(48 * 10, dif.toInt());
+		else
+			equals(56 * 10, dif.toInt());
+
+		for (i in (Offset2.bytesize * 10)...len)
+			equals(0xff, buf.getUInt8(i));
+		Indian.free(tofree);
+	}
 }
 
 typedef Offset1 = Struct<{
@@ -137,6 +213,16 @@ typedef Offset1 = Struct<{
 //total structure: 40 / 48
 
 typedef POffset1 = Ptr<Offset1>;
+
+// This will test a struct inside a struct
+typedef Offset2 = Struct<{
+	i8:UInt8,     // off 0
+	off1:Offset1, // off 4 (32) / 8 (64)
+	i8_2:UInt8      // off 44 (lin32) / 52 (32) / 56 (64)
+}>;
+//total structure: 48 (lin32) / 56 (32) / 64 (64)
+
+typedef POffset2 = Ptr<Offset2>;
 
 //test structs with pointers
 //test structs with IntPtr

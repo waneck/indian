@@ -5,6 +5,7 @@ import haxe.macro.Context;
 import haxe.macro.Context.*;
 
 using haxe.macro.Tools;
+using StringTools;
 
 @:forward abstract Layout(LayoutData) from LayoutData
 {
@@ -65,7 +66,7 @@ using haxe.macro.Tools;
 
 	private static function structLayout(m:MetaAccess)
 	{
-		var metas = [ for (p in platforms) p => {name:p, nbytes:0,align:0} ];
+		var metas = [ for (p in platforms) p => {name:p, nbytes:0,align:p.endsWith('64') ? 8 : 4} ];
 		for (meta in m.get())
 		{
 			switch (meta.name)
