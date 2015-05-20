@@ -39,8 +39,12 @@ import indian.types.*;
 
 	public function test_struct_offset()
 	{
-		var ptr:POffset1 = Indian.alloc(Offset1.bytesize * 10);
+		var len = Offset1.bytesize * 10 + 4;
+		var ptr:POffset1 = Indian.alloc(len);
 		var tofree = ptr;
+		var buf = ptr.asBuffer();
+		for (i in 0...len)
+			buf.setUInt8(i,0xff);
 
 		for (i in 0...10)
 		{
@@ -113,6 +117,8 @@ import indian.types.*;
 			equals(48 * 10, dif.toInt());
 		}
 
+		for (i in (Offset1.bytesize * 10)...len)
+			equals(buf.getUInt8(i), 0xff);
 		Indian.free(tofree);
 	}
 }

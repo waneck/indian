@@ -1,0 +1,11 @@
+{
+  "name": "indian",
+  "url": "http://github.com/waneck/indian",
+  "license": "MIT",
+  "tags": ["cross","neko","hxcpp","java","cs","native"],
+  "description": "The gateway to the native world",
+  "version": "0.0.1",
+  "releasenote": "Initial testing",
+  "contributors": ["waneck"],
+	"classPath": "src"
+}
