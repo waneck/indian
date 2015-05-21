@@ -2,6 +2,7 @@ package indian._macro;
 import haxe.macro.Expr;
 import haxe.macro.Context.*;
 using haxe.macro.Tools;
+using StringTools;
 
 class LayoutAgg
 {
@@ -72,6 +73,22 @@ class LayoutAgg
 	public function offsets()
 	{
 		return [ for (p in platfs) { name:p.name, value:p.offset } ];
+	}
+
+	public function alignAsPointer()
+	{
+		for (o in this.platfs)
+		{
+			var off = o.offset;
+			// align to a pointer
+			if (o.name.endsWith('64'))
+			{
+				off = _align(8, off);
+			} else {
+				off = _align(4, off);
+			}
+			o.offset = off;
+		}
 	}
 
 	public function expand(uniqueName:String, build:Array<Field>):Expr->Expr

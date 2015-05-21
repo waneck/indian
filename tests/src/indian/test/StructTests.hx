@@ -128,7 +128,7 @@ import indian.types.*;
 		trace(untyped __cs__("sizeof(global::indian.structs.DSi8Boff1Si8Bi16Si32Ii32_2Ii64Ji8_2BfDi8_3BsFi8_2B)"));
 		trace(Offset2.bytesize);
 #end
-		var len = Offset2.bytesize * 14 + 4;
+		var len = Offset2.bytesize * 10 + 4;
 		var ptr:POffset2 = Indian.alloc(len);
 		var tofree = ptr;
 		var buf = ptr.asBuffer();

@@ -215,9 +215,12 @@ class PtrBuild
 						throw 'assert';
 				};
 				for (f in (macro class {
+					@:analyzer(no_simplification)
 					public var $name(get,set):$type;
+					@:analyzer(no_simplification)
 					@:extern inline public function $get():$type
 						return $structExpr.$ptrget(untyped this);
+					@:analyzer(no_simplification)
 					@:extern inline public function $set(v:$type)
 					{
 						$structExpr.$ptrset(untyped this,v);

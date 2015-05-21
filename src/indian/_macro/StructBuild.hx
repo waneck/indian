@@ -115,17 +115,20 @@ class StructBuild
 					ptrget = 'ptr_get_${name}', ptrset = 'ptr_set_$name';
 			var get = 'get${i.layout.type}', set = 'set${i.layout.type}';
 			add(macro class {
+				@:analyzer(no_simplification)
 				public static var $off(get,never):Int;
 				@:extern inline private static function $offget():Int
 					return ${getOffset(macro 1)};
 
+				@:analyzer(no_simplification)
 				@:extern inline public static function $ptrget(ptr:$thisPtr):$type
 					return ${getExpr([
 						'cs' => macro @:privateAccess ptr.t().acc.$name,
-						'cpp' => macro @:privateAccess ptr.t().ref.$name,
+						'cpp' => macro untyped __cpp__($v{'{0}->get_ref().$name'}, ptr), // @:privateAccess ptr.t().ref.$name,
 						'default' => macro @:privateAccess ptr.t().$get(${getOffset(macro 1)})
 					])};
 
+				@:analyzer(no_simplification)
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
 						'cs' => macro @:privateAccess ptr.t().acc.$name = val,
@@ -155,6 +158,7 @@ class StructBuild
 			});
 		}
 
+		agg.alignAsPointer();
 		var size = agg.expand('ptr',build);
 		add(macro class {
 			public static var bytesize(get,never):Int;
