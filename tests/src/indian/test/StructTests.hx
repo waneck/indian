@@ -124,10 +124,6 @@ import indian.types.*;
 
 	public function test_struct_offset2()
 	{
-#if cs
-		trace(untyped __cs__("sizeof(global::indian.structs.DSi8Boff1Si8Bi16Si32Ii32_2Ii64Ji8_2BfDi8_3BsFi8_2B)"));
-		trace(Offset2.bytesize);
-#end
 		var len = Offset2.bytesize * 10 + 4;
 		var ptr:POffset2 = Indian.alloc(len);
 		var tofree = ptr;
@@ -165,7 +161,7 @@ import indian.types.*;
 			equals(ptr.off1.i16, cast 2*i);
 			equals(ptr.off1.i32, 3*i);
 			equals(ptr.off1.i32_2, 4*i);
-			equals(ptr.off1.i64, Int64.make(i,5));
+			isTrue(ptr.off1.i64.eq(Int64.make(i,5)));
 			equals(ptr.off1.i8_2, cast 6*i);
 			floatEquals(ptr.off1.f, 7.7*i);
 			equals(ptr.off1.i8_3, cast 8*i);

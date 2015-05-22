@@ -47,6 +47,23 @@ class StructBuild
 		return getType('Dynamic');
 	}
 
+	private static function isStruct(t:Type)
+	{
+		return switch(follow(t))
+		{
+			case TAbstract(a,pl):
+				var a2 = a.get();
+				if (a2.meta.has(':structimpl'))
+					true;
+				else if (!a2.meta.has(':coreType'))
+					isStruct(a2.type);
+				else
+					false;
+			case _:
+				false;
+		}
+	}
+
 	private static function getOrBuild(fields:Array<ClassField>, type:String)
 	{
 		var infos = [ for (f in fields) fieldInfo(f) ];
@@ -88,6 +105,7 @@ class StructBuild
 
 		var thisType = TPath({ pack:['indian','structs'], name:buildname }),
 				thisPtr = macro : indian.Ptr<$thisType>;
+		var complexTypes = [];
 		var agg = new LayoutAgg();
 		for (i in infos)
 		{
@@ -111,8 +129,15 @@ class StructBuild
 			var getOffset = agg.expand('ptr_$name', build);
 
 			var off = 'offset_${name}', offget = 'get_$off';
+
+			var isstr = isStruct(i.field.type);
 			var type = i.field.type.toComplexType(),
 					ptrget = 'ptr_get_${name}', ptrset = 'ptr_set_$name';
+			if (isstr)
+			{
+				type = TPath({ pack:["indian"], name:"Ptr", params: [TPType(type)] });
+			}
+			complexTypes.push({ name:name, t: type });
 			var get = 'get${i.layout.type}', set = 'set${i.layout.type}';
 			add(macro class {
 				@:analyzer(no_simplification)
@@ -123,17 +148,30 @@ class StructBuild
 				@:analyzer(no_simplification)
 				@:extern inline public static function $ptrget(ptr:$thisPtr):$type
 					return ${getExpr([
-						'cs' => macro @:privateAccess ptr.t().acc.$name,
-						'cpp' => macro untyped __cpp__($v{'{0}->get_ref().$name'}, ptr), // @:privateAccess ptr.t().ref.$name,
-						'default' => macro @:privateAccess ptr.t().$get(${getOffset(macro 1)})
+						'cs' => (isstr ?
+								macro untyped __cs__('&({0})', @:privateAccess ptr.t().acc.$name) :
+								macro @:privateAccess ptr.t().acc.$name),
+						'cpp' => (isstr ?
+							macro untyped __cpp__($v{'&({0}->get_ref().$name)'}, ptr) :
+							macro @:privateAccess ptr.t().ref.$name),
+						'default' => (isstr ?
+							macro @:privateAccess ptr.t() + ${getOffset(macro 1)} :
+							macro @:privateAccess ptr.t().$get(${getOffset(macro 1)}))
 					])};
 
 				@:analyzer(no_simplification)
 				@:extern inline public static function $ptrset(ptr:$thisPtr, val:$type):Void
 					${getExpr([
-						'cs' => macro @:privateAccess ptr.t().acc.$name = val,
-						'cpp' => macro untyped __cpp__($v{'{0}->get_ref().$name = {1}'},ptr,val),
-						'default' => macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val)
+						'cs' => (isstr ?
+								macro @:privateAccess ptr.t().acc.$name = untyped __cs__('*{0}',val) :
+								macro @:privateAccess ptr.t().acc.$name = val),
+						'cpp' => (isstr ?
+								macro untyped __cpp__($v{'{0}->get_ref().$name = *({1})'},ptr,val) :
+								macro untyped __cpp__($v{'{0}->get_ref().$name = {1}'},ptr,val)),
+						'default' => (isstr ?
+							macro throw 'Not implemented' :
+							// macro (@:privateAccess ptr.t() + ${getOffset(macro 1)}).,val) :
+							macro @:privateAccess ptr.t().$set(${getOffset(macro 1)},val))
 					])};
 			});
 
@@ -177,7 +215,7 @@ class StructBuild
 		cls.meta = [ for (name in [':dce',':structimpl',':extern']) { name:name, params:[], pos:currentPos() } ];
 		cls.meta.push({ name:':structsize',  params:[for (s in sizes) macro $v{s}],  pos:currentPos() });
 		cls.meta.push({ name:':structalign', params:[for (a in aligns) macro $v{a}], pos:currentPos() });
-		cls.meta.push({ name:':structfields',params:[for (a in fields) { var t = a.type.toComplexType(); macro ($v{a.name} : $t); }], pos:currentPos() });
+		cls.meta.push({ name:':structfields',params:[for (a in complexTypes) { var t = a.t; macro ($v{a.name} : $t); }], pos:currentPos() });
 
 		// for (f in cls.fields)
 		// {
