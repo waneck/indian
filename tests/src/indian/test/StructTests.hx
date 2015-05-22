@@ -193,6 +193,15 @@ import indian.types.*;
 			equals(0xff, buf.getUInt8(i));
 		Indian.free(tofree);
 	}
+
+	public function test_linked_list()
+	{
+		var ll:PLinkedList = null;
+		for (i in 0...10)
+		{
+			ll = new PLinkedList();
+		}
+	}
 }
 
 typedef Offset1 = Struct<{
@@ -220,6 +229,15 @@ typedef Offset2 = Struct<{
 
 typedef POffset2 = Ptr<Offset2>;
 
+typedef LinkedList = Struct<{
+	val:UInt16,           // off 0
+	next:Ptr<LinkedList>  // off 4 (32) / 8
+}>;
+//total structure: 8(32) / 16(64)
+
+typedef PLinkedList = Ptr<LinkedList>;
+
 //test structs with pointers
 //test structs with IntPtr
 //test recursive structs
+//test setting a struct that is contained in another struct
