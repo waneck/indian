@@ -39,7 +39,8 @@ class StructBuild
 						}
 						fields.sort(function(v1,v2) return Reflect.compare(v1.pos.min,v2.pos.min));
 
-						return getOrBuild([ for (f in fields) f.field ],cl.name);
+						var ret = getOrBuild([ for (f in fields) f.field ],cl.name);
+						return ret;
 					case _:
 				}
 			case _:
@@ -89,7 +90,19 @@ class StructBuild
 		var cls = macro class {};
 		var build = cls.fields;
 
+		var tdefDecl = tryGetDeclaringTypedef(),
+		    hasTdef = tdefDecl != null;
+		if (tdefDecl == null)
+			tdefDecl = { pack:['indian','structs'], name: buildname };
+		else
+			tdefDecl.name = '__Strt_' + tdefDecl.name;
+		if (tdefDecl.pack.length == 0)
+			tdefDecl.pack = ['indian','structs'];
+
+
+		// inline function add(def:TypeDefinition) for (f in def.fields) { var pos = getPosInfos(f.pos); pos.file += tdefDecl.name + "-" + f.name; f.pos = makePosition(pos);  build.push(f); }
 		inline function add(def:TypeDefinition) for (f in def.fields) build.push(f);
+
 		function getExpr(map:Map<String,Expr>)
 		{
 			if (defined('neko'))
@@ -103,7 +116,7 @@ class StructBuild
 			else throw 'assert';
 		}
 
-		var thisType = TPath({ pack:['indian','structs'], name:buildname }),
+		var thisType = TPath({ pack:tdefDecl.pack, name:tdefDecl.name }),
 				thisPtr = macro : indian.Ptr<$thisType>;
 		var complexTypes = [];
 		var agg = new LayoutAgg();
@@ -179,19 +192,23 @@ class StructBuild
 		}
 
 
-		var underlying = getUnderlying(fields,buildname);
+		var underlying = getUnderlying(fields,tdefDecl.pack,tdefDecl.name);
 		if (supports)
 		{
-			var name = switch (underlying) {
+			var name = null, pack = null;
+
+			switch (underlying) {
 				case TPath(p):
-					p.name;
+					name = p.name;
+					pack = p.pack;
 				case _: throw 'assert';
 			};
+			var t = Context.parse(pack.join('.') + '.' + name, currentPos());
 			add(macro class {
 				@:extern public inline function new()
 					this = ${getExpr([
 						'cs' => macro null,
-						'cpp' => macro indian.structs.$name.create()
+						'cpp' => macro $t.create()
 				])};
 			});
 		}
@@ -209,8 +226,8 @@ class StructBuild
 		var sizes = agg.offsets(),
 				aligns = agg.getAligns();
 
-		cls.pack = ['indian','structs'];
-		cls.name = buildname;
+		cls.pack = tdefDecl.pack;
+		cls.name = tdefDecl.name;
 		cls.kind = TDAbstract(underlying);
 		cls.meta = [ for (name in [':dce',':structimpl',':extern']) { name:name, params:[], pos:currentPos() } ];
 		cls.meta.push({ name:':structsize',  params:[for (s in sizes) macro $v{s}],  pos:currentPos() });
@@ -229,18 +246,29 @@ class StructBuild
 		// }
 		defineType(cls);
 
+		if (hasTdef)
+		{
+			defineType({
+				pack:['indian','structs'],
+				name: buildname,
+				pos: currentPos(),
+				fields: [],
+				kind: TDAlias(TPath({ pack:tdefDecl.pack, name:tdefDecl.name }))
+			});
+		}
+
 		return getType(typeName);
 	}
 
-	private static function getUnderlying(fields:Array<ClassField>, name:String):ComplexType
+	private static function getUnderlying(fields:Array<ClassField>, pack:Array<String>, name:String):ComplexType
 	{
 		if (defined('cs'))
 		{
-			var def = indian._macro.cs.StructBuilder.build(name,fields,currentPos());
+			var def = indian._macro.cs.StructBuilder.build(name,pack,fields,currentPos());
 			defineType(def);
 			return TPath({ pack:def.pack, name:def.name });
 		} else if (defined('cpp')) {
-			var defs = indian._macro.cpp.StructBuilder.build(name,fields,currentPos());
+			var defs = indian._macro.cpp.StructBuilder.build(name,pack,fields,currentPos());
 			for (def in defs)
 				defineType(def);
 			return TPath({ pack:defs[0].pack, name:defs[0].name });

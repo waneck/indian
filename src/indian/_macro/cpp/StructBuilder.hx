@@ -11,11 +11,13 @@ using Lambda;
 class StructBuilder
 {
 	var name:String;
+	var pack:Array<String>;
 	var fields:Array<ClassField>;
 	var pos:Position;
-	public function new(name:String, fields:Array<ClassField>, pos)
+	public function new(name:String, pack:Array<String>, fields:Array<ClassField>, pos)
 	{
 		this.name = name;
+		this.pack = pack;
 		this.fields = fields;
 		this.pos = pos;
 	}
@@ -82,7 +84,7 @@ class StructBuilder
 
 	function getBoxed()
 	{
-		var thisType = TPath({ pack:['indian','structs'], name:'D'+name });
+		var thisType = TPath({ pack:this.pack, name:'D'+name });
 		var def = macro class {
 			private var data__ : $thisType;
 			public function new(data)
@@ -90,8 +92,8 @@ class StructBuilder
 				this.data__ = data;
 			}
 		};
-		var thisType = clsString(['indian','structs'],'D' + name,true);
-		var boxType = clsString(['indian','structs'],'B' + name,true);
+		var thisType = clsString(this.pack,'D' + name,true);
+		var boxType = clsString(this.pack,'B' + name,true);
 		def.meta = [ for (name in [':keep']) { name:name, params:[], pos:pos } ];
 		var includes = [];
 		var fdecl = [ for (field in fields) typeToCpp(field.type,includes) + ' ' + field.name + '; ' ];
@@ -134,7 +136,7 @@ class StructBuilder
 		{
 			def.meta.push({ name:meta.name, params:[macro $v{meta.param}], pos:pos });
 		}
-		def.pack = ['indian','structs'];
+		def.pack = this.pack;
 		def.name = "B" + name;
 		def.pos = pos;
 
@@ -143,8 +145,8 @@ class StructBuilder
 
 	function getExtern()
 	{
-		var thisTypeStr = clsString(['indian','structs'],'D' + name,true);
-		var thisType = TPath({ pack:['indian','structs'], name:'D'+name });
+		var thisTypeStr = clsString(this.pack,'D' + name,true);
+		var thisType = TPath({ pack:this.pack, name:'D'+name });
 		var def = macro class {
 			@:extern static inline function create():$thisType
 			{
@@ -171,16 +173,16 @@ class StructBuilder
 		var block = { expr:EBlock(newExpr), pos:pos };
 		def.isExtern = true;
 		def.meta = [ for (name in [':unreflective',':structAccess']) { name:name, params:[], pos:pos } ];
-		def.meta.push({ name:':include', params:[macro $v{ 'indian/structs/B' + name + '.h' }], pos:pos });
-		def.pack = ['indian','structs'];
+		def.meta.push({ name:':include', params:[macro $v{ this.pack.join('/') + '/B' + name + '.h' }], pos:pos });
+		def.pack = this.pack;
 		def.name = "D" + name;
 		def.pos = pos;
 
 		return def;
 	}
 
-	static public function build(name,fields,pos)
+	static public function build(name,pack,fields,pos)
 	{
-		return new StructBuilder(name,fields,pos).tdef();
+		return new StructBuilder(name,pack,fields,pos).tdef();
 	}
 }

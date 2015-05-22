@@ -52,10 +52,19 @@ class PtrBuild
 		if (type != null)
 			return type;
 
+		var tdefDecl = tryGetDeclaringTypedef(),
+		    hasTdef = tdefDecl != null;
+		if (tdefDecl == null)
+			tdefDecl = { pack:['indian','pointers'], name: buildName };
+		else
+			tdefDecl.name = '__Ptr_' + tdefDecl.name;
+		if (tdefDecl.pack.length == 0)
+			tdefDecl.pack = ['indian','pointers'];
+
 		var get = 'get$fnName',
 				set = 'set$fnName';
 
-		var thisType = TPath({ pack:['indian','pointers'], name:buildName });
+		var thisType = TPath({ pack:tdefDecl.pack, name:tdefDecl.name });
 		var deref = derefType.toComplexType();
 
 		var underlying = if (defined('cpp') || defined('cs'))
@@ -189,8 +198,8 @@ class PtrBuild
 				return this;
 		};
 
-		cls.pack = ['indian','pointers'];
-		cls.name = buildName;
+		cls.pack = tdefDecl.pack;
+		cls.name = tdefDecl.name;
 		cls.kind = TDAbstract(underlying);
 		cls.meta = [ for (name in [':dce',':pointer',':extern']) { name:name, params:[], pos:pos } ];
 		for (field in build)
@@ -242,6 +251,17 @@ class PtrBuild
 		// 	}
 		// }
 		defineType(cls);
+
+		if (hasTdef)
+		{
+			defineType({
+				pack:['indian','pointers'],
+				name: buildName,
+				pos: currentPos(),
+				fields: [],
+				kind: TDAlias(TPath({ pack:tdefDecl.pack, name:tdefDecl.name }))
+			});
+		}
 
 		return getType(typeName);
 	}
