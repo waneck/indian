@@ -41,7 +41,7 @@ class StructBuilder
 		}
 		var block = { expr:EBlock(newExpr), pos:pos };
 		def.fields.push({ name:'new', kind:FFun({ args:newArgs, ret:null, expr:block }), access:[APublic], pos:pos });
-		def.meta = [ for (name in [':keep',':struct',':nativeGen']) { name:name, params:[], pos:pos } ];
+		def.meta = [ for (name in [':keep',':struct',':nativeGen',':unsafe']) { name:name, params:[], pos:pos } ];
 		def.pack = ['indian','structs'];
 		def.name = "D" + name;
 		def.pos = pos;

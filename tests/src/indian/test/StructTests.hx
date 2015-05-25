@@ -199,8 +199,19 @@ import indian.types.*;
 		var ll:PLinkedList = null;
 		for (i in 0...10)
 		{
-			ll = new PLinkedList();
+			var ll2:PLinkedList = Indian.alloc(LinkedList.bytesize);
+			ll2.next = ll;
+			ll2.value = i;
+			ll = ll2;
 		}
+
+		var i = 9;
+		while (ll != null)
+		{
+			equals(ll.value, i--);
+			ll = ll.next;
+		}
+		equals(i,0);
 	}
 }
 

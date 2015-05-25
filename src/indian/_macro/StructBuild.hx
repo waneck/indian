@@ -14,6 +14,15 @@ class StructBuild
 		switch (getLocalType())
 		{
 			case TInst(_.get() => cl,[t]):
+				var r = Context.getPosInfos(currentPos());
+				trace(getLocalModule());
+				if (sys.FileSystem.exists(r.file))
+				{
+					var f = sys.io.File.read(r.file);
+					f.seek(r.min, SeekBegin);
+					trace(f.readString(r.max - r.min));
+					f.close();
+				}
 				switch(follow(t))
 				{
 					case TAnonymous(_.get() => a) if (a.fields.length > 0):
@@ -39,7 +48,9 @@ class StructBuild
 						}
 						fields.sort(function(v1,v2) return Reflect.compare(v1.pos.min,v2.pos.min));
 
-						return getOrBuild([ for (f in fields) f.field ],cl.name);
+						var ret = getOrBuild([ for (f in fields) f.field ],cl.name);
+						trace('returned struct',ret);
+						return ret;
 					case _:
 				}
 			case _:

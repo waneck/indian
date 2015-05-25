@@ -85,15 +85,29 @@ using StringTools;
 
 	public static function fromType(t:Type,pos:Position):Null<Layout>
 	{
+		var origType = t,
+		    origTdef = null;
 		while(true)
 		{
 			inline function recurse(withType:Type) { t = withType; continue; }
 
 			switch(t) {
-				case TMono(tmono) if (tmono != null):
-					recurse(tmono.get());
-				case TMono(_):
-					throw new Error('Cannot create Struct with field with unknown type',pos);
+				case TMono(tmono):
+					var g = tmono.get();
+					if (g != null)
+					{
+						recurse(tmono.get());
+					} else if (origTdef != null) {
+						// this must be a pointer to itself or to a recursive type
+						return { type:'Pointer', pack:origTdef.pack, name:origTdef.name, layouts:mklayouts([
+							'nix32'=>{nbytes:4,align:4},
+							'nix64'=>{nbytes:8,align:8},
+							'win32'=>{nbytes:4,align:4},
+							'win64'=>{nbytes:8,align:8},
+						]), followedType:t };
+					} else {
+						throw new Error('Cannot create Struct with field with unknown type',pos);
+					}
 				case TAbstract(abs,tl):
 					var a = abs.get();
 					switch [a.pack, a.name, a.meta.has(':coreType')] {
@@ -146,6 +160,8 @@ using StringTools;
 							recurse(a.type);
 					}
 				case TType(_.get() => tdef,tl):
+					if (origTdef == null)
+						origTdef = tdef;
 					switch [tdef.pack, tdef.name ] {
 						case [ ['indian','types'], 'Single' ]:
 							return { type:'Float32', pack:[], name:tdef.name, layouts:layout(4,4), followedType:t };
