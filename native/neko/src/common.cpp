@@ -116,15 +116,15 @@ value alloc_uint64(hx_uint64 v)
 
 void *val_ptr(value ptr)
 {
-	if (val_is_abstract(ptr))
+	if (val_is_null(ptr)) 
 	{
+		return NULL;
+	} else if (val_is_abstract(ptr)) {
 		if (val_is_kind(ptr,k_ui64))
 			return &(((i64_container *) val_data(ptr))->value);
 		// We won't check if it's of kind k_ptr, because other libs may want to
 		// use it, and this is an unsafe library after all
 		return val_data(ptr);
-	} else if (val_is_null(ptr)) {
-		return NULL;
 	}
 
 	buffer buf = alloc_buffer("Invalid pointer: ");
@@ -135,5 +135,8 @@ void *val_ptr(value ptr)
 
 value alloc_ptr(void *ptr)
 {
-	return alloc_abstract(k_ptr, ptr);
+	if (NULL == ptr)
+		return val_null;
+	else
+		return alloc_abstract(k_ptr, ptr);
 }

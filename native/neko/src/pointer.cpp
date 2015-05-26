@@ -311,6 +311,7 @@ value tau_get_ptr(value ptr, value base_addr)
 	{
 		src += (size_t) val_int64(base_addr);
 	}
+
 	return alloc_ptr(*( (void **) src ) );
 }
 DEFINE_PRIM(tau_get_ptr,2);
