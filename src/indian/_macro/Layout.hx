@@ -104,7 +104,7 @@ using StringTools;
 							'nix64'=>{nbytes:8,align:8},
 							'win32'=>{nbytes:4,align:4},
 							'win64'=>{nbytes:8,align:8},
-						]), followedType:t };
+						]), followedType:origType };
 					} else {
 						throw new Error('Cannot create Struct with field with unknown type',pos);
 					}
@@ -160,8 +160,8 @@ using StringTools;
 							recurse(a.type);
 					}
 				case TType(_.get() => tdef,tl):
-					if (origTdef == null)
-						origTdef = tdef;
+					origTdef = tdef;
+					origType = t;
 					switch [tdef.pack, tdef.name ] {
 						case [ ['indian','types'], 'Single' ]:
 							return { type:'Float32', pack:[], name:tdef.name, layouts:layout(4,4), followedType:t };

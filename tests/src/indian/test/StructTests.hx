@@ -194,25 +194,25 @@ import indian.types.*;
 		Indian.free(tofree);
 	}
 
-	// public function test_linked_list()
-	// {
-	// 	var ll:PLinkedList = null;
-	// 	for (i in 0...10)
-	// 	{
-	// 		var ll2:PLinkedList = Indian.alloc(LinkedList.bytesize);
-	// 		ll2.next = ll;
-	// 		ll2.value = i;
-	// 		ll = ll2;
-	// 	}
+	public function test_linked_list()
+	{
+		var ll:PLinkedList = null;
+		for (i in 0...10)
+		{
+			var ll2:PLinkedList = Indian.alloc(LinkedList.bytesize);
+			ll2.next = ll;
+			ll2.val = cast i;
+			ll = ll2;
+		}
 
-	// 	var i = 9;
-	// 	while (ll != null)
-	// 	{
-	// 		equals(ll.value, i--);
-	// 		ll = ll.next;
-	// 	}
-	// 	equals(i,0);
-	// }
+		var i = 10;
+		while (ll != null)
+		{
+			equals(ll.val, --i);
+			ll = ll.next;
+		}
+		equals(i,0);
+	}
 }
 
 typedef Offset1 = Struct<{
@@ -240,13 +240,13 @@ typedef Offset2 = Struct<{
 
 typedef POffset2 = Ptr<Offset2>;
 
-// typedef LinkedList = Struct<{
-// 	val:UInt16,           // off 0
-// 	next:Ptr<LinkedList>  // off 4 (32) / 8
-// }>;
-// //total structure: 8(32) / 16(64)
-//
-// typedef PLinkedList = Ptr<LinkedList>;
+typedef LinkedList = Struct<{
+	val:UInt16,           // off 0
+	next:PLinkedList  // off 4 (32) / 8
+}>;
+//total structure: 8(32) / 16(64)
+
+typedef PLinkedList = Ptr<LinkedList>;
 
 //test structs with pointers
 //test structs with IntPtr
